@@ -1,0 +1,25 @@
+{
+  "name": "react-native-callkit",
+  "version": "1.0.0",
+  "description": "iOS 10 CallKit Framework For React Native",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ianlin/react-native-callkit.git"
+  },
+  "author": "Ian Yu-Hsun Lin <ianyuhsunlin@gmail.com>",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/ianlin/react-native-callkit/issues"
+  },
+  "homepage": "https://github.com/ianlin/react-native-callkit#readme",
+  "peerDependencies": {
+    "react-native": ">=0.19.0"
+  },
+  "devDependencies": {
+    "react-native": ">=0.19.0"
+  }
+}
