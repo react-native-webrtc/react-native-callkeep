@@ -52,6 +52,14 @@ continueUserActivity:(NSUserActivity *)userActivity
 
 ## API
 
+### setupWithAppName
+
+- **appName**: string
+
+Initialise RNCallKit with your app name
+
+App name will be displayed on system UI when incoming calls received
+
 ### displayIncomingCall
 
 - **uuid**: string
