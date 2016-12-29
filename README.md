@@ -18,6 +18,10 @@ npm install --save react-native-callkit
 rnpm link react-native-callkit
 ```
 
+### Add Frameworks
+
+In `Xcode` -> `Build Phases` -> `Link Binary With Libraries`, add `CallKit.framework` and `Intents.framework` with `Optional` status
+
 ### AppDelegate.m
 
 ```obj-c
