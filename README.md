@@ -52,13 +52,17 @@ continueUserActivity:(NSUserActivity *)userActivity
 
 ## API
 
-### setupWithAppName
+### setup
 
-- **appName**: string
+- **options**: object
+  - **appName**: string (required)
+    - It will be displayed on system UI when incoming calls received
+  - **imageName**: string (optional)
+    - If provided, it will be displayed on system UI during the call
+  - **ringtoneSound**: string (optional)
+    - If provided, it will be played when incoming calls received; the system will use the default ringtone if this is not provided
 
-Initialise RNCallKit with your app name
-
-App name will be displayed on system UI when incoming calls received
+Initialise RNCallKit with options
 
 ### displayIncomingCall
 
@@ -138,7 +142,16 @@ class RNCallKitExample extends React.Component {
   constructor(props) {
 
     // Initialise RNCallKit
-    RNCallKit.setupWithAppName('RNCallKitExample');
+    let options = {
+        appName: 'RNCallKitExample',
+        imageName: 'my_image_name_in_bundle',
+        ringtoneSound: 'my_ringtone_sound_filename_in_bundle',
+    };
+    try {
+        RNCallKit.setup(options);
+    } catch (err) {
+        console.log('error:', err.message);
+    }
 
     // Add RNCallKit Events
     RNCallKit.addEventListener('didReceiveStartCallAction', this.onRNCallKitDidReceiveStartCallAction);

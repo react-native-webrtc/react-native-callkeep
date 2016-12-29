@@ -3,6 +3,7 @@
 import {
     NativeModules,
     NativeEventEmitter,
+    Platform,
 } from 'react-native';
 
 const _RNCallKit = NativeModules.RNCallKit;
@@ -17,6 +18,7 @@ const RNCallKitConfigureAudioSession = 'RNCallKitConfigureAudioSession';
 
 export default class RNCallKit {
     static addEventListener(type, handler) {
+        if (Platform.OS !== 'ios') return;
         var listener;
         if (type === 'didReceiveStartCallAction') {
             listener = _RNCallKitEmitter.addListener(
@@ -43,6 +45,7 @@ export default class RNCallKit {
     }
 
     static removeEventListener(type, handler) {
+        if (Platform.OS !== 'ios') return;
         var listener = _callkitEventHandlers.get(handler);
         if (!listener) {
             return;
@@ -51,24 +54,35 @@ export default class RNCallKit {
         _callkitEventHandlers.delete(handler);
     }
 
-    static setupWithAppName(appName) {
-        _RNCallKit.setupWithAppName(appName);
+    static setup(options) {
+        if (Platform.OS !== 'ios') return;
+        if (!options.appName) {
+            throw new Error('RNCallKit.setup: option "appName" is required');
+        }
+        if (typeof options.appName !== 'string') {
+            throw new Error('RNCallKit.setup: option "appName" should be of type "string"');
+        }
+        _RNCallKit.setup(options);
     }
 
     static displayIncomingCall(uuid, handle, hasVideo = false) {
+        if (Platform.OS !== 'ios') return;
         _RNCallKit.displayIncomingCall(uuid, handle, hasVideo);
     }
 
     static startCall(uuid, handle, hasVideo = false) {
+        if (Platform.OS !== 'ios') return;
         _RNCallKit.startCall(uuid, handle, hasVideo);
     }
 
     static endCall(uuid) {
+        if (Platform.OS !== 'ios') return;
         _RNCallKit.endCall(uuid);
     }
 
 	/*
     static setHeldCall(uuid, onHold) {
+        if (Platform.OS !== 'ios') return;
         _RNCallKit.setHeldCall(uuid, onHold);
     }
 	*/

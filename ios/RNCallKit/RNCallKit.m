@@ -21,7 +21,7 @@ NSString *const RNCallKitConfigureAudioSession = @"RNCallKitConfigureAudioSessio
 
 @implementation RNCallKit
 {
-    //NSMutableDictionary *settings;
+    NSMutableDictionary *_settings;
 }
 
 RCT_EXPORT_MODULE()
@@ -58,15 +58,15 @@ RCT_EXPORT_MODULE()
     ];
 }
 
-RCT_EXPORT_METHOD(setupWithAppName:(NSString *)appName)
+RCT_EXPORT_METHOD(setup:(NSDictionary *)options)
 {
 #ifdef DEBUG
-    NSLog(@"[RNCallKit][setupWithAppName] appName = %@", appName);
+    NSLog(@"[RNCallKit][setup] options = %@", options);
 #endif
     self.callKitCallController = [[CXCallController alloc] init];
-    self.callKitProvider = [[CXProvider alloc] initWithConfiguration:[self providerConfigurationWithAppName:appName]];
+    _settings = [[NSMutableDictionary alloc] initWithDictionary:options];
+    self.callKitProvider = [[CXProvider alloc] initWithConfiguration:[self getProviderConfiguration]];
     [self.callKitProvider setDelegate:self queue:nil];
-    //settings = [NSMutableDictionary new];
 }
 
 #pragma mark - CXCallController call actions
@@ -84,6 +84,7 @@ RCT_EXPORT_METHOD(displayIncomingCall:(NSString *)uuidString
     CXCallUpdate *callUpdate = [[CXCallUpdate alloc] init];
     callUpdate.remoteHandle = [[CXHandle alloc] initWithType:CXHandleTypeGeneric value:handle];
     callUpdate.supportsDTMF = YES;
+    // TODO: Holding
     callUpdate.supportsHolding = NO;
     callUpdate.supportsGrouping = NO;
     callUpdate.supportsUngrouping = NO;
@@ -156,18 +157,22 @@ RCT_EXPORT_METHOD(setHeldCall:(NSString *)uuidString onHold:(BOOL)onHold)
     }];
 }
 
-- (CXProviderConfiguration *)providerConfigurationWithAppName:(NSString *)appName
+- (CXProviderConfiguration *)getProviderConfiguration
 {
 #ifdef DEBUG
-    NSLog(@"[RNCallKit][providerConfigurationWithAppName] appName = %@", appName);
+    NSLog(@"[RNCallKit][getProviderConfiguration]");
 #endif
-    CXProviderConfiguration *providerConfiguration = [[CXProviderConfiguration alloc] initWithLocalizedName:appName];
-    //providerConfiguration.supportsVideo = YES;
+    CXProviderConfiguration *providerConfiguration = [[CXProviderConfiguration alloc] initWithLocalizedName:_settings[@"appName"]];
+    providerConfiguration.supportsVideo = YES;
     providerConfiguration.maximumCallGroups = 1;
     providerConfiguration.maximumCallsPerCallGroup = 1;
     //providerConfiguration.supportedHandleTypes = [NSSet setWithObjects:[NSNumber numberWithInteger:CXHandleTypePhoneNumber], nil];
-    providerConfiguration.iconTemplateImageData = UIImagePNGRepresentation([UIImage imageNamed:@"ahoy_img_blue"]);
-    providerConfiguration.ringtoneSound = @"incallmanager_ringtone.mp3";
+    if (_settings[@"imageName"]) {
+        providerConfiguration.iconTemplateImageData = UIImagePNGRepresentation([UIImage imageNamed:_settings[@"imageName"]]);
+    }
+    if (_settings[@"ringtoneSound"]) {
+        providerConfiguration.ringtoneSound = _settings[@"ringtoneSound"];
+    }
     return providerConfiguration;
 }
 
