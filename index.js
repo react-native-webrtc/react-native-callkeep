@@ -65,14 +65,14 @@ export default class RNCallKit {
         _RNCallKit.setup(options);
     }
 
-    static displayIncomingCall(uuid, handle, hasVideo = false) {
+    static displayIncomingCall(uuid, handle, handleType = 'number', hasVideo = false) {
         if (Platform.OS !== 'ios') return;
-        _RNCallKit.displayIncomingCall(uuid, handle, hasVideo);
+        _RNCallKit.displayIncomingCall(uuid, handle, handleType, hasVideo);
     }
 
-    static startCall(uuid, handle, hasVideo = false) {
+    static startCall(uuid, handle, handleType = 'number', hasVideo = false) {
         if (Platform.OS !== 'ios') return;
-        _RNCallKit.startCall(uuid, handle, hasVideo);
+        _RNCallKit.startCall(uuid, handle, handleType, hasVideo);
     }
 
     static endCall(uuid) {
@@ -80,10 +80,10 @@ export default class RNCallKit {
         _RNCallKit.endCall(uuid);
     }
 
-	/*
+    /*
     static setHeldCall(uuid, onHold) {
         if (Platform.OS !== 'ios') return;
         _RNCallKit.setHeldCall(uuid, onHold);
     }
-	*/
+    */
 }

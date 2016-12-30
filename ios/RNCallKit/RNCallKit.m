@@ -74,15 +74,16 @@ RCT_EXPORT_METHOD(setup:(NSDictionary *)options)
 // Display the incoming call to the user
 RCT_EXPORT_METHOD(displayIncomingCall:(NSString *)uuidString
                                handle:(NSString *)handle
+                               handleType:(NSString *)handleType
                              hasVideo:(BOOL)hasVideo)
 {
 #ifdef DEBUG
     NSLog(@"[RNCallKit][displayIncomingCall] uuidString = %@", uuidString);
 #endif
+    int _handleType = [self getHandleType:handleType];
     NSUUID *uuid = [[NSUUID alloc] initWithUUIDString:uuidString];
-
     CXCallUpdate *callUpdate = [[CXCallUpdate alloc] init];
-    callUpdate.remoteHandle = [[CXHandle alloc] initWithType:CXHandleTypeGeneric value:handle];
+    callUpdate.remoteHandle = [[CXHandle alloc] initWithType:_handleType value:handle];
     callUpdate.supportsDTMF = YES;
     // TODO: Holding
     callUpdate.supportsHolding = NO;
@@ -100,13 +101,15 @@ RCT_EXPORT_METHOD(displayIncomingCall:(NSString *)uuidString
 
 RCT_EXPORT_METHOD(startCall:(NSString *)uuidString
                        handle:(NSString *)handle
+                       handleType:(NSString *)handleType
                       video:(BOOL)video)
 {
 #ifdef DEBUG
     NSLog(@"[RNCallKit][startCall] uuidString = %@", uuidString);
 #endif
+    int _handleType = [self getHandleType:handleType];
     NSUUID *uuid = [[NSUUID alloc] initWithUUIDString:uuidString];
-    CXHandle *callHandle = [[CXHandle alloc] initWithType:CXHandleTypeGeneric value:handle];
+    CXHandle *callHandle = [[CXHandle alloc] initWithType:_handleType value:handle];
     CXStartCallAction *startCallAction = [[CXStartCallAction alloc] initWithCallUUID:uuid handle:callHandle];
     [startCallAction setVideo:video];
 
@@ -157,6 +160,21 @@ RCT_EXPORT_METHOD(setHeldCall:(NSString *)uuidString onHold:(BOOL)onHold)
     }];
 }
 
+- (int)getHandleType:(NSString *)handleType
+{
+    int _handleType;
+    if ([handleType isEqualToString:@"generic"]) {
+        _handleType = CXHandleTypeGeneric;
+    } else if ([handleType isEqualToString:@"number"]) {
+        _handleType = CXHandleTypePhoneNumber;
+    } else if ([handleType isEqualToString:@"email"]) {
+        _handleType = CXHandleTypeEmailAddress;
+    } else {
+        _handleType = CXHandleTypeGeneric;
+    }
+    return _handleType;
+}
+
 - (CXProviderConfiguration *)getProviderConfiguration
 {
 #ifdef DEBUG
@@ -166,7 +184,7 @@ RCT_EXPORT_METHOD(setHeldCall:(NSString *)uuidString onHold:(BOOL)onHold)
     providerConfiguration.supportsVideo = YES;
     providerConfiguration.maximumCallGroups = 1;
     providerConfiguration.maximumCallsPerCallGroup = 1;
-    //providerConfiguration.supportedHandleTypes = [NSSet setWithObjects:[NSNumber numberWithInteger:CXHandleTypePhoneNumber], nil];
+    providerConfiguration.supportedHandleTypes = [NSSet setWithObjects:[NSNumber numberWithInteger:CXHandleTypePhoneNumber], nil];
     if (_settings[@"imageName"]) {
         providerConfiguration.iconTemplateImageData = UIImagePNGRepresentation([UIImage imageNamed:_settings[@"imageName"]]);
     }

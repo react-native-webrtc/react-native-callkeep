@@ -72,6 +72,10 @@ Initialise RNCallKit with options
 
 - **uuid**: string
 - **handle**: string
+- **handleType**: string (optional)
+  - generic
+  - number (default)
+  - email
 
 Call when you receive incoming calls to display system UI
 
@@ -79,6 +83,10 @@ Call when you receive incoming calls to display system UI
 
 - **uuid**: string
 - **handle**: string
+- **handleType**: string (optional)
+  - generic
+  - number (default)
+  - email
 
 Call when you make an outgoing call
 
@@ -96,7 +104,7 @@ Call when you finish an incoming/outgoing call
 
 ```javascript
 {
-  handle: 'Ian Lin' // The name got from Recents in built-in Phone app
+  handle: '886900000000' // The number/name got from Recents in built-in Phone app
 }
 ```
 
@@ -104,7 +112,7 @@ User start call action from **Recents** in built-in **Phone** app
 
 Try to start your call action from here (e.g. get credentials of the user by `data.handle` and/or send INVITE to your SIP server)
 
-After all works are done, remember to call `RNCallKit.startCall(uuid, calleeName)`
+After all works are done, remember to call `RNCallKit.startCall(uuid, calleeNumber)`
 
 ### - answerCall
 
@@ -214,7 +222,7 @@ class RNCallKitExample extends React.Component {
     // Store the generated uuid somewhere
     // You will need this when calling RNCallKit.endCall()
     let _uuid = uuid.v4();
-    RNCallKit.displayIncomingCall(_uuid, "Ian Lin")
+    RNCallKit.displayIncomingCall(_uuid, "886900000000")
   }
 
   // This is a fake function where you make outgoing calls
@@ -222,7 +230,7 @@ class RNCallKitExample extends React.Component {
     // Store the generated uuid somewhere
     // You will need this when calling RNCallKit.endCall()
     let _uuid = uuid.v4();
-    RNCallKit.startCall(_uuid, "Ian Lin")
+    RNCallKit.startCall(_uuid, "886900000000")
   }
 
   // This is a fake function where you hang up calls
