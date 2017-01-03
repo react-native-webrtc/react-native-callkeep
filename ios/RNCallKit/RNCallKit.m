@@ -13,15 +13,18 @@
 #import "RCTEventDispatcher.h"
 #import "RCTUtils.h"
 
+#import <AVFoundation/AVAudioSession.h>
+
 NSString *const RNCallKitHandleStartCallNotification = @"RNCallKitHandleStartCallNotification";
 NSString *const RNCallKitDidReceiveStartCallAction = @"RNCallKitDidReceiveStartCallAction";
 NSString *const RNCallKitPerformAnswerCallAction = @"RNCallKitPerformAnswerCallAction";
 NSString *const RNCallKitPerformEndCallAction = @"RNCallKitPerformEndCallAction";
-NSString *const RNCallKitConfigureAudioSession = @"RNCallKitConfigureAudioSession";
+NSString *const RNCallKitDidActivateAudioSession = @"RNCallKitDidActivateAudioSession";
 
 @implementation RNCallKit
 {
     NSMutableDictionary *_settings;
+    NSOperatingSystemVersion _version;
 }
 
 RCT_EXPORT_MODULE()
@@ -54,7 +57,7 @@ RCT_EXPORT_MODULE()
         RNCallKitDidReceiveStartCallAction,
         RNCallKitPerformAnswerCallAction,
         RNCallKitPerformEndCallAction,
-        RNCallKitConfigureAudioSession
+        RNCallKitDidActivateAudioSession
     ];
 }
 
@@ -63,6 +66,7 @@ RCT_EXPORT_METHOD(setup:(NSDictionary *)options)
 #ifdef DEBUG
     NSLog(@"[RNCallKit][setup] options = %@", options);
 #endif
+    _version = [[[NSProcessInfo alloc] init] operatingSystemVersion];
     self.callKitCallController = [[CXCallController alloc] init];
     _settings = [[NSMutableDictionary alloc] initWithDictionary:options];
     self.callKitProvider = [[CXProvider alloc] initWithConfiguration:[self getProviderConfiguration]];
@@ -94,7 +98,9 @@ RCT_EXPORT_METHOD(displayIncomingCall:(NSString *)uuidString
     [self.callKitProvider reportNewIncomingCallWithUUID:uuid update:callUpdate completion:^(NSError * _Nullable error) {
         if (error == nil) {
             // Workaround per https://forums.developer.apple.com/message/169511
-            [self configureAudioSession:@"incomingCall"];
+            if ([self lessThanIos10_2]) {
+                [self configureAudioSession];
+            }
         }
     }];
 }
@@ -156,8 +162,30 @@ RCT_EXPORT_METHOD(setHeldCall:(NSString *)uuidString onHold:(BOOL)onHold)
             NSLog(@"[RNCallKit][requestTransaction] Error requesting transaction (%@): (%@)", transaction.actions, error);
         } else {
             NSLog(@"[RNCallKit][requestTransaction] Requested transaction successfully");
+
+            // CXStartCallAction
+            if ([[transaction.actions firstObject] isKindOfClass:[CXStartCallAction class]]) {
+                CXStartCallAction *startCallAction = [transaction.actions firstObject];
+                CXCallUpdate *callUpdate = [[CXCallUpdate alloc] init];
+                callUpdate.remoteHandle = startCallAction.handle;
+                callUpdate.supportsDTMF = YES;
+                callUpdate.supportsHolding = NO;
+                callUpdate.supportsGrouping = NO;
+                callUpdate.supportsUngrouping = NO;
+                callUpdate.hasVideo = NO;
+                [self.callKitProvider reportCallWithUUID:startCallAction.callUUID updated:callUpdate];
+            }
         }
     }];
+}
+
+- (BOOL)lessThanIos10_2
+{
+    if (_version.majorVersion < 10) {
+        return YES;
+    } else {
+        return _version.minorVersion < 2;
+    }
 }
 
 - (int)getHandleType:(NSString *)handleType
@@ -194,13 +222,11 @@ RCT_EXPORT_METHOD(setHeldCall:(NSString *)uuidString onHold:(BOOL)onHold)
     return providerConfiguration;
 }
 
-- (void)configureAudioSession:(NSString *)type
+- (void)configureAudioSession
 {
 #ifdef DEBUG
     NSLog(@"[RNCallKit][configureAudioSession] Activating audio session");
 #endif
-
-    /* Leave this to JS side by sending event
 
     AVAudioSession* audioSession = [AVAudioSession sharedInstance];
     [audioSession setCategory:AVAudioSessionCategoryPlayAndRecord error:nil];
@@ -213,10 +239,6 @@ RCT_EXPORT_METHOD(setHeldCall:(NSString *)uuidString onHold:(BOOL)onHold)
     NSTimeInterval bufferDuration = .005;
     [audioSession setPreferredIOBufferDuration:bufferDuration error:nil];
     [audioSession setActive:TRUE error:nil];
-
-    */
-
-    [self sendEventWithName:RNCallKitConfigureAudioSession body:@{@"type": type}];
 }
 
 + (BOOL)application:(UIApplication *)application
@@ -298,21 +320,26 @@ continueUserActivity:(NSUserActivity *)userActivity
 #ifdef DEBUG
     NSLog(@"[RNCallKit][CXProviderDelegate][provider:performStartCallAction]");
 #endif
-    [self configureAudioSession:@"outgoingCall"];
+    [self configureAudioSession];
     [action fulfill];
 }
 
 // Answering incoming call
-- (void)provider:(CXProvider *)provider performAnswerCallAction:(CXAnswerCallAction *)action{
+- (void)provider:(CXProvider *)provider performAnswerCallAction:(CXAnswerCallAction *)action
+{
 #ifdef DEBUG
     NSLog(@"[RNCallKit][CXProviderDelegate][provider:performAnswerCallAction]");
 #endif
+    if (![self lessThanIos10_2]) {
+        [self configureAudioSession];
+    }
     [self sendEventWithName:RNCallKitPerformAnswerCallAction body:nil];
     [action fulfill];
 }
 
 // Ending incoming call
-- (void)provider:(CXProvider *)provider performEndCallAction:(CXEndCallAction *)action{
+- (void)provider:(CXProvider *)provider performEndCallAction:(CXEndCallAction *)action
+{
 #ifdef DEBUG
     NSLog(@"[RNCallKit][CXProviderDelegate][provider:performEndCallAction]");
 #endif
@@ -320,28 +347,33 @@ continueUserActivity:(NSUserActivity *)userActivity
     [action fulfill];
 }
 
-- (void)provider:(CXProvider *)provider performSetHeldCallAction:(CXSetHeldCallAction *)action{
+- (void)provider:(CXProvider *)provider performSetHeldCallAction:(CXSetHeldCallAction *)action
+{
 #ifdef DEBUG
     NSLog(@"[RNCallKit][CXProviderDelegate][provider:performSetHeldCallAction]");
 #endif
 }
 
-- (void)provider:(CXProvider *)provider timedOutPerformingAction:(CXAction *)action{
+- (void)provider:(CXProvider *)provider timedOutPerformingAction:(CXAction *)action
+{
 #ifdef DEBUG
     NSLog(@"[RNCallKit][CXProviderDelegate][provider:timedOutPerformingAction]");
 #endif
 }
 
-- (void)provider:(CXProvider *)provider didActivateAudioSession:(AVAudioSession *)audioSession{
+- (void)provider:(CXProvider *)provider didActivateAudioSession:(AVAudioSession *)audioSession
+{
 #ifdef DEBUG
     NSLog(@"[RNCallKit][CXProviderDelegate][provider:didActivateAudioSession]");
 #endif
+    [self sendEventWithName:RNCallKitDidActivateAudioSession body:nil];
 }
-- (void)provider:(CXProvider *)provider didDeactivateAudioSession:(AVAudioSession *)audioSession{
+
+- (void)provider:(CXProvider *)provider didDeactivateAudioSession:(AVAudioSession *)audioSession
+{
 #ifdef DEBUG
     NSLog(@"[RNCallKit][CXProviderDelegate][provider:didDeactivateAudioSession]");
 #endif
 }
-
 
 @end

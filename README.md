@@ -126,21 +126,11 @@ User finish the call
 
 Do your normal `Hang Up` actions here
 
-### - configureAudioSession
+### - didActivateAudioSession
 
-**data**:
+The `AudioSession` has been activated by **RNCallKit**, you might want to do following things when receiving this event:
 
-```javascript
-{
-  type: 'incomingCall' // or 'outgoingCall'
-}
-```
-
-The incoming or outgoing call is processing and **CallKit** requires you to configure an AudioSession
-
-Try to configure the AudioSession here
-
-If you don't know how to configure an AudioSession, you might want to use [react-native-incall-manager][4]
+- Start playing ringback if it is an outgoing call
 
 ## Usage
 
@@ -169,7 +159,7 @@ class RNCallKitExample extends React.Component {
     RNCallKit.addEventListener('didReceiveStartCallAction', this.onRNCallKitDidReceiveStartCallAction);
     RNCallKit.addEventListener('answerCall', this.onRNCallKitPerformAnswerCallAction);
     RNCallKit.addEventListener('endCall', this.onRNCallKitPerformEndCallAction);
-    RNCallKit.addEventListener('configureAudioSession', this.onRNCallKitConfigureAudioSession);
+    RNCallKit.addEventListener('didActivateAudioSession', this.onRNCallKitDidActivateAudioSession);
   }
 
   onRNCallKitDidReceiveStartCallAction(data) {
@@ -202,18 +192,11 @@ class RNCallKitExample extends React.Component {
      */
   }
 
-  onRNCallKitConfigureAudioSession(data) {
-    /* You will get this event when the incoming or outgoing call is processing
-     * and CallKit require you to configure an AudioSession
+  onRNCallKitDidActivateAudioSession(data) {
+    /* You will get this event when the the AudioSession has been activated by **RNCallKit**,
+     * you might want to do following things when receiving this event:
      *
-     * Try to configure the AudioSession here
-     * If you don't know how to configure an AudioSession, you might want
-     * to use react-native-incall-manager
-     *
-     * example:
-     *
-     * let ringback = (data.type === 'incomingCall' ? false : '_DTMF_');
-     * InCallManager.start({media: 'audio', ringback});
+     * - Start playing ringback if it is an outgoing call
      */
   }
 
