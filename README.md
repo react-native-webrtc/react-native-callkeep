@@ -1,5 +1,8 @@
 # React Native CallKit - iOS >= 10.0 only
 
+[![npm version](https://badge.fury.io/js/react-native-callkit.svg)](https://badge.fury.io/js/react-native-callkit)
+[![npm downloads](https://img.shields.io/npm/dm/react-native-callkit.svg?maxAge=2592000)](https://img.shields.io/npm/dm/react-native-callkit.svg?maxAge=2592000)
+
 **React Native CallKit** utilises a brand new iOS 10 framework **CallKit** to make the life easier for VoIP developers using React Native.
 
 For more information about **CallKit**, please see [Official CallKit Framework Document][1] or [Introduction to CallKit by Xamarin][2]
