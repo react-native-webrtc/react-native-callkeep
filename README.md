@@ -7,6 +7,8 @@
 
 For more information about **CallKit**, please see [Official CallKit Framework Document][1] or [Introduction to CallKit by Xamarin][2]
 
+**Note**: Since CallKit is quite new, this module will be updated frequently so be careful with the version you are using.
+
 ## Installation
 
 ### NPM module
@@ -27,23 +29,43 @@ In `Xcode` -> `Build Phases` -> `Link Binary With Libraries`, add `CallKit.frame
 
 ### AppDelegate.m
 
+#### - Import Library
+
 ```obj-c
 #import "RNCallKit.h"
+```
 
-.
-.
-.
+#### - Change the way you initialise React Root View
 
+Initialise **RNCallKit** first, since we need our custom `observer` of `NSNotificationCenter` to be started as soon as the app is initialising
 
-- (BOOL)application:(UIApplication *)application
-            openURL:(NSURL *)url
-            options:(NSDictionary<UIApplicationOpenURLOptionsKey, id> *)options NS_AVAILABLE_IOS(9_0)
-{
+```diff
 
-  return [RNCallKit application:application
-                        openURL:url
-                        options:options];
-}
+// This is how you normally initialise React Root View, delete it
+-RCTRootView *rootView = [[RCTRootView alloc] initWithBundleURL:jsCodeLocation
+-                                                    moduleName:@"MyApp"
+-                                             initialProperties:nil
+-                                                 launchOptions:launchOptions];
+
+// Initialise RNCallKit
++RNCallKit *rncallkit = [[RNCallKit alloc] init];
+
+// Initialise React Bridge with RNCallKit
++RCTBridge *bridge = [[RCTBridge alloc] initWithBundleURL:jsCodeLocation
++                                          moduleProvider:^{ return @[rncallkit]; }
++                                           launchOptions:launchOptions];
+
+// Initialise React Root View with React Bridge you've just created
++RCTRootView *rootView = [[RCTRootView alloc] initWithBridge:bridge
++                                                 moduleName:@"MyApp"
++                                          initialProperties:nil];
+```
+
+#### - Handling User Activity
+
+This delegate will be called when the user tries to start a call from native Phone App
+
+```obj-c
 
 - (BOOL)application:(UIApplication *)application
 continueUserActivity:(NSUserActivity *)userActivity
@@ -174,7 +196,7 @@ class RNCallKitExample extends React.Component {
      */
 
     let _uuid = uuid.v4();
-    RNCallKit.startCall(_uuid, data.handle);    
+    RNCallKit.startCall(_uuid, data.handle);
   }
 
   onRNCallKitPerformAnswerCallAction() {
@@ -187,7 +209,7 @@ class RNCallKitExample extends React.Component {
   }
 
   onRNCallKitPerformEndCallAction() {
-    /* You will get this event when the user finish the incoming/outgoing call 
+    /* You will get this event when the user finish the incoming/outgoing call
      *
      * Try to do your normal Hang Up actions here
      *

@@ -25,6 +25,7 @@ export default class RNCallKit {
                 RNCallKitDidReceiveStartCallAction,
                 (data) => { handler(data);}
             );
+            _RNCallKit._startCallActionEventListenerAdded();
         } else if (type === 'answerCall') {
             listener = _RNCallKitEmitter.addListener(
                 RNCallKitPerformAnswerCallAction,

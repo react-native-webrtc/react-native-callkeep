@@ -15,37 +15,43 @@
 
 #import <AVFoundation/AVAudioSession.h>
 
-NSString *const RNCallKitHandleStartCallNotification = @"RNCallKitHandleStartCallNotification";
-NSString *const RNCallKitDidReceiveStartCallAction = @"RNCallKitDidReceiveStartCallAction";
-NSString *const RNCallKitPerformAnswerCallAction = @"RNCallKitPerformAnswerCallAction";
-NSString *const RNCallKitPerformEndCallAction = @"RNCallKitPerformEndCallAction";
-NSString *const RNCallKitDidActivateAudioSession = @"RNCallKitDidActivateAudioSession";
+static int const DelayInSeconds = 2;
+
+static NSString *const RNCallKitHandleStartCallNotification = @"RNCallKitHandleStartCallNotification";
+static NSString *const RNCallKitDidReceiveStartCallAction = @"RNCallKitDidReceiveStartCallAction";
+static NSString *const RNCallKitPerformAnswerCallAction = @"RNCallKitPerformAnswerCallAction";
+static NSString *const RNCallKitPerformEndCallAction = @"RNCallKitPerformEndCallAction";
+static NSString *const RNCallKitDidActivateAudioSession = @"RNCallKitDidActivateAudioSession";
 
 @implementation RNCallKit
 {
     NSMutableDictionary *_settings;
     NSOperatingSystemVersion _version;
+    BOOL _isStartCallActionEventListenerAdded;
 }
 
-RCT_EXPORT_MODULE()
+// should initialise in AppDelegate.m
+//RCT_EXPORT_MODULE()
 
-// Override method of RCTEventEmitter
-- (void)startObserving
+- (instancetype)init
 {
 #ifdef DEBUG
-    NSLog(@"[RNCallKit][startObserving]");
+    NSLog(@"[RNCallKit][init]");
 #endif
-    [[NSNotificationCenter defaultCenter] addObserver:self
-                                             selector:@selector(handleStartCallNotification:)
-                                                 name:RNCallKitHandleStartCallNotification
-                                               object:nil];
+    if (self = [super init]) {
+        [[NSNotificationCenter defaultCenter] addObserver:self
+                                                 selector:@selector(handleStartCallNotification:)
+                                                     name:RNCallKitHandleStartCallNotification
+                                                   object:nil];
+        _isStartCallActionEventListenerAdded = NO;
+    }
+    return self;
 }
 
-// Override method of RCTEventEmitter
-- (void)stopObserving
+- (void)dealloc
 {
 #ifdef DEBUG
-    NSLog(@"[RNCallKit][stopObserving]");
+    NSLog(@"[RNCallKit][dealloc]");
 #endif
     [[NSNotificationCenter defaultCenter] removeObserver:self];
 }
@@ -147,6 +153,11 @@ RCT_EXPORT_METHOD(setHeldCall:(NSString *)uuidString onHold:(BOOL)onHold)
     [transaction addAction:setHeldCallAction];
 
     [self requestTransaction:transaction];
+}
+
+RCT_EXPORT_METHOD(_startCallActionEventListenerAdded)
+{
+    _isStartCallActionEventListenerAdded = YES;
 }
 
 - (void)requestTransaction:(CXTransaction *)transaction
@@ -272,7 +283,7 @@ continueUserActivity:(NSUserActivity *)userActivity
 #ifdef DEBUG
     NSLog(@"[RNCallKit][application:continueUserActivity]");
 #endif
-    INInteraction  *interaction = userActivity.interaction;
+    INInteraction *interaction = userActivity.interaction;
     INPerson *contact;
     NSString *handle;
 
@@ -290,9 +301,11 @@ continueUserActivity:(NSUserActivity *)userActivity
             @"handle": handle,
             @"video": @NO
         };
+
         [[NSNotificationCenter defaultCenter] postNotificationName:RNCallKitHandleStartCallNotification
                                                             object:self
                                                           userInfo:userInfo];
+
         return YES;
     }
     return NO;
@@ -303,7 +316,17 @@ continueUserActivity:(NSUserActivity *)userActivity
 #ifdef DEBUG
     NSLog(@"[RNCallKit][handleStartCallNotification] userInfo = %@", notification.userInfo);
 #endif
-    [self sendEventWithName:RNCallKitDidReceiveStartCallAction body:notification.userInfo];
+    int delayInSeconds;
+    if (!_isStartCallActionEventListenerAdded) {
+        // Workaround for when app is just launched and JS side hasn't registered to the event properly
+        delayInSeconds = DelayInSeconds;
+    } else {
+        delayInSeconds = 0;
+    }
+    dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, (int64_t)(delayInSeconds * NSEC_PER_SEC));
+    dispatch_after(popTime, dispatch_get_main_queue(), ^{
+        [self sendEventWithName:RNCallKitDidReceiveStartCallAction body:notification.userInfo];
+    });
 }
 
 #pragma mark - CXProviderDelegate
