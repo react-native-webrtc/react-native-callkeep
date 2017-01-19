@@ -9,6 +9,10 @@ For more information about **CallKit**, please see [Official CallKit Framework D
 
 **Note**: Since CallKit is quite new, this module will be updated frequently so be careful with the version you are using.
 
+## Version
+
+Use version >= **1.1.0** if you're using react native >= 0.40
+
 ## Installation
 
 ### NPM module
