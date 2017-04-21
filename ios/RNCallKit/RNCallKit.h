@@ -12,7 +12,7 @@
 #import <Intents/Intents.h>
 //#import <AVFoundation/AVAudioSession.h>
 
-#import "RCTEventEmitter.h"
+#import <React/RCTEventEmitter.h>
 
 @interface RNCallKit : RCTEventEmitter <CXProviderDelegate>
 
