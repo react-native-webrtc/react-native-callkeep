@@ -29,12 +29,12 @@ export default class RNCallKit {
         } else if (type === 'answerCall') {
             listener = _RNCallKitEmitter.addListener(
                 RNCallKitPerformAnswerCallAction,
-                () => { handler();}
+                (data) => { handler(data);}
             );
         } else if (type === 'endCall') {
             listener = _RNCallKitEmitter.addListener(
                 RNCallKitPerformEndCallAction,
-                () => { handler(); }
+                (data) => { handler(data); }
             );
         } else if (type === 'didActivateAudioSession') {
             listener = _RNCallKitEmitter.addListener(
