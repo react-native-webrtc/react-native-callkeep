@@ -148,12 +148,26 @@ After all works are done, remember to call `RNCallKit.startCall(uuid, calleeNumb
 User answer the incoming call
 
 Do your normal `Answering` actions here
+**data**:
+
+```javascript
+{
+  callUUID: 'f0ee907b-6dbd-45a8-858a-903decb198f8' // The UUID of the call that is to be answered
+}
+```
 
 ### - endCall
 
 User finish the call
 
 Do your normal `Hang Up` actions here
+**data**:
+
+```javascript
+{
+  callUUID: 'f0ee907b-6dbd-45a8-858a-903decb198f8' // The UUID of the call that is to be hung
+}
+```
 
 ### - didActivateAudioSession
 

@@ -356,7 +356,7 @@ continueUserActivity:(NSUserActivity *)userActivity
     if (![self lessThanIos10_2]) {
         [self configureAudioSession];
     }
-    [self sendEventWithName:RNCallKitPerformAnswerCallAction body:nil];
+    [self sendEventWithName:RNCallKitPerformAnswerCallAction body:@{ @"callUUID": action.callUUID.UUIDString }];
     [action fulfill];
 }
 
@@ -366,7 +366,7 @@ continueUserActivity:(NSUserActivity *)userActivity
 #ifdef DEBUG
     NSLog(@"[RNCallKit][CXProviderDelegate][provider:performEndCallAction]");
 #endif
-    [self sendEventWithName:RNCallKitPerformEndCallAction body:nil];
+    [self sendEventWithName:RNCallKitPerformEndCallAction body:@{ @"callUUID": action.callUUID.UUIDString }];
     [action fulfill];
 }
 
