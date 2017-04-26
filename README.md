@@ -148,6 +148,7 @@ After all works are done, remember to call `RNCallKit.startCall(uuid, calleeNumb
 User answer the incoming call
 
 Do your normal `Answering` actions here
+
 **data**:
 
 ```javascript
@@ -161,6 +162,7 @@ Do your normal `Answering` actions here
 User finish the call
 
 Do your normal `Hang Up` actions here
+
 **data**:
 
 ```javascript
@@ -217,21 +219,21 @@ class RNCallKitExample extends React.Component {
     RNCallKit.startCall(_uuid, data.handle);
   }
 
-  onRNCallKitPerformAnswerCallAction() {
+  onRNCallKitPerformAnswerCallAction(data) {
     /* You will get this event when the user answer the incoming call
      *
      * Try to do your normal Answering actions here
      *
-     * e.g. this.handleAnswerCall();
+     * e.g. this.handleAnswerCall(data.callUUID);
      */
   }
 
-  onRNCallKitPerformEndCallAction() {
+  onRNCallKitPerformEndCallAction(data) {
     /* You will get this event when the user finish the incoming/outgoing call
      *
      * Try to do your normal Hang Up actions here
      *
-     * e.g. this.handleHangUpCall();
+     * e.g. this.handleHangUpCall(data.callUUID);
      */
   }
 
