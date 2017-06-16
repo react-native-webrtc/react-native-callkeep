@@ -76,6 +76,11 @@ export default class RNCallKit {
         _RNCallKit.startCall(uuid, handle, handleType, hasVideo);
     }
 
+    static reportConnectedOutgoingCallWithUUID(uuid) {
+        if (Platform.OS !== 'ios') return;
+        _RNCallKit.reportConnectedOutgoingCallWithUUID(uuid);
+    }
+
     static endCall(uuid) {
         if (Platform.OS !== 'ios') return;
         _RNCallKit.endCall(uuid);

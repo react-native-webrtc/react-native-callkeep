@@ -160,6 +160,13 @@ RCT_EXPORT_METHOD(_startCallActionEventListenerAdded)
     _isStartCallActionEventListenerAdded = YES;
 }
 
+RCT_EXPORT_METHOD(reportConnectedOutgoingCallWithUUID:(NSString *)uuidString)
+{
+    NSUUID *uuid = [[NSUUID alloc] initWithUUIDString:uuidString];
+    [self.callKitProvider reportOutgoingCallWithUUID:uuid connectedAtDate:[NSDate date]];
+}
+
+
 - (void)requestTransaction:(CXTransaction *)transaction
 {
 #ifdef DEBUG
@@ -343,6 +350,7 @@ continueUserActivity:(NSUserActivity *)userActivity
 #ifdef DEBUG
     NSLog(@"[RNCallKit][CXProviderDelegate][provider:performStartCallAction]");
 #endif
+    [self.callKitProvider reportOutgoingCallWithUUID:action.callUUID startedConnectingAtDate:[NSDate date]];
     [self configureAudioSession];
     [action fulfill];
 }
