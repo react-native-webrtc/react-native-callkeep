@@ -4,11 +4,11 @@ package = JSON.parse(File.read(File.join(__dir__, 'package.json')))
 
 Pod::Spec.new do |s|
   s.name                = "RNCallKit"
-  s.version             = "1.1.3"
+  s.version             = package['version']
   s.summary             = package['description']
-  s.homepage            = "https://github.com/ianlin/react-native-callkit"
-  s.license             = "ISC"
-  s.author              = "ianlin"
+  s.homepage            = package['homepage]
+  s.license             = package['license']
+  s.author              = package['author']
   s.source              = { :git => package['repository']['url'], :tag => "v#{s.version}" }
   s.requires_arc        = true
   s.platform            = :ios, "8.0"
