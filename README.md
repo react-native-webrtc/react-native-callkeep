@@ -13,7 +13,7 @@ For more information about **CallKit**, please see [Official CallKit Framework D
 
 Use version >= **1.1.0** if you're using react native >= 0.40
 
-## Installation
+## Installation (without CocoaPods)
 
 ### NPM module
 
@@ -26,6 +26,22 @@ npm install --save react-native-callkit
 ```bash
 rnpm link react-native-callkit
 ```
+
+## Installation (with CocoaPods)
+
+### NPM module
+
+```bash
+npm install --save react-native-callkit
+```
+
+### CocaPods
+```bash
+cd ios
+pod install
+```
+
+## Installation common steps
 
 ### Add Frameworks
 
