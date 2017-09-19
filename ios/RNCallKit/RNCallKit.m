@@ -15,7 +15,7 @@
 
 #import <AVFoundation/AVAudioSession.h>
 
-static int const DelayInSeconds = 2;
+static int const DelayInSeconds = 3;
 
 static NSString *const RNCallKitHandleStartCallNotification = @"RNCallKitHandleStartCallNotification";
 static NSString *const RNCallKitDidReceiveStartCallAction = @"RNCallKitDidReceiveStartCallAction";
@@ -31,7 +31,7 @@ static NSString *const RNCallKitDidActivateAudioSession = @"RNCallKitDidActivate
 }
 
 // should initialise in AppDelegate.m
-//RCT_EXPORT_MODULE()
+RCT_EXPORT_MODULE()
 
 - (instancetype)init
 {

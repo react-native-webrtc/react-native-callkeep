@@ -55,7 +55,7 @@ In `Xcode` -> `Build Phases` -> `Link Binary With Libraries`, add `CallKit.frame
 #import "RNCallKit.h"
 ```
 
-#### - Change the way you initialise React Root View
+#### - Change the way you initialise React Root View (required if <= 1.2.1)
 
 Initialise **RNCallKit** first, since we need our custom `observer` of `NSNotificationCenter` to be started as soon as the app is initialising
 
