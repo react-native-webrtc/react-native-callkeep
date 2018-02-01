@@ -43,6 +43,19 @@ pod install
 
 ## Installation common steps
 
+### Info.plist
+
+Add `voip` under `UIBackgroundModes`
+
+Note that it must be done via editing `Info.plist` as in Xcode 9 there is no `voip` option in `Capabilities`.
+
+```
+<key>UIBackgroundModes</key>
+<array>
+  <string>voip</string>
+</array>
+```
+
 ### Add Frameworks
 
 In `Xcode` -> `Build Phases` -> `Link Binary With Libraries`, add `CallKit.framework` and `Intents.framework` with `Optional` status
