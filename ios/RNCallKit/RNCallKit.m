@@ -296,7 +296,7 @@ continueUserActivity:(NSUserActivity *)userActivity
     INPerson *contact;
     NSString *handle;
 
-    if ([userActivity.activityType isEqualToString:INStartAudioCallIntentIdentifier]) {
+    if ([userActivity.activityType isEqualToString:INStartAudioCallIntentIdentifier] || [userActivity.activityType isEqualToString:INStartVideoCallIntentIdentifier]) {
         INStartAudioCallIntent *startAudioCallIntent = (INStartAudioCallIntent *)interaction.intent;
         contact = [startAudioCallIntent.contacts firstObject];
     }
