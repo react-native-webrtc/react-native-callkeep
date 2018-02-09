@@ -208,6 +208,12 @@ RCT_EXPORT_METHOD(reportConnectedOutgoingCallWithUUID:(NSString *)uuidString)
     }
 }
 
+- (BOOL)containsLowerCaseLetter:(NSString *)callUUID
+{
+    NSRegularExpression* regex = [[NSRegularExpression alloc] initWithPattern:@"[a-z]" options:0 error:nil];
+    return [regex numberOfMatchesInString:callUUID options:0 range:NSMakeRange(0, [callUUID length])] > 0;
+}
+
 - (int)getHandleType:(NSString *)handleType
 {
     int _handleType;
@@ -366,7 +372,8 @@ continueUserActivity:(NSUserActivity *)userActivity
     if (![self lessThanIos10_2]) {
         [self configureAudioSession];
     }
-    [self sendEventWithName:RNCallKitPerformAnswerCallAction body:@{ @"callUUID": action.callUUID.UUIDString }];
+    NSString *callUUID = [self containsLowerCaseLetter:action.callUUID.UUIDString] ? action.callUUID.UUIDString : [action.callUUID.UUIDString lowercaseString];
+    [self sendEventWithName:RNCallKitPerformAnswerCallAction body:@{ @"callUUID": callUUID }];
     [action fulfill];
 }
 
@@ -376,7 +383,8 @@ continueUserActivity:(NSUserActivity *)userActivity
 #ifdef DEBUG
     NSLog(@"[RNCallKit][CXProviderDelegate][provider:performEndCallAction]");
 #endif
-    [self sendEventWithName:RNCallKitPerformEndCallAction body:@{ @"callUUID": action.callUUID.UUIDString }];
+    NSString *callUUID = [self containsLowerCaseLetter:action.callUUID.UUIDString] ? action.callUUID.UUIDString : [action.callUUID.UUIDString lowercaseString];
+    [self sendEventWithName:RNCallKitPerformEndCallAction body:@{ @"callUUID": callUUID }];
     [action fulfill];
 }
 
