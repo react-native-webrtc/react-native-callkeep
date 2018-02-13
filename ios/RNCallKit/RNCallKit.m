@@ -84,8 +84,9 @@ RCT_EXPORT_METHOD(setup:(NSDictionary *)options)
 // Display the incoming call to the user
 RCT_EXPORT_METHOD(displayIncomingCall:(NSString *)uuidString
                                handle:(NSString *)handle
-                               handleType:(NSString *)handleType
-                             hasVideo:(BOOL)hasVideo)
+                           handleType:(NSString *)handleType
+                             hasVideo:(BOOL)hasVideo
+                  localizedCallerName:(NSString * _Nullable)localizedCallerName)
 {
 #ifdef DEBUG
     NSLog(@"[RNCallKit][displayIncomingCall] uuidString = %@", uuidString);
@@ -100,6 +101,7 @@ RCT_EXPORT_METHOD(displayIncomingCall:(NSString *)uuidString
     callUpdate.supportsGrouping = NO;
     callUpdate.supportsUngrouping = NO;
     callUpdate.hasVideo = hasVideo;
+    callUpdate.localizedCallerName = localizedCallerName;
 
     [self.callKitProvider reportNewIncomingCallWithUUID:uuid update:callUpdate completion:^(NSError * _Nullable error) {
         if (error == nil) {
