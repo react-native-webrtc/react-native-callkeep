@@ -71,9 +71,9 @@ export default class RNCallKit {
         _RNCallKit.displayIncomingCall(uuid, handle, handleType, hasVideo, localizedCallerName);
     }
 
-    static startCall(uuid, handle, handleType = 'number', hasVideo = false) {
+    static startCall(uuid, handle, handleType = 'number', hasVideo = false, contactIdentifier?: String) {
         if (Platform.OS !== 'ios') return;
-        _RNCallKit.startCall(uuid, handle, handleType, hasVideo);
+        _RNCallKit.startCall(uuid, handle, handleType, hasVideo, contactIdentifier);
     }
 
     static reportConnectedOutgoingCallWithUUID(uuid) {
