@@ -144,6 +144,18 @@ RCT_EXPORT_METHOD(endCall:(NSString *)uuidString)
     [self requestTransaction:transaction];
 }
 
+RCT_EXPORT_METHOD(endAllCalls)
+{
+#ifdef DEBUG
+    NSLog(@"[RNCallKit][endAllCalls] calls = %@", self.callKitCallController.callObserver.calls);
+#endif
+    for (CXCall *call in self.callKitCallController.callObserver.calls) {
+        CXEndCallAction *endCallAction = [[CXEndCallAction alloc] initWithCallUUID:call.UUID];
+        CXTransaction *transaction = [[CXTransaction alloc] initWithAction:endCallAction];
+        [self requestTransaction:transaction];
+    }
+}
+
 RCT_EXPORT_METHOD(setHeldCall:(NSString *)uuidString onHold:(BOOL)onHold)
 {
 #ifdef DEBUG
