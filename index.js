@@ -86,6 +86,11 @@ export default class RNCallKit {
         _RNCallKit.endCall(uuid);
     }
 
+    static endAllCalls() {
+        if (Platform.OS !== 'ios') return;
+        _RNCallKit.endAllCalls();
+    }
+
     /*
     static setHeldCall(uuid, onHold) {
         if (Platform.OS !== 'ios') return;
