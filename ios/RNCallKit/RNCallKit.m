@@ -315,26 +315,30 @@ continueUserActivity:(NSUserActivity *)userActivity
     INInteraction *interaction = userActivity.interaction;
     INPerson *contact;
     NSString *handle;
-
-    if ([userActivity.activityType isEqualToString:INStartAudioCallIntentIdentifier] || [userActivity.activityType isEqualToString:INStartVideoCallIntentIdentifier]) {
+    BOOL isAudioCall = [userActivity.activityType isEqualToString:INStartAudioCallIntentIdentifier];
+    BOOL isVideoCall = [userActivity.activityType isEqualToString:INStartVideoCallIntentIdentifier];
+    
+    if (isAudioCall) {
         INStartAudioCallIntent *startAudioCallIntent = (INStartAudioCallIntent *)interaction.intent;
         contact = [startAudioCallIntent.contacts firstObject];
+    } else if (isVideoCall) {
+        INStartVideoCallIntent *startVideoCallIntent = (INStartVideoCallIntent *)interaction.intent;
+        contact = [startVideoCallIntent.contacts firstObject];
     }
-
+    
     if (contact != nil) {
         handle = contact.personHandle.value;
     }
-
+    
     if (handle != nil && handle.length > 0 ){
         NSDictionary *userInfo = @{
-            @"handle": handle,
-            @"video": @NO
-        };
-
+                                   @"handle": handle,
+                                   @"video": @(isVideoCall)
+                                   };
+        
         [[NSNotificationCenter defaultCenter] postNotificationName:RNCallKitHandleStartCallNotification
                                                             object:self
                                                           userInfo:userInfo];
-
         return YES;
     }
     return NO;
