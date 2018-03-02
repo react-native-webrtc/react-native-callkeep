@@ -1,6 +1,6 @@
 {
   "name": "react-native-callkit",
-  "version": "1.3.2",
+  "version": "1.3.3",
   "description": "iOS 10 CallKit Framework For React Native",
   "main": "index.js",
   "scripts": {
