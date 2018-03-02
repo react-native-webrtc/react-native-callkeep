@@ -134,6 +134,7 @@ Initialise RNCallKit with options
   - generic
   - number (default)
   - email
+- **localizedCallerName**: string (optional)
 
 Call when you receive incoming calls to display system UI
 
@@ -145,6 +146,8 @@ Call when you receive incoming calls to display system UI
   - generic
   - number (default)
   - email
+- **contactIdentifier**: string (optional)
+  - The identifier is displayed in the native call UI, and is typically the name of the call recipient.
 
 Call when you make an outgoing call
 
