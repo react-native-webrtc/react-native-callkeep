@@ -85,9 +85,9 @@ RCT_EXPORT_METHOD(setup:(NSDictionary *)options)
 
 // Display the incoming call to the user
 RCT_EXPORT_METHOD(displayIncomingCall:(NSString *)uuidString
-                  handle:(NSString *)handle
-                  handleType:(NSString *)handleType
-                  hasVideo:(BOOL)hasVideo
+                               handle:(NSString *)handle
+                           handleType:(NSString *)handleType
+                             hasVideo:(BOOL)hasVideo
                   localizedCallerName:(NSString * _Nullable)localizedCallerName)
 {
 #ifdef DEBUG
@@ -295,19 +295,19 @@ RCT_EXPORT_METHOD(reportConnectedOutgoingCallWithUUID:(NSString *)uuidString)
     NSLog(@"[RNCallKit][application:openURL]");
 #endif
     /*
-     NSString *handle = [url startCallHandle];
-     if (handle != nil && handle.length > 0 ){
-     NSDictionary *userInfo = @{
-     @"handle": handle,
-     @"video": @NO
-     };
-     [[NSNotificationCenter defaultCenter] postNotificationName:RNCallKitHandleStartCallNotification
-     object:self
-     userInfo:userInfo];
-     return YES;
-     }
-     return NO;
-     */
+    NSString *handle = [url startCallHandle];
+    if (handle != nil && handle.length > 0 ){
+        NSDictionary *userInfo = @{
+            @"handle": handle,
+            @"video": @NO
+        };
+        [[NSNotificationCenter defaultCenter] postNotificationName:RNCallKitHandleStartCallNotification
+                                                            object:self
+                                                          userInfo:userInfo];
+        return YES;
+    }
+    return NO;
+    */
     return YES;
 }
 

@@ -70,7 +70,9 @@ export default class RNCallKit {
     static displayIncomingCall(uuid, handle, handleType = 'number', hasVideo = false, localizedCallerName?: String, callback) {
         if (Platform.OS !== 'ios') return;
         if (callback) {
-          _callkitEventHandlers.set(callback, _RNCallKitEmitter.addListener(
+          _callkitEventHandlers.set(
+            callback,
+            _RNCallKitEmitter.addListener(
               RNCallKitDidDisplayIncomingCall,
               (data) => { callback(data.error); }
           ));
