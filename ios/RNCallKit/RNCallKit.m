@@ -114,9 +114,10 @@ RCT_EXPORT_METHOD(displayIncomingCall:(NSString *)uuidString
 }
 
 RCT_EXPORT_METHOD(startCall:(NSString *)uuidString
-                       handle:(NSString *)handle
-                       handleType:(NSString *)handleType
-                      video:(BOOL)video)
+                     handle:(NSString *)handle
+                 handleType:(NSString *)handleType
+                      video:(BOOL)video
+          contactIdentifier:(NSString * _Nullable)contactIdentifier)
 {
 #ifdef DEBUG
     NSLog(@"[RNCallKit][startCall] uuidString = %@", uuidString);
@@ -126,6 +127,7 @@ RCT_EXPORT_METHOD(startCall:(NSString *)uuidString
     CXHandle *callHandle = [[CXHandle alloc] initWithType:_handleType value:handle];
     CXStartCallAction *startCallAction = [[CXStartCallAction alloc] initWithCallUUID:uuid handle:callHandle];
     [startCallAction setVideo:video];
+    [startCallAction setContactIdentifier:contactIdentifier];
 
     CXTransaction *transaction = [[CXTransaction alloc] initWithAction:startCallAction];
 
