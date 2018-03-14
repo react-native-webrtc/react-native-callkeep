@@ -245,6 +245,7 @@ class RNCallKitExample extends React.Component {
     RNCallKit.addEventListener('answerCall', this.onRNCallKitPerformAnswerCallAction);
     RNCallKit.addEventListener('endCall', this.onRNCallKitPerformEndCallAction);
     RNCallKit.addEventListener('didActivateAudioSession', this.onRNCallKitDidActivateAudioSession);
+    RNCallKit.addEventListener('didDisplayIncomingCall', this.onRNCallKitDidDisplayIncomingCall);
   }
 
   onRNCallKitDidReceiveStartCallAction(data) {
@@ -282,6 +283,12 @@ class RNCallKitExample extends React.Component {
      * you might want to do following things when receiving this event:
      *
      * - Start playing ringback if it is an outgoing call
+     */
+  }
+
+  onRNCallKitDidDisplayIncomingCall(error) {
+    /* You will get this event after RNCallKit finishes showing incoming call UI
+     * You can check if there was an error while displaying
      */
   }
 
