@@ -106,7 +106,6 @@ RCT_EXPORT_METHOD(displayIncomingCall:(NSString *)uuidString
     callUpdate.localizedCallerName = localizedCallerName;
 
     [self.callKitProvider reportNewIncomingCallWithUUID:uuid update:callUpdate completion:^(NSError * _Nullable error) {
-        // Invoking the displayIncomingCall callback
         [self sendEventWithName:RNCallKitDidDisplayIncomingCall body:@{ @"error": error ? error.localizedDescription : @"" }];
         if (error == nil) {
             // Workaround per https://forums.developer.apple.com/message/169511

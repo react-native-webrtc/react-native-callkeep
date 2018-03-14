@@ -42,7 +42,13 @@ export default class RNCallKit {
                 RNCallKitDidActivateAudioSession,
                 () => { handler(); }
             );
+        } else if (type === 'didDisplayIncomingCall') {
+            listener = _RNCallKitEmitter.addListener(
+                RNCallKitDidDisplayIncomingCall,
+                (data) => { handler(data.error); }
+            );
         }
+
         _callkitEventHandlers.set(handler, listener);
     }
 
@@ -67,16 +73,8 @@ export default class RNCallKit {
         _RNCallKit.setup(options);
     }
 
-    static displayIncomingCall(uuid, handle, handleType = 'number', hasVideo = false, localizedCallerName?: String, callback) {
+    static displayIncomingCall(uuid, handle, handleType = 'number', hasVideo = false, localizedCallerName?: String) {
         if (Platform.OS !== 'ios') return;
-        if (callback) {
-          _callkitEventHandlers.set(
-            callback,
-            _RNCallKitEmitter.addListener(
-              RNCallKitDidDisplayIncomingCall,
-              (data) => { callback(data.error); }
-          ));
-        }
         _RNCallKit.displayIncomingCall(uuid, handle, handleType, hasVideo, localizedCallerName);
     }
 

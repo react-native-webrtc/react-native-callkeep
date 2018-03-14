@@ -137,7 +137,6 @@ Initialise RNCallKit with options
 - **hasVideo**: boolean (optional)
   - false (default)
 - **localizedCallerName**: string (optional)
-- **callback**: (error?: string) => void (optional)
 
 Call when you receive incoming calls to display system UI
 
