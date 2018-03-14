@@ -211,6 +211,12 @@ The `AudioSession` has been activated by **RNCallKit**, you might want to do fol
 
 - Start playing ringback if it is an outgoing call
 
+### - didDisplayIncomingCall
+
+Callback for `RNCallKit.displayIncomingCall`
+
+**error**: string (optional)
+
 ## Usage
 
 ```javascript
