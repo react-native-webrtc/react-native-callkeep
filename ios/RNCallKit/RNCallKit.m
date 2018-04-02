@@ -22,6 +22,7 @@ static NSString *const RNCallKitDidReceiveStartCallAction = @"RNCallKitDidReceiv
 static NSString *const RNCallKitPerformAnswerCallAction = @"RNCallKitPerformAnswerCallAction";
 static NSString *const RNCallKitPerformEndCallAction = @"RNCallKitPerformEndCallAction";
 static NSString *const RNCallKitDidActivateAudioSession = @"RNCallKitDidActivateAudioSession";
+static NSString *const RNCallKitDidDisplayIncomingCall = @"RNCallKitDidDisplayIncomingCall";
 
 @implementation RNCallKit
 {
@@ -60,11 +61,12 @@ RCT_EXPORT_MODULE()
 - (NSArray<NSString *> *)supportedEvents
 {
     return @[
-        RNCallKitDidReceiveStartCallAction,
-        RNCallKitPerformAnswerCallAction,
-        RNCallKitPerformEndCallAction,
-        RNCallKitDidActivateAudioSession
-    ];
+             RNCallKitDidReceiveStartCallAction,
+             RNCallKitPerformAnswerCallAction,
+             RNCallKitPerformEndCallAction,
+             RNCallKitDidActivateAudioSession,
+             RNCallKitDidDisplayIncomingCall
+             ];
 }
 
 RCT_EXPORT_METHOD(setup:(NSDictionary *)options)
@@ -104,6 +106,7 @@ RCT_EXPORT_METHOD(displayIncomingCall:(NSString *)uuidString
     callUpdate.localizedCallerName = localizedCallerName;
 
     [self.callKitProvider reportNewIncomingCallWithUUID:uuid update:callUpdate completion:^(NSError * _Nullable error) {
+        [self sendEventWithName:RNCallKitDidDisplayIncomingCall body:@{ @"error": error ? error.localizedDescription : @"" }];
         if (error == nil) {
             // Workaround per https://forums.developer.apple.com/message/169511
             if ([self lessThanIos10_2]) {
@@ -309,7 +312,7 @@ RCT_EXPORT_METHOD(reportConnectedOutgoingCallWithUUID:(NSString *)uuidString)
 
 + (BOOL)application:(UIApplication *)application
 continueUserActivity:(NSUserActivity *)userActivity
-  restorationHandler:(void(^)(NSArray * __nullable restorableObjects))restorationHandler
+ restorationHandler:(void(^)(NSArray * __nullable restorableObjects))restorationHandler
 {
 #ifdef DEBUG
     NSLog(@"[RNCallKit][application:continueUserActivity]");
@@ -319,7 +322,7 @@ continueUserActivity:(NSUserActivity *)userActivity
     NSString *handle;
     BOOL isAudioCall = [userActivity.activityType isEqualToString:INStartAudioCallIntentIdentifier];
     BOOL isVideoCall = [userActivity.activityType isEqualToString:INStartVideoCallIntentIdentifier];
-    
+
     if (isAudioCall) {
         INStartAudioCallIntent *startAudioCallIntent = (INStartAudioCallIntent *)interaction.intent;
         contact = [startAudioCallIntent.contacts firstObject];
@@ -327,17 +330,17 @@ continueUserActivity:(NSUserActivity *)userActivity
         INStartVideoCallIntent *startVideoCallIntent = (INStartVideoCallIntent *)interaction.intent;
         contact = [startVideoCallIntent.contacts firstObject];
     }
-    
+
     if (contact != nil) {
         handle = contact.personHandle.value;
     }
-    
+
     if (handle != nil && handle.length > 0 ){
         NSDictionary *userInfo = @{
                                    @"handle": handle,
                                    @"video": @(isVideoCall)
                                    };
-        
+
         [[NSNotificationCenter defaultCenter] postNotificationName:RNCallKitHandleStartCallNotification
                                                             object:self
                                                           userInfo:userInfo];

@@ -15,6 +15,7 @@ const RNCallKitDidReceiveStartCallAction = 'RNCallKitDidReceiveStartCallAction';
 const RNCallKitPerformAnswerCallAction = 'RNCallKitPerformAnswerCallAction';
 const RNCallKitPerformEndCallAction = 'RNCallKitPerformEndCallAction';
 const RNCallKitDidActivateAudioSession = 'RNCallKitDidActivateAudioSession';
+const RNCallKitDidDisplayIncomingCall = 'RNCallKitDidDisplayIncomingCall';
 
 export default class RNCallKit {
     static addEventListener(type, handler) {
@@ -41,7 +42,13 @@ export default class RNCallKit {
                 RNCallKitDidActivateAudioSession,
                 () => { handler(); }
             );
+        } else if (type === 'didDisplayIncomingCall') {
+            listener = _RNCallKitEmitter.addListener(
+                RNCallKitDidDisplayIncomingCall,
+                (data) => { handler(data.error); }
+            );
         }
+
         _callkitEventHandlers.set(handler, listener);
     }
 
