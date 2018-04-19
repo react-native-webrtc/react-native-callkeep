@@ -166,6 +166,10 @@ Call when you finish an incoming/outgoing call
 
 Switch the mic on/off
 
+### checkIfBusy
+
+Checks if there are any active calls on the device and returns a promise with a boolean value (`true` if there're active calls, `false` otherwise).
+
 ## Events
 
 ### - didReceiveStartCallAction
