@@ -23,6 +23,7 @@ static NSString *const RNCallKitPerformAnswerCallAction = @"RNCallKitPerformAnsw
 static NSString *const RNCallKitPerformEndCallAction = @"RNCallKitPerformEndCallAction";
 static NSString *const RNCallKitDidActivateAudioSession = @"RNCallKitDidActivateAudioSession";
 static NSString *const RNCallKitDidDisplayIncomingCall = @"RNCallKitDidDisplayIncomingCall";
+static NSString *const RNCallKitDidPerformSetMutedCallAction = @"RNCallKitDidPerformSetMutedCallAction";
 
 @implementation RNCallKit
 {
@@ -65,7 +66,8 @@ RCT_EXPORT_MODULE()
              RNCallKitPerformAnswerCallAction,
              RNCallKitPerformEndCallAction,
              RNCallKitDidActivateAudioSession,
-             RNCallKitDidDisplayIncomingCall
+             RNCallKitDidDisplayIncomingCall,
+             RNCallKitDidPerformSetMutedCallAction
              ];
 }
 
@@ -185,6 +187,18 @@ RCT_EXPORT_METHOD(reportConnectedOutgoingCallWithUUID:(NSString *)uuidString)
     [self.callKitProvider reportOutgoingCallWithUUID:uuid connectedAtDate:[NSDate date]];
 }
 
+RCT_EXPORT_METHOD(setMutedCall:(NSString *)uuidString muted:(BOOL)muted)
+{
+#ifdef DEBUG
+    NSLog(@"[RNCallKit][setMutedCall] muted = %i", muted);
+#endif
+    NSUUID *uuid = [[NSUUID alloc] initWithUUIDString:uuidString];
+    CXSetMutedCallAction *setMutedAction = [[CXSetMutedCallAction alloc] initWithCallUUID:uuid muted:muted];
+    CXTransaction *transaction = [[CXTransaction alloc] init];
+    [transaction addAction:setMutedAction];
+
+    [self requestTransaction:transaction];
+}
 
 - (void)requestTransaction:(CXTransaction *)transaction
 {
@@ -438,6 +452,15 @@ continueUserActivity:(NSUserActivity *)userActivity
 #ifdef DEBUG
     NSLog(@"[RNCallKit][CXProviderDelegate][provider:didDeactivateAudioSession]");
 #endif
+}
+
+-(void)provider:(CXProvider *)provider performSetMutedCallAction:(CXSetMutedCallAction *)action
+{
+#ifdef DEBUG
+    NSLog(@"[RNCallKit][CXProviderDelegate][provider:performSetMutedCallAction]");
+#endif
+    [self sendEventWithName:RNCallKitDidPerformSetMutedCallAction body:@{ @"muted": @(action.muted) }];
+    [action fulfill];
 }
 
 @end
