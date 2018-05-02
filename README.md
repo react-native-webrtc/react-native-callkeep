@@ -170,6 +170,10 @@ Switch the mic on/off
 
 Checks if there are any active calls on the device and returns a promise with a boolean value (`true` if there're active calls, `false` otherwise).
 
+### checkSpeaker
+
+Checks if the device speaker is on and returns a promise with a boolean value (`true` if speaker is on, `false` otherwise).
+
 ## Events
 
 ### - didReceiveStartCallAction
