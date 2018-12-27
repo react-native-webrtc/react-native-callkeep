@@ -1,68 +1,58 @@
-import { 
-    NativeModules,
-    NativeEventEmitter,
-} from 'react-native';
+import { NativeModules, NativeEventEmitter, Platform } from 'react-native';
 
-const _RNCallKit = NativeModules.RNCallKit;
-const _RNCallKitEmitter = new NativeEventEmitter(_RNCallKit);
+const RNCallKeepModule = NativeModules.RNCallKeep;
+const eventEmitter = new NativeEventEmitter(RNCallKeepModule);
 
-const RNCallKitDidReceiveStartCallAction = 'RNCallKitDidReceiveStartCallAction';
-const RNCallKitPerformAnswerCallAction = 'RNCallKitPerformAnswerCallAction';
-const RNCallKitPerformEndCallAction = 'RNCallKitPerformEndCallAction';
-const RNCallKitDidActivateAudioSession = 'RNCallKitDidActivateAudioSession';
-const RNCallKitDidDisplayIncomingCall = 'RNCallKitDidDisplayIncomingCall';
-const RNCallKitDidPerformSetMutedCallAction = 'RNCallKitDidPerformSetMutedCallAction';
+const RNCallKeepDidReceiveStartCallAction = 'RNCallKeepDidReceiveStartCallAction';
+const RNCallKeepPerformAnswerCallAction = 'RNCallKeepPerformAnswerCallAction';
+const RNCallKeepPerformEndCallAction = 'RNCallKeepPerformEndCallAction';
+const RNCallKeepDidActivateAudioSession = 'RNCallKeepDidActivateAudioSession';
+const RNCallKeepDidDisplayIncomingCall = 'RNCallKeepDidDisplayIncomingCall';
+const RNCallKeepDidPerformSetMutedCallAction = 'RNCallKeepDidPerformSetMutedCallAction';
+const RNCallKeepDidPerformHoldAction = 'RNCallKeepDidPerformHoldAction';
+const RNCallKeepDidPerformUnHoldAction = 'RNCallKeepDidPerformUnHoldAction';
+const RNCallKeepDidPerformDTMFAction = 'RNCallKeepDidPerformDTMFAction';
+const isIOS = Platform.OS === 'ios';
 
-didReceiveStartCallAction = handler => {
-    const listener = _RNCallKitEmitter.addListener(
-        RNCallKitDidReceiveStartCallAction,
-        (data) => { handler(data);}
-    );
-    _RNCallKit._startCallActionEventListenerAdded();
-    return listener;
-}
+const didReceiveStartCallAction = handler => {
+  const listener = eventEmitter.addListener(
+    RNCallKeepDidReceiveStartCallAction, (data) => {
+      handler(isIOS ? data : { handle: data.number });
+    }
+  );
 
-answerCall = handler => (
-    _RNCallKitEmitter.addListener(
-        RNCallKitPerformAnswerCallAction,
-        (data) => { handler(data);}
-    )
-)
+  if (isIOS) {
+    RNCallKeepModule._startCallActionEventListenerAdded();
+  }
 
-endCall = handler => (
-    _RNCallKitEmitter.addListener(
-        RNCallKitPerformEndCallAction,
-        (data) => { handler(data); }
-    )
-)
+  return listener;
+};
 
-didActivateAudioSession = handler => (
-    _RNCallKitEmitter.addListener(
-        RNCallKitDidActivateAudioSession,
-        () => { handler(); }
-    )
-)
+const answerCall = handler =>
+  eventEmitter.addListener(RNCallKeepPerformAnswerCallAction, (data) => handler(isIOS ? data : {}));
 
-didDisplayIncomingCall = handler => (
-    _RNCallKitEmitter.addListener(
-        RNCallKitDidDisplayIncomingCall,
-        (data) => { handler(data.error); }
-    )
-)
+const endCall = handler =>
+  eventEmitter.addListener(RNCallKeepPerformEndCallAction, (data) => { handler(isIOS ? data : {}); });
 
-didPerformSetMutedCallAction = handler => (
-    _RNCallKitEmitter.addListener(
-        RNCallKitDidPerformSetMutedCallAction,
-        (data) => { handler(data.muted); }
-    )
-)
+const didActivateAudioSession = handler =>
+  eventEmitter.addListener(RNCallKeepDidActivateAudioSession, () => { handler(); });
 
-export const listeners = { 
-    didReceiveStartCallAction,
-    answerCall,
-    endCall,
-    didActivateAudioSession,
-    didDisplayIncomingCall,
-    didPerformSetMutedCallAction,
+const didDisplayIncomingCall = handler =>
+  eventEmitter.addListener(RNCallKeepDidDisplayIncomingCall, (data) => { handler(isIOS ? data.error : null); });
+
+const didPerformSetMutedCallAction = handler =>
+  eventEmitter.addListener(RNCallKeepDidPerformSetMutedCallAction, (data) => { handler(data.muted); });
+
+const didPerformDTMFAction = handler =>
+  eventEmitter.addListener(RNCallKeepDidPerformDTMFAction, (data) => { handler(data.number); });
+
+export const listeners = {
+  didReceiveStartCallAction,
+  answerCall,
+  endCall,
+  didActivateAudioSession,
+  didDisplayIncomingCall,
+  didPerformSetMutedCallAction,
+  didPerformDTMFAction,
 };
 

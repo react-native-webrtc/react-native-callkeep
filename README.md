@@ -1,49 +1,104 @@
-# React Native CallKit - iOS >= 10.0 only
+# React Native CallKeep
 
-[![npm version](https://badge.fury.io/js/react-native-callkit.svg)](https://badge.fury.io/js/react-native-callkit)
-[![npm downloads](https://img.shields.io/npm/dm/react-native-callkit.svg?maxAge=2592000)](https://img.shields.io/npm/dm/react-native-callkit.svg?maxAge=2592000)
+[![npm version](https://badge.fury.io/js/react-native-callkeep.svg)](https://badge.fury.io/js/react-native-callkeep)
+[![npm downloads](https://img.shields.io/npm/dm/react-native-callkeep.svg?maxAge=2592000)](https://img.shields.io/npm/dm/react-native-callkeep.svg?maxAge=2592000)
 
-**React Native CallKit** utilises a brand new iOS 10 framework **CallKit** to make the life easier for VoIP developers using React Native.
+**React Native CallKit** utilises a brand new iOS 10 framework **CallKit** and Android ConnectionService to make the life easier for VoIP developers using React Native.
 
-For more information about **CallKit**, please see [Official CallKit Framework Document][1] or [Introduction to CallKit by Xamarin][2]
+For more information about **CallKit** on iOS, please see [Official CallKit Framework Document](https://developer.apple.com/reference/callkit?language=objc) or [Introduction to CallKit by Xamarin](https://developer.xamarin.com/guides/ios/platform_features/introduction-to-ios10/callkit/)
+For more information about **ConnectionService** on Android, please see [Android Documentation](https://developer.android.com/reference/android/telecom/ConnectionService) and [Build a calling app](https://developer.android.com/guide/topics/connectivity/telecom/selfManaged)
 
-**Note**: Since CallKit is quite new, this module will be updated frequently so be careful with the version you are using.
 
-## Version
+# Installation
 
-Use version >= **1.1.0** if you're using react native >= 0.40
-
-## Installation (without CocoaPods)
-
-### NPM module
-
-```bash
-npm install --save react-native-callkit
+```sh
+npm install --save react-native-callkeep
+# or
+yarn add react-native-callkeep
 ```
 
-### Link Library
+## Automatic linking
 
-```bash
-rnpm link react-native-callkit
+```sh
+react-native link react-native-callkeep
 ```
 
-## Installation (with CocoaPods)
+### IOS (with CocoaPods)
 
-### NPM module
+Include in a Podfile in your react-native ios directory:
 
-```bash
-npm install --save react-native-callkit
+```
+pod 'react-native-callkeep', :path => '../node_modules/react-native-callkeep'
 ```
 
-### CocaPods
+Then:
 ```bash
 cd ios
 pod install
 ```
 
-## Installation common steps
+## Manual linking
 
-### Info.plist
+### Android
+
+1. In `android/app/build.gradle`
+Should have a line `compile project(':react-native-callkeep')` in `dependencies {}` section.
+
+2. In `android/settings.gradle`
+Should have:
+
+```java
+include ':react-native-callkeep'
+project(':react-native-callkeep').projectDir = new File(rootProject.projectDir, '../node_modules/react-native-callkeep/android')
+```
+
+3. In `MainApplication.java`:
+
+```java
+import io.wazo.callkeep.RNCallKeepPackage;
+
+private static List<ReactPackage> getPackages() {
+    return Arrays.<ReactPackage>asList(
+        new MainReactPackage(),
+        new RNCallKeepPackage() // Add this line
+    );
+}
+```
+
+4. Add permissionResult listener in `MainActivity.java`:
+
+```java
+import io.wazo.callkeep.RNCallKeepModule;
+
+public class MainActivity extends ReactActivity {
+    // ...
+    
+    // Permission results
+    @Override
+    public void onRequestPermissionsResult(int permsRequestCode, String[] permissions, int[] grantResults) {
+        switch (permsRequestCode) {
+            case RNCallKeepModule.REQUEST_READ_PHONE_STATE:
+                RNCallKeepModule.onRequestPermissionsResult(grantResults);
+                break;
+        }
+    }
+}
+```
+
+### iOS
+
+1. Drag `node_modules/react-native-callkeep/ios/RNCallKeep.xcodeproj` under `<your_xcode_project>/Libraries`.
+
+2. Select <your_xcode_project> --> Build Phases --> Link Binary With Libraries.
+Drag `Libraries/RNCallKeep.xcodeproj/Products/libRNCallKeep.a` to Link Binary With Libraries.
+
+3. Select <your_xcode_project> --> Build Settings
+In `Header Search Paths`, add `$(SRCROOT)/../node_modules/react-native-callkeep/ios/RNCallKeep`.
+
+
+## iOS installation common steps
+
+### Info.plist (iOS)
 
 Add `voip` under `UIBackgroundModes`
 
@@ -62,54 +117,47 @@ In `Xcode` -> `Build Phases` -> `Link Binary With Libraries`, add `CallKit.frame
 
 ### AppDelegate.m
 
-#### - Import Library
+#### Import Library
 
 ```obj-c
-#import "RNCallKit.h"
+#import "RNCallKeep.h"
 ```
 
-#### - Change the way you initialise React Root View (required if <= 1.2.1)
-
-Initialise **RNCallKit** first, since we need our custom `observer` of `NSNotificationCenter` to be started as soon as the app is initialising
-
-```diff
-
-// This is how you normally initialise React Root View, delete it
--RCTRootView *rootView = [[RCTRootView alloc] initWithBundleURL:jsCodeLocation
--                                                    moduleName:@"MyApp"
--                                             initialProperties:nil
--                                                 launchOptions:launchOptions];
-
-// Initialise RNCallKit
-+RNCallKit *rncallkit = [[RNCallKit alloc] init];
-
-// Initialise React Bridge with RNCallKit
-+RCTBridge *bridge = [[RCTBridge alloc] initWithBundleURL:jsCodeLocation
-+                                          moduleProvider:^{ return @[rncallkit]; }
-+                                           launchOptions:launchOptions];
-
-// Initialise React Root View with React Bridge you've just created
-+RCTRootView *rootView = [[RCTRootView alloc] initWithBridge:bridge
-+                                                 moduleName:@"MyApp"
-+                                          initialProperties:nil];
-```
-
-#### - Handling User Activity
+#### Handling User Activity
 
 This delegate will be called when the user tries to start a call from native Phone App
 
 ```obj-c
-
 - (BOOL)application:(UIApplication *)application
 continueUserActivity:(NSUserActivity *)userActivity
   restorationHandler:(void(^)(NSArray * __nullable restorableObjects))restorationHandler
 {
-  return [RNCallKit application:application
+  return [RNCallKeep application:application
            continueUserActivity:userActivity
              restorationHandler:restorationHandler];
 }
+```
+
+## Android common step installation
+
+1. In `android/app/src/main/AndroidManifest.xml` add these permissions:
 
 
+```xml
+<uses-permission android:name="android.permission.BIND_TELECOM_CONNECTION_SERVICE"/>
+<uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+
+<application> 
+    // ...
+    <service android:name="io.wazo.callkeep.VoiceConnectionService"
+        android:label="Wazo"
+        android:permission="android.permission.BIND_TELECOM_CONNECTION_SERVICE">
+        <intent-filter>
+            <action android:name="android.telecom.ConnectionService" />
+        </intent-filter>
+    </service>
+    // ....
+</application>
 ```
 
 ## API
@@ -124,7 +172,7 @@ continueUserActivity:(NSUserActivity *)userActivity
   - **ringtoneSound**: string (optional)
     - If provided, it will be played when incoming calls received; the system will use the default ringtone if this is not provided
 
-Initialise RNCallKit with options
+Initialise RNCallKeep with options
 
 ### displayIncomingCall
 
@@ -190,7 +238,7 @@ User start call action from **Recents** in built-in **Phone** app
 
 Try to start your call action from here (e.g. get credentials of the user by `data.handle` and/or send INVITE to your SIP server)
 
-After all works are done, remember to call `RNCallKit.startCall(uuid, calleeNumber)`
+After all works are done, remember to call `RNCallKeep.startCall(uuid, calleeNumber)`
 
 ### - answerCall
 
@@ -222,13 +270,13 @@ Do your normal `Hang Up` actions here
 
 ### - didActivateAudioSession
 
-The `AudioSession` has been activated by **RNCallKit**, you might want to do following things when receiving this event:
+The `AudioSession` has been activated by **RNCallKeep**, you might want to do following things when receiving this event:
 
 - Start playing ringback if it is an outgoing call
 
 ### - didDisplayIncomingCall
 
-Callback for `RNCallKit.displayIncomingCall`
+Callback for `RNCallKeep.displayIncomingCall`
 
 **error**: string (optional)
 
@@ -242,35 +290,35 @@ A call was muted by the system or the user:
 
 ```javascript
 import React from 'react';
-import RNCallKit from 'react-native-callkit';
+import RNCallKeep from 'react-native-callkeep';
 
 import uuid from 'uuid';
 
-class RNCallKitExample extends React.Component {
+class RNCallKeepExample extends React.Component {
   constructor(props) {
 
-    // Initialise RNCallKit
+    // Initialise RNCallKeep
     let options = {
-        appName: 'RNCallKitExample',
+        appName: 'RNCallKeepExample',
         imageName: 'my_image_name_in_bundle',
         ringtoneSound: 'my_ringtone_sound_filename_in_bundle',
     };
     try {
-        RNCallKit.setup(options);
+        RNCallKeep.setup(options);
     } catch (err) {
         console.log('error:', err.message);
     }
 
-    // Add RNCallKit Events
-    RNCallKit.addEventListener('didReceiveStartCallAction', this.onRNCallKitDidReceiveStartCallAction);
-    RNCallKit.addEventListener('answerCall', this.onRNCallKitPerformAnswerCallAction);
-    RNCallKit.addEventListener('endCall', this.onRNCallKitPerformEndCallAction);
-    RNCallKit.addEventListener('didActivateAudioSession', this.onRNCallKitDidActivateAudioSession);
-    RNCallKit.addEventListener('didDisplayIncomingCall', this.onRNCallKitDidDisplayIncomingCall);
-    RNCallKit.addEventListener('didPerformSetMutedCallAction', this.onRNCallKitDidPerformSetMutedCallAction);
+    // Add RNCallKeep Events
+    RNCallKeep.addEventListener('didReceiveStartCallAction', this.onRNCallKeepDidReceiveStartCallAction);
+    RNCallKeep.addEventListener('answerCall', this.onRNCallKeepPerformAnswerCallAction);
+    RNCallKeep.addEventListener('endCall', this.onRNCallKeepPerformEndCallAction);
+    RNCallKeep.addEventListener('didActivateAudioSession', this.onRNCallKeepDidActivateAudioSession);
+    RNCallKeep.addEventListener('didDisplayIncomingCall', this.onRNCallKeepDidDisplayIncomingCall);
+    RNCallKeep.addEventListener('didPerformSetMutedCallAction', this.onRNCallKeepDidPerformSetMutedCallAction);
   }
 
-  onRNCallKitDidReceiveStartCallAction(data) {
+  onRNCallKeepDidReceiveStartCallAction(data) {
     /*
      * Your normal start call action
      *
@@ -279,10 +327,10 @@ class RNCallKitExample extends React.Component {
      */
 
     let _uuid = uuid.v4();
-    RNCallKit.startCall(_uuid, data.handle);
+    RNCallKeep.startCall(_uuid, data.handle);
   }
 
-  onRNCallKitPerformAnswerCallAction(data) {
+  onRNCallKeepPerformAnswerCallAction(data) {
     /* You will get this event when the user answer the incoming call
      *
      * Try to do your normal Answering actions here
@@ -291,7 +339,7 @@ class RNCallKitExample extends React.Component {
      */
   }
 
-  onRNCallKitPerformEndCallAction(data) {
+  onRNCallKeepPerformEndCallAction(data) {
     /* You will get this event when the user finish the incoming/outgoing call
      *
      * Try to do your normal Hang Up actions here
@@ -300,21 +348,21 @@ class RNCallKitExample extends React.Component {
      */
   }
 
-  onRNCallKitDidActivateAudioSession(data) {
-    /* You will get this event when the the AudioSession has been activated by **RNCallKit**,
+  onRNCallKeepDidActivateAudioSession(data) {
+    /* You will get this event when the the AudioSession has been activated by **RNCallKeep**,
      * you might want to do following things when receiving this event:
      *
      * - Start playing ringback if it is an outgoing call
      */
   }
 
-  onRNCallKitDidDisplayIncomingCall(error) {
-    /* You will get this event after RNCallKit finishes showing incoming call UI
+  onRNCallKeepDidDisplayIncomingCall(error) {
+    /* You will get this event after RNCallKeep finishes showing incoming call UI
      * You can check if there was an error while displaying
      */
   }
 
-  onRNCallKitDidPerformSetMutedCallAction(muted) {
+  onRNCallKeepDidPerformSetMutedCallAction(muted) {
     /* You will get this event after the system or the user mutes a call
      * You can use it to toggle the mic on your custom call UI
      */
@@ -323,23 +371,23 @@ class RNCallKitExample extends React.Component {
   // This is a fake function where you can receive incoming call notifications
   onIncomingCall() {
     // Store the generated uuid somewhere
-    // You will need this when calling RNCallKit.endCall()
+    // You will need this when calling RNCallKeep.endCall()
     let _uuid = uuid.v4();
-    RNCallKit.displayIncomingCall(_uuid, "886900000000")
+    RNCallKeep.displayIncomingCall(_uuid, "886900000000")
   }
 
   // This is a fake function where you make outgoing calls
   onOutgoingCall() {
     // Store the generated uuid somewhere
-    // You will need this when calling RNCallKit.endCall()
+    // You will need this when calling RNCallKeep.endCall()
     let _uuid = uuid.v4();
-    RNCallKit.startCall(_uuid, "886900000000")
+    RNCallKeep.startCall(_uuid, "886900000000")
   }
 
   // This is a fake function where you hang up calls
   onHangUpCall() {
     // get the _uuid you stored earlier
-    RNCallKit.endCall(_uuid)
+    RNCallKeep.endCall(_uuid)
   }
 
   render() {
@@ -355,8 +403,3 @@ Any pull request, issue report and suggestion are highly welcome!
 ## License
 
 [ISC License][3] (functionality equivalent to **MIT License**)
-
-[1]: https://developer.apple.com/reference/callkit?language=objc
-[2]: https://developer.xamarin.com/guides/ios/platform_features/introduction-to-ios10/callkit/
-[3]: https://opensource.org/licenses/ISC
-[4]: https://github.com/zxcpoiu/react-native-incall-manager

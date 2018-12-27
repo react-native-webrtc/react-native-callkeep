@@ -1,6 +1,6 @@
 //
-//  RNCallKit.h
-//  RNCallKit
+//  RNCallKeep.h
+//  RNCallKeep
 //
 //  Created by Ian Yu-Hsun Lin on 12/22/16.
 //  Copyright © 2016 Ian Yu-Hsun Lin. All rights reserved.
@@ -14,10 +14,10 @@
 
 #import <React/RCTEventEmitter.h>
 
-@interface RNCallKit : RCTEventEmitter <CXProviderDelegate>
+@interface RNCallKeep : RCTEventEmitter <CXProviderDelegate>
 
-@property (nonatomic, strong) CXCallController *callKitCallController;
-@property (nonatomic, strong) CXProvider *callKitProvider;
+@property (nonatomic, strong) CXCallController *callKeepCallController;
+@property (nonatomic, strong) CXProvider *callKeepProvider;
 
 + (BOOL)application:(UIApplication *)application
             openURL:(NSURL *)url
