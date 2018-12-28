@@ -32,14 +32,14 @@ class RNCallKeep {
   setup(options) {
     if (!isIOS) {
       return (async () => {
-        return this._setupAndroid(options);
+        return this._setupAndroid(options.android);
       })();
     }
 
-    return this._setupIOS(options);
+    return this._setupIOS(options.ios);
   }
 
-  displayIncomingCall(uuid, handle, handleType = 'number', hasVideo = false, localizedCallerName) {
+  displayIncomingCall(uuid, handle, localizedCallerName, handleType = 'number', hasVideo = false) {
     if (!isIOS) {
       RNCallKeepModule.displayIncomingCall(handle, localizedCallerName);
       return;
@@ -117,15 +117,15 @@ class RNCallKeep {
     }
 
     Alert.alert(
-      options.android.title,
-      options.android.description,
+      options.alertTitle,
+      options.alertDescription,
       [
         {
-          text: options.android.cancelButton,
+          text: options.cancelButton,
           onPress: () => {},
           style: 'cancel',
         },
-        { text: options.android.okButton,
+        { text: options.okButton,
           onPress: () => RNCallKeepModule.openPhoneAccounts()
         },
       ],

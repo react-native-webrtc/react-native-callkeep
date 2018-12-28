@@ -15,7 +15,7 @@
   "contributors": [
     "Wazo Team <dev@wazo.io> (https://github.com/wazo-pbx)"
   ],
-  "license": "MIT",
+  "license": "ISC",
   "bugs": {
     "url": "https://github.com/wazo-pbx/react-native-callkeep/issues"
   },
