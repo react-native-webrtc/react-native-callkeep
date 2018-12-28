@@ -2,8 +2,8 @@
 //  RNCallKeep.h
 //  RNCallKeep
 //
-//  Created by Ian Yu-Hsun Lin on 12/22/16.
-//  Copyright © 2016 Ian Yu-Hsun Lin. All rights reserved.
+//  Copyright 2018 The CallKeep Authors (see the AUTHORS file)
+//  SPDX-License-Identifier: ISC, MIT
 //
 
 #import <Foundation/Foundation.h>
