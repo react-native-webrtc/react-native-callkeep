@@ -1,91 +1,143 @@
-'use strict';
-
-import {
-    NativeModules,
-    Platform,
-} from 'react-native';
+import { NativeModules, Platform, Alert } from 'react-native';
 
 import { listeners } from './actions'
 
-const _RNCallKit = NativeModules.RNCallKit;
+const RNCallKeepModule = NativeModules.RNCallKeep;
+const isIOS = Platform.OS === 'ios';
+const hasConnectionService = !isIOS && Platform.Version >= 23;
 
-const _callkitEventHandlers = new Map();
+class RNCallKeep {
 
-export default class RNCallKit {
+  constructor() {
+    this._callkitEventHandlers = new Map();
+  }
 
-    static addEventListener(type, handler) {
-        if (Platform.OS !== 'ios') return;
-        const listener = listeners[type](handler)
-        _callkitEventHandlers.set(handler, listener);
+
+  addEventListener(type, handler) {
+    const listener = listeners[type](handler);
+
+    this._callkitEventHandlers.set(handler, listener);
+  }
+
+  removeEventListener(type, handler) {
+    const listener = _callkitEventHandlers.get(handler);
+    if (!listener) {
+      return;
     }
 
-    static removeEventListener(type, handler) {
-        if (Platform.OS !== 'ios') return;
-        var listener = _callkitEventHandlers.get(handler);
-        if (!listener) {
-            return;
-        }
-        listener.remove();
-        _callkitEventHandlers.delete(handler);
+    listener.remove();
+    this._callkitEventHandlers.delete(handler);
+  }
+
+  setup(options) {
+    if (!isIOS) {
+      return (async () => {
+        return this._setupAndroid(options.android);
+      })();
     }
 
-    static setup(options) {
-        if (Platform.OS !== 'ios') return;
-        if (!options.appName) {
-            throw new Error('RNCallKit.setup: option "appName" is required');
-        }
-        if (typeof options.appName !== 'string') {
-            throw new Error('RNCallKit.setup: option "appName" should be of type "string"');
-        }
-        _RNCallKit.setup(options);
+    return this._setupIOS(options.ios);
+  }
+
+  displayIncomingCall(uuid, handle, localizedCallerName, handleType = 'number', hasVideo = false) {
+    if (!isIOS) {
+      RNCallKeepModule.displayIncomingCall(handle, localizedCallerName);
+      return;
     }
 
-    static displayIncomingCall(uuid, handle, handleType = 'number', hasVideo = false, localizedCallerName?: String) {
-        if (Platform.OS !== 'ios') return;
-        _RNCallKit.displayIncomingCall(uuid, handle, handleType, hasVideo, localizedCallerName);
+    RNCallKeepModule.displayIncomingCall(uuid, handle, handleType, hasVideo, localizedCallerName);
+  }
+
+  startCall(uuid, handle, handleType = 'number', hasVideo = false, contactIdentifier) {
+    if (!isIOS) {
+      // Can't start a call directly on Android
+      return;
     }
 
-    static startCall(uuid, handle, handleType = 'number', hasVideo = false, contactIdentifier?: String) {
-        if (Platform.OS !== 'ios') return;
-        _RNCallKit.startCall(uuid, handle, handleType, hasVideo, contactIdentifier);
+    RNCallKeepModule.startCall(uuid, handle, handleType, hasVideo, contactIdentifier);
+  }
+
+  reportConnectedOutgoingCallWithUUID(uuid) {
+    RNCallKeepModule.reportConnectedOutgoingCallWithUUID(uuid);
+  }
+
+  endCall(uuid) {
+    isIOS ? RNCallKeepModule.endCall(uuid) : RNCallKeepModule.endCall();
+  }
+
+  endAllCalls() {
+    isIOS ? RNCallKeepModule.endAllCalls() : RNCallKeepModule.endCall();
+  }
+
+  setMutedCAll(uuid, muted) {
+     if (!isIOS) {
+      // Can't mute on Android
+      return;
     }
 
-    static reportConnectedOutgoingCallWithUUID(uuid) {
-        if (Platform.OS !== 'ios') return;
-        _RNCallKit.reportConnectedOutgoingCallWithUUID(uuid);
+    RNCallKeepModule.setMutedCall(uuid, muted);
+  }
+
+  checkIfBusy() {
+    return Platform.OS === 'ios'
+      ? RNCallKeepModule.checkIfBusy()
+      : Promise.reject('RNCallKeep.checkIfBusy was called from unsupported OS');
+  };
+
+  checkSpeaker() {
+    return Platform.OS === 'ios'
+      ? RNCallKeepModule.checkSpeaker()
+      : Promise.reject('RNCallKeep.checkSpeaker was called from unsupported OS');
+  }
+
+  setActive = (state) => {
+    if (isIOS) {
+      return;
     }
 
-    static endCall(uuid) {
-        if (Platform.OS !== 'ios') return;
-        _RNCallKit.endCall(uuid);
+    // Tell android that we are able to make outgoing calls
+    RNCallKeepModule.setActive(state);
+  }
+
+  _setupIOS(options) {
+    if (!options.appName) {
+        throw new Error('RNCallKeep.setup: option "appName" is required');
+    }
+    if (typeof options.appName !== 'string') {
+        throw new Error('RNCallKeep.setup: option "appName" should be of type "string"');
     }
 
-    static endAllCalls() {
-        if (Platform.OS !== 'ios') return;
-        _RNCallKit.endAllCalls();
+    RNCallKeepModule.setup(options);
+  }
+
+  async _setupAndroid(options) {
+    const hasAccount = await RNCallKeepModule.checkPhoneAccountPermission();
+    if (hasAccount) {
+      return;
     }
 
-    static setMutedCAll(uuid, muted) {
-        if (Platform.OS !== 'ios') return;
-        _RNCallKit.setMutedCall(uuid, muted);
-    }
+    Alert.alert(
+      options.alertTitle,
+      options.alertDescription,
+      [
+        {
+          text: options.cancelButton,
+          onPress: () => {},
+          style: 'cancel',
+        },
+        { text: options.okButton,
+          onPress: () => RNCallKeepModule.openPhoneAccounts()
+        },
+      ],
+      { cancelable: true },
+    );
+  }
 
-    static checkIfBusy() {
-      return Platform.OS === 'ios'
-        ? _RNCallKit.checkIfBusy()
-        : Promise.reject('RNCallKit.checkIfBusy was called from unsupported OS');
-    };
-
-    static checkSpeaker() {
-      return Platform.OS === 'ios'
-        ? _RNCallKit.checkSpeaker()
-        : Promise.reject('RNCallKit.checkSpeaker was called from unsupported OS');
-    }
-
-    /*
-    static setHeldCall(uuid, onHold) {
-        if (Platform.OS !== 'ios') return;
-        _RNCallKit.setHeldCall(uuid, onHold);
-    }
-    */
+  /*
+  static holdCall(uuid, onHold) {
+    RNCallKeepModule.setHeldCall(uuid, onHold);
+  }
+  */
 }
+
+export default new RNCallKeep();
