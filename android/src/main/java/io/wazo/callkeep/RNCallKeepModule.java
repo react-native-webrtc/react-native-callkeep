@@ -1,5 +1,6 @@
 /*
- * Copyright (c) 2018 Wazo's Team
+ * Copyright (c) 2016-2018 The CallKeep Authors (see the AUTHORS file)
+ * SPDX-License-Identifier: ISC, MIT
  *
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
