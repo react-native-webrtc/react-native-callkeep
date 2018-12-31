@@ -84,7 +84,7 @@ RNCallKeep.setActive(true);
 ```
 
 - `active`: boolean
- - Tell whenever the app is ready or not
+  - Tell whenever the app is ready or not
 
 ### displayIncomingCall
 
@@ -95,11 +95,11 @@ RNCallKeep.displayIncomingCall(uuid, handle);
 ````
 
 - `uuid`: string
- - An `uuid` that should be stored and re-used for `stopCall`.
+  - An `uuid` that should be stored and re-used for `stopCall`.
 - `handle`: string
- - Phone number of the caller
+  - Phone number of the caller
 - `localizedCallerName`: string (optional, iOS only)
- - Name of the caller to be displayed on the native UI
+  - Name of the caller to be displayed on the native UI
 - `handleType`: string (optional, iOS only)
   - `generic`
   - `number` (default)
@@ -119,9 +119,9 @@ RNCallKeep.startCall(uuid, number);
 ```
 
 - _uuid_: string
- - An `uuid` that should be stored and re-used for `stopCall`.
+  - An `uuid` that should be stored and re-used for `stopCall`.
 - `handle`: string
- - Phone number of the callee
+  - Phone number of the callee
 - `handleType`: string (optional)
   - `generic`
   - `number` (default)
@@ -139,7 +139,7 @@ RNCallKeep.endCall(uuid);
 ```
 
 - `uuid`: string
- - The `uuid` used for `startCall` or `displayIncomingCall`
+  - The `uuid` used for `startCall` or `displayIncomingCall`
 
 
 ### setMutedCall
@@ -152,7 +152,7 @@ RNCallKeep.setMutedCall(uuid, true);
 ```
 
 - `uuid`: string
- - uuid of the current call.
+  - uuid of the current call.
 - `muted`: boolean
 
 ### checkIfBusy
@@ -171,6 +171,29 @@ _This feature is available only on iOs._
 
 ```js
 RNCallKeep.checkSpeaker();
+```
+
+### supportConnectionService (async)
+
+Tells if `ConnectionService` is available on the device (returns a boolean).
+
+_This feature is available only on Android._
+
+```js
+RNCallKeep.supportConnectionService();
+```
+
+### hasPhoneAccount (async)
+
+Checks if the user has enabled the [phone account](https://developer.android.com/reference/android/telecom/PhoneAccount) for your application.
+A phone account must be enable to be able to display UI screen on incoming call and make outgoing calls from native Contact application.
+
+Returns a promise of a boolean.
+
+_This feature is available only on Android._
+
+```js
+await RNCallKeep.hasPhoneAccount();
 ```
 
 ## Events
@@ -249,6 +272,17 @@ A call was muted by the system or the user:
 
 ```js
 RNCallKeep.addEventListener('didPerformSetMutedCallAction', ({ muted }) => {
+  
+});
+
+```
+### - didPerformDTMFAction
+_This feature is available only on Android for now._
+
+Used type a number on his dialer
+
+```js
+RNCallKeep.addEventListener('didPerformDTMFAction', ({ dtmf }) => {
   
 });
 ```
