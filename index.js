@@ -4,7 +4,7 @@ import { listeners } from './actions'
 
 const RNCallKeepModule = NativeModules.RNCallKeep;
 const isIOS = Platform.OS === 'ios';
-const hasConnectionService = !isIOS && Platform.Version >= 23;
+const supportConnectionService = !isIOS && Platform.Version >= 23;
 
 class RNCallKeep {
 
@@ -67,6 +67,14 @@ class RNCallKeep {
 
   endAllCalls() {
     isIOS ? RNCallKeepModule.endAllCalls() : RNCallKeepModule.endCall();
+  }
+
+  supportConnectionService() {
+    return supportConnectionService;
+  }
+
+  async hasPhoneAccount() {
+    return isIOS ? true : await RNCallKeepModule.hasPhoneAccount();
   }
 
   setMutedCAll(uuid, muted) {

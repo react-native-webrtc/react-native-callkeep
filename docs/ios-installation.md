@@ -56,9 +56,17 @@ You'll now have the Library included.
 
 ![iOS Other libraries](pictures/ios-other-libraries.png)
 
-### 2. Allow voip background
+### 2. Add header search path
 
-2.1. Open `Info.plist` file and add `voip` in `UIBackgroundModes`.
+2.1. Click on `Build Settings` tab, then search for `Header Search Paths`.
+
+2.2. Add `$(SRCROOT)/../node_modules/react-native-callkeep/ios/RNCallKeep`.
+
+![iOS Search Paths](pictures/ios-search-paths.png)
+
+### 3. Allow voip background
+
+3.1. Open `Info.plist` file and add `voip` in `UIBackgroundModes`.
 
 ![iOS info.plist](pictures/ios-info-plist.png)
 
@@ -71,15 +79,15 @@ By editing this file with a text editor, your should see:
 </array>
 ```
 
-### 3. Updating AppDelegate.m
+### 4. Updating AppDelegate.m
 
-3.1. Import Library:
+4.1. Import Library:
 
 ```diff
 + #import "RNCallKeep.h"
 ```
 
-3.2. Handling User Activity.
+4.2. Handling User Activity.
 
 This delegate will be called when the user tries to start a call from native Phone App.
 
