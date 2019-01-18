@@ -20,7 +20,7 @@ class RNCallKeep {
   }
 
   removeEventListener(type, handler) {
-    const listener = _callkitEventHandlers.get(handler);
+    const listener = this._callkitEventHandlers.get(handler);
     if (!listener) {
       return;
     }
