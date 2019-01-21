@@ -42,8 +42,8 @@ const options = {
     appName: 'My app name',
   },
   android: {
-    title: 'Permissions required',
-    description: 'This application needs to access your phone accounts',
+    alertTitle: 'Permissions required',
+    alertDescription: 'This application needs to access your phone accounts',
     cancelButton: 'Cancel',
     okButton: 'ok',
   }
