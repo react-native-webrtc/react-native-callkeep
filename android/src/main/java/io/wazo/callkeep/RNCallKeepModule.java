@@ -17,46 +17,35 @@
 
 package io.wazo.callkeep;
 
+import android.Manifest;
+import android.app.Activity;
+import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
-import android.content.BroadcastReceiver;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
-import android.content.IntentFilter;
-import android.content.Intent;
+import android.net.Uri;
+import android.os.Build;
+import android.os.Bundle;
+import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.content.LocalBroadcastManager;
-import android.support.annotation.Nullable;
-
-import android.accounts.AccountManager;
-import android.accounts.Account;
-import android.telecom.DisconnectCause;
 import android.telecom.Connection;
-import android.telecom.PhoneAccountHandle;
+import android.telecom.DisconnectCause;
 import android.telecom.PhoneAccount;
+import android.telecom.PhoneAccountHandle;
 import android.telecom.TelecomManager;
 
-import com.facebook.react.bridge.NativeModule;
+import com.facebook.react.bridge.Arguments;
+import com.facebook.react.bridge.Promise;
 import com.facebook.react.bridge.ReactApplicationContext;
-import com.facebook.react.bridge.ReactContext;
 import com.facebook.react.bridge.ReactContextBaseJavaModule;
 import com.facebook.react.bridge.ReactMethod;
 import com.facebook.react.bridge.WritableMap;
-import com.facebook.react.bridge.Arguments;
-import com.facebook.react.bridge.Promise;
 import com.facebook.react.modules.core.DeviceEventManagerModule.RCTDeviceEventEmitter;
-
-import android.os.Bundle;
-import android.os.Build;
-import android.net.Uri;
-import android.app.Activity;
-import android.Manifest;
-
-import java.util.Map;
-import java.util.HashMap;
-import java.util.List;
-import java.lang.SecurityException;
 
 // @see https://github.com/kbagchiGWC/voice-quickstart-android/blob/9a2aff7fbe0d0a5ae9457b48e9ad408740dfb968/exampleConnectionService/src/main/java/com/twilio/voice/examples/connectionservice/VoiceConnectionServiceActivity.java
 public class RNCallKeepModule extends ReactContextBaseJavaModule {
@@ -81,7 +70,7 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
     private static TelecomManager telecomManager;
     private static Promise hasPhoneAccountPromise;
     private ReactApplicationContext reactContext;
-    private PhoneAccountHandle pah;
+    private static PhoneAccountHandle handle;
     private boolean isReceiverRegistered = false;
     private VoiceBroadcastReceiver voiceBroadcastReceiver;
 
@@ -116,7 +105,7 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
 
     @ReactMethod
     public void displayIncomingCall(String number, String callerName) {
-        if (!this.hasPhoneAccount()) {
+        if (!isAvailable() || !hasPhoneAccount()) {
             return;
         }
 
@@ -126,19 +115,19 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
         extras.putParcelable(TelecomManager.EXTRA_INCOMING_CALL_ADDRESS, uri);
         extras.putString(EXTRA_CALLER_NAME, callerName);
 
-        telecomManager.addNewIncomingCall(this.pah, extras);
+        telecomManager.addNewIncomingCall(handle, extras);
     }
 
     @ReactMethod
     public void startCall(String number, String callerName) {
-        if (!this.hasPhoneAccount()) {
+        if (!isAvailable() || !hasPhoneAccount()) {
             return;
         }
 
         Bundle extras = new Bundle();
         Uri uri = Uri.fromParts(PhoneAccount.SCHEME_TEL, number, null);
 
-        extras.putParcelable(TelecomManager.EXTRA_PHONE_ACCOUNT_HANDLE, this.pah);
+        extras.putParcelable(TelecomManager.EXTRA_PHONE_ACCOUNT_HANDLE, handle);
         extras.putString(EXTRA_CALLER_NAME, callerName);
 
         telecomManager.placeCall(uri, extras);
@@ -146,7 +135,7 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
 
     @ReactMethod
     public void endCall() {
-        if (!hasPhoneAccount()) {
+        if (!isAvailable() || !hasPhoneAccount()) {
             return;
         }
 
@@ -218,16 +207,18 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
     }
 
     private void registerPhoneAccount(Context appContext) {
+        if (!isAvailable()) {
+            return;
+        }
+
         ComponentName cName = new ComponentName(this.getAppContext(), VoiceConnectionService.class);
         String appName = this.getApplicationName(appContext);
 
-        this.pah = new PhoneAccountHandle(cName, appName);
+        handle = new PhoneAccountHandle(cName, appName);
 
-        PhoneAccount account = new PhoneAccount.Builder(pah, appName)
+        PhoneAccount account = new PhoneAccount.Builder(handle, appName)
                 .setCapabilities(PhoneAccount.CAPABILITY_CALL_PROVIDER)
                 .build();
-
-        PhoneAccountHandle handle = new PhoneAccountHandle(cName, appName);
 
         telecomManager = (TelecomManager) this.getAppContext().getSystemService(this.getAppContext().TELECOM_SERVICE);
         telecomManager.registerPhoneAccount(account);
@@ -267,15 +258,7 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
             return false;
         }
 
-        List<PhoneAccountHandle> enabledAccounts = telecomManager.getCallCapablePhoneAccounts();
-
-        for (PhoneAccountHandle account : enabledAccounts) {
-            if (account.getComponentName().getClassName().equals(VoiceConnectionService.class.getCanonicalName())) {
-                return true;
-            }
-        }
-
-        return false;
+        return telecomManager.getPhoneAccount(handle).isEnabled();
     }
 
     private void registerReceiver() {
