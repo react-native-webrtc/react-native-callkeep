@@ -40,6 +40,7 @@ import static io.wazo.callkeep.RNCallKeepModule.ACTION_DTMF_TONE;
 import static io.wazo.callkeep.RNCallKeepModule.ACTION_HOLD_CALL;
 import static io.wazo.callkeep.RNCallKeepModule.ACTION_UNHOLD_CALL;
 import static io.wazo.callkeep.RNCallKeepModule.ACTION_ONGOING_CALL;
+import static io.wazo.callkeep.RNCallKeepModule.ACTION_AUDIO_SESSION;
 import static io.wazo.callkeep.RNCallKeepModule.EXTRA_CALLER_NAME;
 
 // @see https://github.com/kbagchiGWC/voice-quickstart-android/blob/9a2aff7fbe0d0a5ae9457b48e9ad408740dfb968/exampleConnectionService/src/main/java/com/twilio/voice/examples/connectionservice/VoiceConnectionService.java
@@ -78,6 +79,7 @@ public class VoiceConnectionService extends ConnectionService {
         outgoingCallConnection.setDialing();
 
         sendCallRequestToActivity(ACTION_ONGOING_CALL, request.getAddress().getSchemeSpecificPart());
+        sendCallRequestToActivity(ACTION_AUDIO_SESSION, null);
 
         return outgoingCallConnection;
     }
@@ -112,6 +114,7 @@ public class VoiceConnectionService extends ConnectionService {
                 connection.setAudioModeIsVoip(true);
 
                 sendCallRequestToActivity(ACTION_ANSWER_CALL, null);
+                sendCallRequestToActivity(ACTION_AUDIO_SESSION, null);
             }
 
             @Override
@@ -176,9 +179,7 @@ public class VoiceConnectionService extends ConnectionService {
 
         Bundle extra = request.getExtras();
 
-        connection.setConnectionCapabilities(Connection.CAPABILITY_MUTE);
-        connection.setConnectionCapabilities(Connection.CAPABILITY_HOLD);
-        connection.setConnectionCapabilities(Connection.CAPABILITY_SUPPORT_HOLD);
+        connection.setConnectionCapabilities(Connection.CAPABILITY_MUTE | Connection.CAPABILITY_HOLD | Connection.CAPABILITY_SUPPORT_HOLD);
         connection.setAddress(request.getAddress(), TelecomManager.PRESENTATION_ALLOWED);
         connection.setExtras(extra);
         connection.setCallerDisplayName(extra.getString(EXTRA_CALLER_NAME), TelecomManager.PRESENTATION_ALLOWED);

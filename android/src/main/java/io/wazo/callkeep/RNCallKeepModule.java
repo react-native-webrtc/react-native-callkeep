@@ -73,6 +73,7 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
     public static final String ACTION_HOLD_CALL = "ACTION_HOLD_CALL";
     public static final String ACTION_UNHOLD_CALL = "ACTION_UNHOLD_CALL";
     public static final String ACTION_ONGOING_CALL = "ACTION_ONGOING_CALL";
+    public static final String ACTION_AUDIO_SESSION = "ACTION_AUDIO_SESSION";
 
     private static final String E_ACTIVITY_DOES_NOT_EXIST = "E_ACTIVITY_DOES_NOT_EXIST";
     private static final String REACT_NATIVE_MODULE_NAME = "RNCallKeep";
@@ -129,6 +130,21 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
     }
 
     @ReactMethod
+    public void startCall(String number, String callerName) {
+        if (!this.hasPhoneAccount()) {
+            return;
+        }
+
+        Bundle extras = new Bundle();
+        Uri uri = Uri.fromParts(PhoneAccount.SCHEME_TEL, number, null);
+
+        extras.putParcelable(TelecomManager.EXTRA_PHONE_ACCOUNT_HANDLE, this.pah);
+        extras.putString(EXTRA_CALLER_NAME, callerName);
+
+        telecomManager.placeCall(uri, extras);
+    }
+
+    @ReactMethod
     public void endCall() {
         if (!hasPhoneAccount()) {
             return;
@@ -156,7 +172,8 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
         }
 
         hasPhoneAccountPromise = promise;
-        if (!this.checkPermission(Manifest.permission.READ_PHONE_STATE, REQUEST_READ_PHONE_STATE)) {
+        String[] permissions = { Manifest.permission.READ_PHONE_STATE, Manifest.permission.CALL_PHONE };
+        if (!this.checkPermissions(permissions, REQUEST_READ_PHONE_STATE)) {
             return;
         }
 
@@ -227,16 +244,22 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
         return stringId == 0 ? applicationInfo.nonLocalizedLabel.toString() : appContext.getString(stringId);
     }
 
-    private Boolean checkPermission(String name, int id) {
+    private Boolean checkPermissions(String[] permissions, int id) {
         Activity currentActivity = this.getCurrentActivity();
-        int permissionCheck = ContextCompat.checkSelfPermission(currentActivity, name);
 
-        if (permissionCheck != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(currentActivity, new String[]{name}, id);
-            return false;
+        boolean hasPermissions = true;
+        for (String permission : permissions) {
+            int permissionCheck = ContextCompat.checkSelfPermission(currentActivity, permission);
+            if (permissionCheck != PackageManager.PERMISSION_GRANTED) {
+                hasPermissions = false;
+            }
         }
 
-        return true;
+        if (!hasPermissions) {
+            ActivityCompat.requestPermissions(currentActivity, permissions, id);
+        }
+
+        return hasPermissions;
     }
 
     private static boolean hasPhoneAccount() {
@@ -266,6 +289,7 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
             intentFilter.addAction(ACTION_UNHOLD_CALL);
             intentFilter.addAction(ACTION_HOLD_CALL);
             intentFilter.addAction(ACTION_ONGOING_CALL);
+            intentFilter.addAction(ACTION_AUDIO_SESSION);
             LocalBroadcastManager.getInstance(this.reactContext).registerReceiver(voiceBroadcastReceiver, intentFilter);
             isReceiverRegistered = true;
         }
@@ -312,6 +336,9 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
                     args.putString("number", intent.getStringExtra("attribute"));
 
                     sendEventToJS("RNCallKeepDidReceiveStartCallAction", args);
+                    break;
+                case ACTION_AUDIO_SESSION:
+                    sendEventToJS("RNCallKeepDidActivateAudioSession", null);
                     break;
             }
         }
