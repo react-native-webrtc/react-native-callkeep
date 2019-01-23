@@ -24,6 +24,7 @@ static NSString *const RNCallKeepPerformEndCallAction = @"RNCallKeepPerformEndCa
 static NSString *const RNCallKeepDidActivateAudioSession = @"RNCallKeepDidActivateAudioSession";
 static NSString *const RNCallKeepDidDisplayIncomingCall = @"RNCallKeepDidDisplayIncomingCall";
 static NSString *const RNCallKeepDidPerformSetMutedCallAction = @"RNCallKeepDidPerformSetMutedCallAction";
+static NSString *const RNCallKeepPerformPlayDTMFCallAction = @"RNCallKeepDidPerformDTMFAction";
 
 @implementation RNCallKeep
 {
@@ -67,7 +68,8 @@ RCT_EXPORT_MODULE()
              RNCallKeepPerformEndCallAction,
              RNCallKeepDidActivateAudioSession,
              RNCallKeepDidDisplayIncomingCall,
-             RNCallKeepDidPerformSetMutedCallAction
+             RNCallKeepDidPerformSetMutedCallAction,
+             RNCallKeepPerformPlayDTMFCallAction
              ];
 }
 
@@ -451,6 +453,15 @@ continueUserActivity:(NSUserActivity *)userActivity
 #ifdef DEBUG
     NSLog(@"[RNCallKeep][CXProviderDelegate][provider:performSetHeldCallAction]");
 #endif
+}
+
+- (void)provider:(CXProvider *)provider performPlayDTMFCallAction:(CXPlayDTMFCallAction *)action {
+#ifdef DEBUG
+    NSLog(@"[RNCallKit][CXProviderDelegate][provider:performPlayDTMFCallAction]");
+#endif
+    NSString *callUUID = [self containsLowerCaseLetter:action.callUUID.UUIDString] ? action.callUUID.UUIDString : [action.callUUID.UUIDString lowercaseString];
+    [self sendEventWithName:RNCallKeepPerformPlayDTMFCallAction body:@{ @"digits": action.digits, @"callUUID": callUUID }];
+    [action fulfill];
 }
 
 - (void)provider:(CXProvider *)provider timedOutPerformingAction:(CXAction *)action
