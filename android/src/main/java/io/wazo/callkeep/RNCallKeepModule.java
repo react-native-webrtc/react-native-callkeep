@@ -127,8 +127,11 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
         Bundle extras = new Bundle();
         Uri uri = Uri.fromParts(PhoneAccount.SCHEME_TEL, number, null);
 
+        Bundle callExtras = new Bundle();
+        callExtras.putString(EXTRA_CALLER_NAME, callerName);
+
         extras.putParcelable(TelecomManager.EXTRA_PHONE_ACCOUNT_HANDLE, handle);
-        extras.putString(EXTRA_CALLER_NAME, callerName);
+        extras.putParcelable(TelecomManager.EXTRA_OUTGOING_CALL_EXTRAS, callExtras);
 
         telecomManager.placeCall(uri, extras);
     }
