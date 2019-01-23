@@ -122,10 +122,13 @@ RNCallKeep.startCall(uuid, number);
   - An `uuid` that should be stored and re-used for `stopCall`.
 - `handle`: string
   - Phone number of the callee
-- `handleType`: string (optional)
+- `handleType`: string (optional, iOS only)
   - `generic`
   - `number` (default)
   - `email`
+- `hasVideo`: boolean (optional, iOS only)
+  - `false` (default)
+  - `true` (you know... when not false)
 - `contactIdentifier`: string (optional)
   - The identifier is displayed in the native call UI, and is typically the name of the call recipient.
 
