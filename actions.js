@@ -32,16 +32,16 @@ const answerCall = handler =>
   eventEmitter.addListener(RNCallKeepPerformAnswerCallAction, (data) => handler(isIOS ? data : {}));
 
 const endCall = handler =>
-  eventEmitter.addListener(RNCallKeepPerformEndCallAction, (data) => { handler(isIOS ? data : {}); });
+  eventEmitter.addListener(RNCallKeepPerformEndCallAction, (data) => handler(isIOS ? data : {}));
 
 const didActivateAudioSession = handler =>
-  eventEmitter.addListener(RNCallKeepDidActivateAudioSession, () => { handler(); });
+  eventEmitter.addListener(RNCallKeepDidActivateAudioSession, handler);
 
 const didDisplayIncomingCall = handler =>
-  eventEmitter.addListener(RNCallKeepDidDisplayIncomingCall, (data) => { handler(isIOS ? data.error : null); });
+  eventEmitter.addListener(RNCallKeepDidDisplayIncomingCall, (data) => handler(isIOS ? data.error : null));
 
 const didPerformSetMutedCallAction = handler =>
-  eventEmitter.addListener(RNCallKeepDidPerformSetMutedCallAction, (data) => { handler(data.muted); });
+  eventEmitter.addListener(RNCallKeepDidPerformSetMutedCallAction, (data) => handler(data.muted));
 
 const didPerformDTMFAction = handler => {
   // @TODO: handle DTMF on iOS
@@ -49,7 +49,7 @@ const didPerformDTMFAction = handler => {
     return;
   }
 
-  eventEmitter.addListener(RNCallKeepDidPerformDTMFAction, (data) => { handler(data.number); });
+  eventEmitter.addListener(RNCallKeepDidPerformDTMFAction, handler);
 };
 
 export const listeners = {
