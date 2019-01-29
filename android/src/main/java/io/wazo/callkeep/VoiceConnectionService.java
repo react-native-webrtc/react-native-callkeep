@@ -78,6 +78,7 @@ public class VoiceConnectionService extends ConnectionService {
 
         Connection outgoingCallConnection = createConnection(request);
         outgoingCallConnection.setDialing();
+        outgoingCallConnection.setAudioModeIsVoip(true);
 
         sendCallRequestToActivity(ACTION_ONGOING_CALL, request.getAddress().getSchemeSpecificPart());
         sendCallRequestToActivity(ACTION_AUDIO_SESSION, null);
