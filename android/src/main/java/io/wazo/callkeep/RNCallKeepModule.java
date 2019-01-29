@@ -183,6 +183,16 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
     }
 
     @ReactMethod
+    public void setCurrentCallActive() {
+        Connection conn = VoiceConnectionService.getConnection();
+        if (conn == null) {
+            return;
+        }
+
+        conn.setActive();
+    }
+
+    @ReactMethod
     public void openPhoneAccounts() {
         if (!isAvailable()) {
             return;
