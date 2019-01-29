@@ -43,14 +43,12 @@ const didDisplayIncomingCall = handler =>
 const didPerformSetMutedCallAction = handler =>
   eventEmitter.addListener(RNCallKeepDidPerformSetMutedCallAction, (data) => handler(data.muted));
 
-const didPerformDTMFAction = handler => {
-  // @TODO: handle DTMF on iOS
-  if (isIOS) {
-    return;
-  }
+const didPerformDTMFAction = handler =>
+  eventEmitter.addListener(RNCallKeepDidPerformDTMFAction, (data) => {
+    const payload = isIOS ? { dtmf: data.digits, callUUID: data.callUUID } : data;
 
-  eventEmitter.addListener(RNCallKeepDidPerformDTMFAction, handler);
-};
+    return handler(payload);
+  });
 
 export const listeners = {
   didReceiveStartCallAction,
