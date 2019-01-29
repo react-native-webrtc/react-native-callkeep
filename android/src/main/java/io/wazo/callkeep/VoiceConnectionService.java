@@ -109,6 +109,7 @@ public class VoiceConnectionService extends ConnectionService {
                 }
 
                 connection.setActive();
+                connection.setAudioModeIsVoip(true);
 
                 sendCallRequestToActivity(ACTION_ANSWER_CALL, null);
             }
