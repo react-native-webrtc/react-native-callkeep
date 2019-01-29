@@ -17,12 +17,13 @@
 
 package io.wazo.callkeep;
 
+import android.annotation.TargetApi;
 import android.content.Intent;
-import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
-import android.support.v4.content.LocalBroadcastManager;
+import android.os.Handler;
 import android.support.annotation.Nullable;
-
+import android.support.v4.content.LocalBroadcastManager;
 import android.telecom.CallAudioState;
 import android.telecom.Connection;
 import android.telecom.ConnectionRequest;
@@ -30,19 +31,20 @@ import android.telecom.ConnectionService;
 import android.telecom.DisconnectCause;
 import android.telecom.PhoneAccountHandle;
 import android.telecom.TelecomManager;
-import android.os.Handler;
 
-import static io.wazo.callkeep.RNCallKeepModule.ACTION_END_CALL;
 import static io.wazo.callkeep.RNCallKeepModule.ACTION_ANSWER_CALL;
-import static io.wazo.callkeep.RNCallKeepModule.ACTION_MUTE_CALL;
-import static io.wazo.callkeep.RNCallKeepModule.ACTION_UNMUTE_CALL;
+import static io.wazo.callkeep.RNCallKeepModule.ACTION_AUDIO_SESSION;
 import static io.wazo.callkeep.RNCallKeepModule.ACTION_DTMF_TONE;
+import static io.wazo.callkeep.RNCallKeepModule.ACTION_END_CALL;
 import static io.wazo.callkeep.RNCallKeepModule.ACTION_HOLD_CALL;
-import static io.wazo.callkeep.RNCallKeepModule.ACTION_UNHOLD_CALL;
+import static io.wazo.callkeep.RNCallKeepModule.ACTION_MUTE_CALL;
 import static io.wazo.callkeep.RNCallKeepModule.ACTION_ONGOING_CALL;
+import static io.wazo.callkeep.RNCallKeepModule.ACTION_UNHOLD_CALL;
+import static io.wazo.callkeep.RNCallKeepModule.ACTION_UNMUTE_CALL;
 import static io.wazo.callkeep.RNCallKeepModule.EXTRA_CALLER_NAME;
 
 // @see https://github.com/kbagchiGWC/voice-quickstart-android/blob/9a2aff7fbe0d0a5ae9457b48e9ad408740dfb968/exampleConnectionService/src/main/java/com/twilio/voice/examples/connectionservice/VoiceConnectionService.java
+@TargetApi(Build.VERSION_CODES.M)
 public class VoiceConnectionService extends ConnectionService {
     private static Connection connection;
     private static Boolean isActive = false;
@@ -76,8 +78,10 @@ public class VoiceConnectionService extends ConnectionService {
 
         Connection outgoingCallConnection = createConnection(request);
         outgoingCallConnection.setDialing();
+        outgoingCallConnection.setAudioModeIsVoip(true);
 
         sendCallRequestToActivity(ACTION_ONGOING_CALL, request.getAddress().getSchemeSpecificPart());
+        sendCallRequestToActivity(ACTION_AUDIO_SESSION, null);
 
         return outgoingCallConnection;
     }
@@ -112,6 +116,7 @@ public class VoiceConnectionService extends ConnectionService {
                 connection.setAudioModeIsVoip(true);
 
                 sendCallRequestToActivity(ACTION_ANSWER_CALL, null);
+                sendCallRequestToActivity(ACTION_AUDIO_SESSION, null);
             }
 
             @Override
@@ -176,9 +181,7 @@ public class VoiceConnectionService extends ConnectionService {
 
         Bundle extra = request.getExtras();
 
-        connection.setConnectionCapabilities(Connection.CAPABILITY_MUTE);
-        connection.setConnectionCapabilities(Connection.CAPABILITY_HOLD);
-        connection.setConnectionCapabilities(Connection.CAPABILITY_SUPPORT_HOLD);
+        connection.setConnectionCapabilities(Connection.CAPABILITY_MUTE | Connection.CAPABILITY_HOLD | Connection.CAPABILITY_SUPPORT_HOLD);
         connection.setAddress(request.getAddress(), TelecomManager.PRESENTATION_ALLOWED);
         connection.setExtras(extra);
         connection.setCallerDisplayName(extra.getString(EXTRA_CALLER_NAME), TelecomManager.PRESENTATION_ALLOWED);

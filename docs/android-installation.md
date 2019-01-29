@@ -40,7 +40,7 @@ import io.wazo.callkeep.RNCallKeepModule; // Add this import line with others
 
 public class MainActivity extends ReactActivity {
     // ...
-    
+
     // Permission results
     @Override
     public void onRequestPermissionsResult(int permsRequestCode, String[] permissions, int[] grantResults) {
@@ -61,8 +61,10 @@ public class MainActivity extends ReactActivity {
 ```xml
 <uses-permission android:name="android.permission.BIND_TELECOM_CONNECTION_SERVICE"/>
 <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+<uses-permission android:name="android.permission.READ_PHONE_STATE" />
+<uses-permission android:name="android.permission.CALL_PHONE" />
 
-<application> 
+<application>
     // ...
     <service android:name="io.wazo.callkeep.VoiceConnectionService"
         android:label="Wazo"

@@ -50,7 +50,7 @@ class RNCallKeep {
 
   startCall(uuid, handle, handleType = 'number', hasVideo = false, contactIdentifier) {
     if (!isIOS) {
-      // Can't start a call directly on Android
+      RNCallKeepModule.startCall(handle, contactIdentifier);
       return;
     }
 
