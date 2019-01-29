@@ -31,6 +31,7 @@ import android.telecom.ConnectionService;
 import android.telecom.DisconnectCause;
 import android.telecom.PhoneAccountHandle;
 import android.telecom.TelecomManager;
+import android.util.Log;
 
 import static io.wazo.callkeep.RNCallKeepModule.ACTION_ANSWER_CALL;
 import static io.wazo.callkeep.RNCallKeepModule.ACTION_AUDIO_SESSION;
@@ -47,14 +48,14 @@ import static io.wazo.callkeep.RNCallKeepModule.EXTRA_CALLER_NAME;
 @TargetApi(Build.VERSION_CODES.M)
 public class VoiceConnectionService extends ConnectionService {
     private static Connection connection;
-    private static Boolean isActive = false;
+    private static Boolean isAvailable = false;
 
     public static Connection getConnection() {
         return connection;
     }
 
-    public static void setActive(Boolean value) {
-        isActive = value;
+    public static void setAvailable(Boolean value) {
+        isAvailable = value;
     }
 
 
@@ -87,7 +88,7 @@ public class VoiceConnectionService extends ConnectionService {
     }
 
     private Boolean canMakeOutgoingCall() {
-        return isActive;
+        return isAvailable;
     }
 
     private Connection createConnection(ConnectionRequest request) {

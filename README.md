@@ -72,7 +72,7 @@ RNCallKeep.setup(options);
       
 ## Methods
 
-### setActive
+### setAvailable
 _This feature is available only on Android._
 
 Tell _ConnectionService_ that the device is ready to accept outgoing calls. 
@@ -80,7 +80,7 @@ If not the user will be stuck in the build UI screen without any actions.
 Eg: Call it with `false` when disconnected from the sip client, when your token expires ...
 
 ```js
-RNCallKeep.setActive(true);
+RNCallKeep.setAvailable(true);
 ```
 
 - `active`: boolean
@@ -143,6 +143,14 @@ RNCallKeep.endCall(uuid);
 
 - `uuid`: string
   - The `uuid` used for `startCall` or `displayIncomingCall`
+
+### setCurrentCallActive
+
+Mark the current call as active (eg: when the callee as answered).
+
+```js
+RNCallKeep.setCurrentCallActive();
+```
 
 
 ### setMutedCall
@@ -323,7 +331,7 @@ class RNCallKeepExample extends React.Component {
 
     try {
       RNCallKeep.setup(options);
-      RNCallKeep.setActive(true); // Only used for Android, see doc above.
+      RNCallKeep.setAvailable(true); // Only used for Android, see doc above.
     } catch (err) {
       console.error('initializeCallKeep error:', err.message);
     }
