@@ -43,9 +43,12 @@ const didDisplayIncomingCall = handler =>
 const didPerformSetMutedCallAction = handler =>
   eventEmitter.addListener(RNCallKeepDidPerformSetMutedCallAction, (data) => handler(data.muted));
 
-const didPerformDTMFAction = handler => {
-  eventEmitter.addListener(RNCallKeepDidPerformDTMFAction, handler);
-};
+const didPerformDTMFAction = handler =>
+  eventEmitter.addListener(RNCallKeepDidPerformDTMFAction, (data) => {
+    const payload = isIOS ? { dtmf: data.digits, callUUID: data.callUUID } : data;
+
+    return handler(payload);
+  });
 
 export const listeners = {
   didReceiveStartCallAction,
