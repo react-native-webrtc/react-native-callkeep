@@ -79,13 +79,13 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
 
         this.reactContext = reactContext;
 
-        VoiceConnectionService.setActive(false);
+        VoiceConnectionService.setAvailable(false);
 
-        if (isAvailable()) {
+        if (isConnectionServiceAvailable()) {
             this.registerPhoneAccount(this.getAppContext());
             voiceBroadcastReceiver = new VoiceBroadcastReceiver();
             registerReceiver();
-            VoiceConnectionService.setActive(false);
+            VoiceConnectionService.setAvailable(true);
         }
     }
 
@@ -105,7 +105,7 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
 
     @ReactMethod
     public void displayIncomingCall(String number, String callerName) {
-        if (!isAvailable() || !hasPhoneAccount()) {
+        if (!isConnectionServiceAvailable() || !hasPhoneAccount()) {
             return;
         }
 
@@ -120,7 +120,7 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
 
     @ReactMethod
     public void startCall(String number, String callerName) {
-        if (!isAvailable() || !hasPhoneAccount()) {
+        if (!isConnectionServiceAvailable() || !hasPhoneAccount()) {
             return;
         }
 
@@ -138,7 +138,7 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
 
     @ReactMethod
     public void endCall() {
-        if (!isAvailable() || !hasPhoneAccount()) {
+        if (!isConnectionServiceAvailable() || !hasPhoneAccount()) {
             return;
         }
 
@@ -154,7 +154,7 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
 
     @ReactMethod
     public void checkPhoneAccountPermission(Promise promise) {
-        if (!isAvailable()) {
+        if (!isConnectionServiceAvailable()) {
             promise.reject(E_ACTIVITY_DOES_NOT_EXIST, "ConnectionService not available for this version of Android.");
             return;
         }
@@ -178,8 +178,8 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
     }
 
     @ReactMethod
-    public void setActive(Boolean active) {
-        VoiceConnectionService.setActive(active);
+    public void setAvailable(Boolean active) {
+        VoiceConnectionService.setAvailable(active);
     }
 
     @ReactMethod
@@ -194,7 +194,7 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
 
     @ReactMethod
     public void openPhoneAccounts() {
-        if (!isAvailable()) {
+        if (!isConnectionServiceAvailable()) {
             return;
         }
 
@@ -214,13 +214,13 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
     }
 
     @ReactMethod
-    public static Boolean isAvailable() {
+    public static Boolean isConnectionServiceAvailable() {
         // PhoneAccount is available since api level 23
         return Build.VERSION.SDK_INT >= 23;
     }
 
     private void registerPhoneAccount(Context appContext) {
-        if (!isAvailable()) {
+        if (!isConnectionServiceAvailable()) {
             return;
         }
 
@@ -267,7 +267,7 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
     }
 
     private static boolean hasPhoneAccount() {
-        if (!isAvailable()) {
+        if (!isConnectionServiceAvailable()) {
             return false;
         }
 

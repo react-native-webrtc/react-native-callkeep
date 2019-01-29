@@ -13,13 +13,13 @@ class RNCallKeep {
   }
 
 
-  addEventListener(type, handler) {
+  addEventListener = (type, handler) => {
     const listener = listeners[type](handler);
 
     this._callkitEventHandlers.set(handler, listener);
-  }
+  };
 
-  removeEventListener(type, handler) {
+  removeEventListener = (type, handler) => {
     const listener = this._callkitEventHandlers.get(handler);
     if (!listener) {
       return;
@@ -27,9 +27,9 @@ class RNCallKeep {
 
     listener.remove();
     this._callkitEventHandlers.delete(handler);
-  }
+  };
 
-  setup(options) {
+  setup = (options) => {
     if (!isIOS) {
       return (async () => {
         return this._setupAndroid(options.android);
@@ -37,77 +37,80 @@ class RNCallKeep {
     }
 
     return this._setupIOS(options.ios);
-  }
+  };
 
-  displayIncomingCall(uuid, handle, localizedCallerName, handleType = 'number', hasVideo = false) {
+  displayIncomingCall = (uuid, handle, localizedCallerName, handleType = 'number', hasVideo = false) => {
     if (!isIOS) {
       RNCallKeepModule.displayIncomingCall(handle, localizedCallerName);
       return;
     }
 
     RNCallKeepModule.displayIncomingCall(uuid, handle, handleType, hasVideo, localizedCallerName);
-  }
+  };
 
-  startCall(uuid, handle, handleType = 'number', hasVideo = false, contactIdentifier) {
+  startCall = (uuid, handle, handleType = 'number', hasVideo = false, contactIdentifier) => {
     if (!isIOS) {
       RNCallKeepModule.startCall(handle, contactIdentifier);
       return;
     }
 
     RNCallKeepModule.startCall(uuid, handle, handleType, hasVideo, contactIdentifier);
-  }
+  };
 
-  reportConnectedOutgoingCallWithUUID(uuid) {
+  reportConnectedOutgoingCallWithUUID = (uuid) => {
     RNCallKeepModule.reportConnectedOutgoingCallWithUUID(uuid);
-  }
+  };
 
-  endCall(uuid) {
+  endCall = (uuid) => {
     isIOS ? RNCallKeepModule.endCall(uuid) : RNCallKeepModule.endCall();
-  }
+  };
 
-  endAllCalls() {
+  endAllCalls = () => {
     isIOS ? RNCallKeepModule.endAllCalls() : RNCallKeepModule.endCall();
-  }
+  };
 
-  supportConnectionService() {
-    return supportConnectionService;
-  }
+  supportConnectionService = () => supportConnectionService;
 
-  async hasPhoneAccount() {
-    return isIOS ? true : await RNCallKeepModule.hasPhoneAccount();
-  }
+  hasPhoneAccount = async () =>
+    isIOS ? true : await RNCallKeepModule.hasPhoneAccount();
 
-  setMutedCAll(uuid, muted) {
+  setMutedCAll = (uuid, muted) => {
      if (!isIOS) {
       // Can't mute on Android
       return;
     }
 
     RNCallKeepModule.setMutedCall(uuid, muted);
-  }
-
-  checkIfBusy() {
-    return Platform.OS === 'ios'
-      ? RNCallKeepModule.checkIfBusy()
-      : Promise.reject('RNCallKeep.checkIfBusy was called from unsupported OS');
   };
 
-  checkSpeaker() {
-    return Platform.OS === 'ios'
+  checkIfBusy = () =>
+    Platform.OS === 'ios'
+      ? RNCallKeepModule.checkIfBusy()
+      : Promise.reject('RNCallKeep.checkIfBusy was called from unsupported OS');
+
+  checkSpeaker = () =>
+    Platform.OS === 'ios'
       ? RNCallKeepModule.checkSpeaker()
       : Promise.reject('RNCallKeep.checkSpeaker was called from unsupported OS');
-  }
 
-  setActive = (state) => {
+  setAvailable = (state) => {
     if (isIOS) {
       return;
     }
 
     // Tell android that we are able to make outgoing calls
-    RNCallKeepModule.setActive(state);
-  }
+    RNCallKeepModule.setAvailable(state);
+  };
 
-  _setupIOS(options) {
+  setCurrentCallActive = () => {
+    if (isIOS) {
+      return;
+    }
+
+    RNCallKeepModule.setCurrentCallActive();
+  };
+
+  _setupIOS = (options) => {
     if (!options.appName) {
         throw new Error('RNCallKeep.setup: option "appName" is required');
     }
@@ -116,9 +119,9 @@ class RNCallKeep {
     }
 
     RNCallKeepModule.setup(options);
-  }
+  };
 
-  async _setupAndroid(options) {
+  _setupAndroid = async (options) => {
     const hasAccount = await RNCallKeepModule.checkPhoneAccountPermission();
     if (hasAccount) {
       return;
@@ -139,7 +142,7 @@ class RNCallKeep {
       ],
       { cancelable: true },
     );
-  }
+  };
 
   /*
   static holdCall(uuid, onHold) {
