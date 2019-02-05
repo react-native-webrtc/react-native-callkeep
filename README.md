@@ -287,6 +287,20 @@ RNCallKeep.addEventListener('didPerformSetMutedCallAction', (muted) => {
 });
 
 ```
+### - didToggleHoldCallAction
+
+A call was held or unheld by the current user
+
+```js
+RNCallKeep.addEventListener('didToggleHoldCallAction', ({ hold, callUUID }) => {
+  
+});
+```
+
+- `hold` (boolean)
+- `callUUID` (string)
+  - The UUID of the call that is to be answered (iOS only).
+
 ### - didPerformDTMFAction
 
 Used type a number on his dialer
@@ -387,8 +401,11 @@ class RNCallKeepExample extends React.Component {
   render() {
   }
 }
-
 ```
+
+## Notes
+
+- On iOS, you should call `setup` each time you want to use callKeep.
 
 ## Contributing
 
