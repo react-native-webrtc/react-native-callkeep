@@ -126,9 +126,9 @@ RCT_EXPORT_METHOD(displayIncomingCall:(NSString *)uuidString
     callUpdate.remoteHandle = [[CXHandle alloc] initWithType:_handleType value:handle];
     callUpdate.supportsDTMF = YES;
     callUpdate.supportsHolding = YES;
-    callUpdate.supportsGrouping = NO;
-    callUpdate.supportsUngrouping = NO;
-    callUpdate.hasVideo = hasVideo;
+    callUpdate.supportsGrouping = YES;
+    callUpdate.supportsUngrouping = YES;
+    callUpdate.hasVideo = NO;
     callUpdate.localizedCallerName = localizedCallerName;
 
     [self.callKeepProvider reportNewIncomingCallWithUUID:uuid update:callUpdate completion:^(NSError * _Nullable error) {
@@ -245,8 +245,8 @@ RCT_EXPORT_METHOD(setMutedCall:(NSString *)uuidString muted:(BOOL)muted)
                 callUpdate.remoteHandle = startCallAction.handle;
                 callUpdate.supportsDTMF = YES;
                 callUpdate.supportsHolding = YES;
-                callUpdate.supportsGrouping = NO;
-                callUpdate.supportsUngrouping = NO;
+                callUpdate.supportsGrouping = YES;
+                callUpdate.supportsUngrouping = YES;
                 callUpdate.hasVideo = NO;
                 [self.callKeepProvider reportCallWithUUID:startCallAction.callUUID updated:callUpdate];
             }
@@ -452,7 +452,7 @@ continueUserActivity:(NSUserActivity *)userActivity
 -(void)provider:(CXProvider *)provider performSetHeldCallAction:(CXSetHeldCallAction *)action
 {
 #ifdef DEBUG
-    NSLog(@"[RNCallKit][CXProviderDelegate][provider:performSetHeldCallAction]");
+    NSLog(@"[RNCallKeep][CXProviderDelegate][provider:performSetHeldCallAction]");
 #endif
     NSString *callUUID = [self containsLowerCaseLetter:action.callUUID.UUIDString] ? action.callUUID.UUIDString : [action.callUUID.UUIDString lowercaseString];
 
@@ -462,7 +462,7 @@ continueUserActivity:(NSUserActivity *)userActivity
 
 - (void)provider:(CXProvider *)provider performPlayDTMFCallAction:(CXPlayDTMFCallAction *)action {
 #ifdef DEBUG
-    NSLog(@"[RNCallKit][CXProviderDelegate][provider:performPlayDTMFCallAction]");
+    NSLog(@"[RNCallKeep][CXProviderDelegate][provider:performPlayDTMFCallAction]");
 #endif
     NSString *callUUID = [self containsLowerCaseLetter:action.callUUID.UUIDString] ? action.callUUID.UUIDString : [action.callUUID.UUIDString lowercaseString];
     [self sendEventWithName:RNCallKeepPerformPlayDTMFCallAction body:@{ @"digits": action.digits, @"callUUID": callUUID }];

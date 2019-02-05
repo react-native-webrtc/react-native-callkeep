@@ -401,8 +401,11 @@ class RNCallKeepExample extends React.Component {
   render() {
   }
 }
-
 ```
+
+## Notes
+
+- On iOS, you should call `setup` each time you want to use callKeep.
 
 ## Contributing
 
