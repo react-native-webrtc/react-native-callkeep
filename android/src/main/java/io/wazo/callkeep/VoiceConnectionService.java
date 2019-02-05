@@ -155,6 +155,7 @@ public class VoiceConnectionService extends ConnectionService {
             @Override
             public void onHold() {
                 super.onHold();
+                connection.setOnHold();
 
                 sendCallRequestToActivity(ACTION_HOLD_CALL, null);
             }
@@ -162,6 +163,7 @@ public class VoiceConnectionService extends ConnectionService {
             @Override
             public void onUnhold() {
                 super.onUnhold();
+                connection.setActive();
 
                 sendCallRequestToActivity(ACTION_UNHOLD_CALL, null);
             }
