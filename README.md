@@ -282,23 +282,24 @@ RNCallKeep.addEventListener('didDisplayIncomingCall', ({ error }) => {
 A call was muted by the system or the user:
 
 ```js
-RNCallKeep.addEventListener('didPerformSetMutedCallAction', ({ muted }) => {
+RNCallKeep.addEventListener('didPerformSetMutedCallAction', (muted) => {
   
 });
 
 ```
 ### - didPerformDTMFAction
-_This feature is available only on Android for now._
 
 Used type a number on his dialer
 
 ```js
-RNCallKeep.addEventListener('didPerformDTMFAction', ({ dtmf }) => {
+RNCallKeep.addEventListener('didPerformDTMFAction', ({ dtmf, callUUID }) => {
   
 });
 ```
 
-- `muted` (boolean)
+- `dtmf` (string)
+- `callUUID` (string)
+  - iOS only.
 
 ## Example
 
