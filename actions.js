@@ -9,8 +9,7 @@ const RNCallKeepPerformEndCallAction = 'RNCallKeepPerformEndCallAction';
 const RNCallKeepDidActivateAudioSession = 'RNCallKeepDidActivateAudioSession';
 const RNCallKeepDidDisplayIncomingCall = 'RNCallKeepDidDisplayIncomingCall';
 const RNCallKeepDidPerformSetMutedCallAction = 'RNCallKeepDidPerformSetMutedCallAction';
-const RNCallKeepDidPerformHoldAction = 'RNCallKeepDidPerformHoldAction';
-const RNCallKeepDidPerformUnHoldAction = 'RNCallKeepDidPerformUnHoldAction';
+const RNCallKeepDidToggleHoldAction = 'RNCallKeepDidToggleHoldAction';
 const RNCallKeepDidPerformDTMFAction = 'RNCallKeepDidPerformDTMFAction';
 const isIOS = Platform.OS === 'ios';
 
@@ -43,6 +42,9 @@ const didDisplayIncomingCall = handler =>
 const didPerformSetMutedCallAction = handler =>
   eventEmitter.addListener(RNCallKeepDidPerformSetMutedCallAction, (data) => handler(data.muted));
 
+const didToggleHoldCallAction = handler =>
+  eventEmitter.addListener(RNCallKeepDidToggleHoldAction, handler);
+
 const didPerformDTMFAction = handler =>
   eventEmitter.addListener(RNCallKeepDidPerformDTMFAction, (data) => {
     const payload = isIOS ? { dtmf: data.digits, callUUID: data.callUUID } : data;
@@ -57,6 +59,7 @@ export const listeners = {
   didActivateAudioSession,
   didDisplayIncomingCall,
   didPerformSetMutedCallAction,
+  didToggleHoldCallAction,
   didPerformDTMFAction,
 };
 

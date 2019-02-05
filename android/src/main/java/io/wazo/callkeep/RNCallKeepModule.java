@@ -308,10 +308,12 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
                     sendEventToJS("RNCallKeepPerformAnswerCallAction", null);
                     break;
                 case ACTION_HOLD_CALL:
-                    sendEventToJS("RNCallKeepDidPerformHoldAction", null);
+                    args.putBoolean("hold", true);
+                    sendEventToJS("RNCallKeepDidToggleHoldAction", args);
                     break;
                 case ACTION_UNHOLD_CALL:
-                    sendEventToJS("RNCallKeepDidPerformUnHoldAction", null);
+                    args.putBoolean("hold", false);
+                    sendEventToJS("RNCallKeepDidToggleHoldAction", args);
                     break;
                 case ACTION_MUTE_CALL:
                     args.putBoolean("muted", true);

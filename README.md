@@ -287,6 +287,20 @@ RNCallKeep.addEventListener('didPerformSetMutedCallAction', (muted) => {
 });
 
 ```
+### - didToggleHoldCallAction
+
+A call was held or unheld by the current user
+
+```js
+RNCallKeep.addEventListener('didToggleHoldCallAction', ({ hold, callUUID }) => {
+  
+});
+```
+
+- `hold` (boolean)
+- `callUUID` (string)
+  - The UUID of the call that is to be answered (iOS only).
+
 ### - didPerformDTMFAction
 
 Used type a number on his dialer
