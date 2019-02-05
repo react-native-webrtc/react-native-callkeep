@@ -29,11 +29,9 @@ class RNCallKeep {
     this._callkitEventHandlers.delete(handler);
   };
 
-  setup = (options) => {
+  setup = async (options) => {
     if (!isIOS) {
-      return (async () => {
-        return this._setupAndroid(options.android);
-      })();
+      return this._setupAndroid(options.android);
     }
 
     return this._setupIOS(options.ios);
@@ -110,38 +108,44 @@ class RNCallKeep {
     RNCallKeepModule.setCurrentCallActive();
   };
 
-  _setupIOS = (options) => {
+  _setupIOS = async (options) => new Promise((resolve, reject) => {
     if (!options.appName) {
-        throw new Error('RNCallKeep.setup: option "appName" is required');
+      reject('RNCallKeep.setup: option "appName" is required');
     }
     if (typeof options.appName !== 'string') {
-        throw new Error('RNCallKeep.setup: option "appName" should be of type "string"');
+      reject('RNCallKeep.setup: option "appName" should be of type "string"');
     }
 
-    RNCallKeepModule.setup(options);
-  };
+    resolve(RNCallKeepModule.setup(options));
+  });
 
   _setupAndroid = async (options) => {
     const hasAccount = await RNCallKeepModule.checkPhoneAccountPermission();
-    if (hasAccount) {
-      return;
-    }
 
-    Alert.alert(
-      options.alertTitle,
-      options.alertDescription,
-      [
-        {
-          text: options.cancelButton,
-          onPress: () => {},
-          style: 'cancel',
-        },
-        { text: options.okButton,
-          onPress: () => RNCallKeepModule.openPhoneAccounts()
-        },
-      ],
-      { cancelable: true },
-    );
+    return new Promise((resolve, reject) => {
+      if (hasAccount) {
+        return resolve();
+      }
+
+      Alert.alert(
+        options.alertTitle,
+        options.alertDescription,
+        [
+          {
+            text: options.cancelButton,
+            onPress: reject,
+            style: 'cancel',
+          },
+          { text: options.okButton,
+            onPress: () => {
+              RNCallKeepModule.openPhoneAccounts();
+              resolve();
+            }
+          },
+        ],
+        { cancelable: true },
+      );
+    });
   };
 
   /*
