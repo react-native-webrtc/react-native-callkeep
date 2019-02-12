@@ -387,6 +387,11 @@ continueUserActivity:(NSUserActivity *)userActivity
     return NO;
 }
 
++ (BOOL)requiresMainQueueSetup
+{
+    return YES;
+}
+
 - (void)handleStartCallNotification:(NSNotification *)notification
 {
 #ifdef DEBUG
