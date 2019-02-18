@@ -66,6 +66,7 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
 
     private static final String E_ACTIVITY_DOES_NOT_EXIST = "E_ACTIVITY_DOES_NOT_EXIST";
     private static final String REACT_NATIVE_MODULE_NAME = "RNCallKeep";
+    private static final String[] permissions = { Manifest.permission.READ_PHONE_STATE, Manifest.permission.CALL_PHONE };
 
     private static TelecomManager telecomManager;
     private static Promise hasPhoneAccountPromise;
@@ -120,7 +121,7 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
 
     @ReactMethod
     public void startCall(String number, String callerName) {
-        if (!isConnectionServiceAvailable() || !hasPhoneAccount()) {
+        if (!isConnectionServiceAvailable() || !hasPhoneAccount() || !hasPermissions()) {
             return;
         }
 
@@ -154,18 +155,21 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
 
     @ReactMethod
     public void checkPhoneAccountPermission(Promise promise) {
+        Activity currentActivity = this.getCurrentActivity();
+
         if (!isConnectionServiceAvailable()) {
             promise.reject(E_ACTIVITY_DOES_NOT_EXIST, "ConnectionService not available for this version of Android.");
             return;
         }
-        if (this.getCurrentActivity() == null) {
+        if (currentActivity == null) {
             promise.reject(E_ACTIVITY_DOES_NOT_EXIST, "Activity doesn't exist");
             return;
         }
 
         hasPhoneAccountPromise = promise;
-        String[] permissions = { Manifest.permission.READ_PHONE_STATE, Manifest.permission.CALL_PHONE };
-        if (!this.checkPermissions(permissions, REQUEST_READ_PHONE_STATE)) {
+
+        if (!this.hasPermissions()) {
+            ActivityCompat.requestPermissions(currentActivity, permissions, REQUEST_READ_PHONE_STATE);
             return;
         }
 
@@ -175,6 +179,11 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
     @ReactMethod
     public void hasPhoneAccount(Promise promise) {
         promise.resolve(hasPhoneAccount());
+    }
+
+    @ReactMethod
+    public void hasPermissions(Promise promise) {
+        promise.resolve(this.hasPermissions());
     }
 
     @ReactMethod
@@ -248,7 +257,7 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
         return stringId == 0 ? applicationInfo.nonLocalizedLabel.toString() : appContext.getString(stringId);
     }
 
-    private Boolean checkPermissions(String[] permissions, int id) {
+    private Boolean hasPermissions() {
         Activity currentActivity = this.getCurrentActivity();
 
         boolean hasPermissions = true;
@@ -259,19 +268,11 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
             }
         }
 
-        if (!hasPermissions) {
-            ActivityCompat.requestPermissions(currentActivity, permissions, id);
-        }
-
         return hasPermissions;
     }
 
     private static boolean hasPhoneAccount() {
-        if (!isConnectionServiceAvailable()) {
-            return false;
-        }
-
-        return telecomManager.getPhoneAccount(handle).isEnabled();
+        return !isConnectionServiceAvailable() ? false : telecomManager.getPhoneAccount(handle).isEnabled();
     }
 
     private void registerReceiver() {
