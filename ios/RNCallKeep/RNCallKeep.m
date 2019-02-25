@@ -58,6 +58,10 @@ RCT_EXPORT_MODULE()
     NSLog(@"[RNCallKeep][dealloc]");
 #endif
     [[NSNotificationCenter defaultCenter] removeObserver:self];
+
+    if (self.callKeepProvider != nil) {
+        [self.callKeepProvider invalidate];
+    }
 }
 
 // Override method of RCTEventEmitter
