@@ -49,7 +49,7 @@ import com.facebook.react.modules.core.DeviceEventManagerModule.RCTDeviceEventEm
 
 // @see https://github.com/kbagchiGWC/voice-quickstart-android/blob/9a2aff7fbe0d0a5ae9457b48e9ad408740dfb968/exampleConnectionService/src/main/java/com/twilio/voice/examples/connectionservice/VoiceConnectionServiceActivity.java
 public class RNCallKeepModule extends ReactContextBaseJavaModule {
-    public static final int REQUEST_READ_PHONE_STATE = 394858;
+    public static final int REQUEST_READ_PHONE_STATE = 1337;
     public static final int REQUEST_REGISTER_CALL_PROVIDER = 394859;
 
     public static final String CHECKING_PERMS = "CHECKING_PERMS";
@@ -226,6 +226,18 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
     public static Boolean isConnectionServiceAvailable() {
         // PhoneAccount is available since api level 23
         return Build.VERSION.SDK_INT >= 23;
+    }
+
+    @ReactMethod
+    public void backToForeground() {
+        Context context = getAppContext();
+        String packageName = context.getApplicationContext().getPackageName();
+        Intent focusIntent = context.getPackageManager().getLaunchIntentForPackage(packageName).cloneFilter();
+
+        focusIntent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
+
+        Activity activity = getCurrentActivity();
+        activity.startActivity(focusIntent);
     }
 
     private void registerPhoneAccount(Context appContext) {
