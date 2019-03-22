@@ -20,6 +20,7 @@
     "url": "https://github.com/wazo-pbx/react-native-callkeep/issues"
   },
   "homepage": "https://github.com/wazo-pbx/react-native-callkeep#readme",
+  "typings": "./index.d.ts",
   "peerDependencies": {
     "react-native": ">=0.40.0"
   },

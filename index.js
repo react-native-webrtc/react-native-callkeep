@@ -148,6 +148,14 @@ class RNCallKeep {
     });
   };
 
+  backToForeground() {
+    if (isIOS) {
+      return;
+    }
+
+    NativeModules.RNCallKeep.backToForeground();
+  }
+
   /*
   static holdCall(uuid, onHold) {
     RNCallKeepModule.setHeldCall(uuid, onHold);
