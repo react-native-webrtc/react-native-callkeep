@@ -177,6 +177,21 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
     }
 
     @ReactMethod
+    public void checkDefaultPhoneAccount(Promise promise) {
+        if (!isConnectionServiceAvailable() || !hasPhoneAccount()) {
+            promise.resolve(true);
+            return;
+        }
+
+        if (!Build.MANUFACTURER.equalsIgnoreCase("Samsung")) {
+            promise.resolve(true);
+            return;
+        }
+
+        promise.resolve(telecomManager.getDefaultOutgoingPhoneAccount("tel") != null);
+    }
+
+    @ReactMethod
     public void hasPhoneAccount(Promise promise) {
         promise.resolve(hasPhoneAccount());
     }
@@ -214,6 +229,15 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
                     "com.android.server.telecom.settings.EnableAccountPreferenceActivity"));
 
             this.getAppContext().startActivity(intent);
+            return;
+        }
+
+        openPhoneAccountSettings();
+    }
+
+    @ReactMethod
+    public void openPhoneAccountSettings() {
+        if (!isConnectionServiceAvailable()) {
             return;
         }
 

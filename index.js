@@ -37,6 +37,14 @@ class RNCallKeep {
     return this._setupIOS(options.ios);
   };
 
+  checkDefault = async (options) => {
+    if (!isIOS) {
+      return this._checkDefault(options);
+    }
+
+    return;
+  };
+
   displayIncomingCall = (uuid, handle, localizedCallerName, handleType = 'number', hasVideo = false) => {
     if (!isIOS) {
       RNCallKeepModule.displayIncomingCall(handle, localizedCallerName);
@@ -121,32 +129,43 @@ class RNCallKeep {
 
   _setupAndroid = async (options) => {
     const hasAccount = await RNCallKeepModule.checkPhoneAccountPermission();
+    const shouldOpenAccounts = await this._alert(options, hasAccount);
 
-    return new Promise((resolve, reject) => {
-      if (hasAccount) {
-        return resolve();
-      }
-
-      Alert.alert(
-        options.alertTitle,
-        options.alertDescription,
-        [
-          {
-            text: options.cancelButton,
-            onPress: reject,
-            style: 'cancel',
-          },
-          { text: options.okButton,
-            onPress: () => {
-              RNCallKeepModule.openPhoneAccounts();
-              resolve();
-            }
-          },
-        ],
-        { cancelable: true },
-      );
-    });
+    if (shouldOpenAccounts) {
+      RNCallKeepModule.openPhoneAccounts();
+    }
   };
+
+  _checkDefault = async (options) => {
+    const hasDefault = await RNCallKeepModule.checkDefaultPhoneAccount();
+    const shouldOpenAccounts = await this._alert(options, hasDefault);
+
+    if (shouldOpenAccounts) {
+      RNCallKeepModule.openPhoneAccountSettings();
+    }
+  };
+
+  _alert = async (options, condition) => new Promise((resolve, reject) => {
+    if (condition) {
+      return resolve(false);
+    }
+
+    Alert.alert(
+      options.alertTitle,
+      options.alertDescription,
+      [
+        {
+          text: options.cancelButton,
+          onPress: reject,
+          style: 'cancel',
+        },
+        { text: options.okButton,
+          onPress: () => resolve(true)
+        },
+      ],
+      { cancelable: true },
+    );
+  });
 
   backToForeground() {
     if (isIOS) {
