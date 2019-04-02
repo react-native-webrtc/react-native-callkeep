@@ -69,13 +69,13 @@ RNCallKeep.setup(options);
       Cancel button label
     - `okButton`: string (required)
       Ok button label
-      
+
 ## Methods
 
 ### setAvailable
 _This feature is available only on Android._
 
-Tell _ConnectionService_ that the device is ready to accept outgoing calls. 
+Tell _ConnectionService_ that the device is ready to accept outgoing calls.
 If not the user will be stuck in the build UI screen without any actions.
 Eg: Call it with `false` when disconnected from the sip client, when your token expires ...
 
@@ -207,6 +207,25 @@ _This feature is available only on Android._
 await RNCallKeep.hasPhoneAccount();
 ```
 
+### hasDefaultPhoneAccount
+
+Checks if the user has set a default [phone account](https://developer.android.com/reference/android/telecom/PhoneAccount).
+If the user has not set a default they will be prompted to do so with an alert.
+
+This is a workaround for an [issue](https://github.com/wazo-pbx/react-native-callkeep/issues/33) affecting some Samsung devices.
+
+_This feature is available only on Android._
+
+```js
+const options = {
+  alertTitle: 'Default not set',
+  alertDescription: 'Please set the default phone account'
+};
+
+RNCallKeep.hasDefaultPhoneAccount(options);
+```
+
+
 ## Events
 
 ### didReceiveStartCallAction
@@ -219,7 +238,7 @@ After all works are done, remember to call `RNCallKeep.startCall(uuid, calleeNum
 
 ```js
 RNCallKeep.addEventListener('didReceiveStartCallAction', ({ handle }) => {
-  
+
 });
 ```
 
@@ -283,7 +302,7 @@ A call was muted by the system or the user:
 
 ```js
 RNCallKeep.addEventListener('didPerformSetMutedCallAction', (muted) => {
-  
+
 });
 
 ```
@@ -293,7 +312,7 @@ A call was held or unheld by the current user
 
 ```js
 RNCallKeep.addEventListener('didToggleHoldCallAction', ({ hold, callUUID }) => {
-  
+
 });
 ```
 
@@ -307,7 +326,7 @@ Used type a number on his dialer
 
 ```js
 RNCallKeep.addEventListener('didPerformDTMFAction', ({ dtmf, callUUID }) => {
-  
+
 });
 ```
 
@@ -327,9 +346,9 @@ import uuid from 'uuid';
 class RNCallKeepExample extends React.Component {
   constructor(props) {
     super(props);
-    
+
     this.currentCallId = null;
-    
+
     // Initialise RNCallKeep
     const options = {
       ios: {
@@ -342,7 +361,7 @@ class RNCallKeepExample extends React.Component {
         okButton: 'ok',
       }
     };
-    
+
 
     try {
       RNCallKeep.setup(options);
@@ -369,13 +388,13 @@ class RNCallKeepExample extends React.Component {
   onAnswerCallAction = ({ callUUID }) => {
     // called when the user answer the incoming call
   };
-  
+
   onEndCallAction = ({ callUUID }) => {
     RNCallKeep.endCall(this.getCurrentCallId());
-    
+
     this.currentCallId = null;
   };
-  
+
   onIncomingCallDisplayed = error => {
     // You will get this event after RNCallKeep finishes showing incoming call UI
     // You can check if there was an error while displaying
@@ -389,7 +408,7 @@ class RNCallKeepExample extends React.Component {
     // you might want to do following things when receiving this event:
     // - Start playing ringback if it is an outgoing call
   };
-  
+
   getCurrentCallId = () => {
     if (!this.currentCallId) {
       this.currentCallId = uuid.v4();

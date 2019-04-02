@@ -37,9 +37,9 @@ class RNCallKeep {
     return this._setupIOS(options.ios);
   };
 
-  checkDefault = async (options) => {
+  hasDefaultPhoneAccount = async (options) => {
     if (!isIOS) {
-      return this._checkDefault(options);
+      return this._hasDefaultPhoneAccount(options);
     }
 
     return;
@@ -136,7 +136,7 @@ class RNCallKeep {
     }
   };
 
-  _checkDefault = async (options) => {
+  _hasDefaultPhoneAccount = async (options) => {
     const hasDefault = await RNCallKeepModule.checkDefaultPhoneAccount();
     const shouldOpenAccounts = await this._alert(options, hasDefault);
 
