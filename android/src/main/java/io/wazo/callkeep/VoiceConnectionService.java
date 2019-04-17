@@ -43,12 +43,14 @@ import static io.wazo.callkeep.RNCallKeepModule.ACTION_ONGOING_CALL;
 import static io.wazo.callkeep.RNCallKeepModule.ACTION_UNHOLD_CALL;
 import static io.wazo.callkeep.RNCallKeepModule.ACTION_UNMUTE_CALL;
 import static io.wazo.callkeep.RNCallKeepModule.EXTRA_CALLER_NAME;
+import static io.wazo.callkeep.RNCallKeepModule.EXTRA_CALL_UUID;
 
 // @see https://github.com/kbagchiGWC/voice-quickstart-android/blob/9a2aff7fbe0d0a5ae9457b48e9ad408740dfb968/exampleConnectionService/src/main/java/com/twilio/voice/examples/connectionservice/VoiceConnectionService.java
 @TargetApi(Build.VERSION_CODES.M)
 public class VoiceConnectionService extends ConnectionService {
     private static Connection connection;
     private static Boolean isAvailable = false;
+    private static String TAG = "VoiceConnectionService";
 
     public static Connection getConnection() {
         return connection;
@@ -92,97 +94,9 @@ public class VoiceConnectionService extends ConnectionService {
     }
 
     private Connection createConnection(ConnectionRequest request) {
-        connection = new Connection() {
-            private boolean isMuted = false;
-
-            @Override
-            public void onCallAudioStateChanged(CallAudioState state) {
-                if (state.isMuted() == this.isMuted) {
-                    return;
-                }
-
-                this.isMuted = state.isMuted();
-
-                sendCallRequestToActivity(isMuted ? ACTION_MUTE_CALL : ACTION_UNMUTE_CALL, null);
-            }
-
-            @Override
-            public void onAnswer() {
-                super.onAnswer();
-                if (connection == null) {
-                    return;
-                }
-
-                connection.setActive();
-                connection.setAudioModeIsVoip(true);
-
-                sendCallRequestToActivity(ACTION_ANSWER_CALL, null);
-                sendCallRequestToActivity(ACTION_AUDIO_SESSION, null);
-            }
-
-            @Override
-            public void onPlayDtmfTone(char dtmf) {
-                sendCallRequestToActivity(ACTION_DTMF_TONE, String.valueOf(dtmf));
-            }
-
-            @Override
-            public void onDisconnect() {
-                super.onDisconnect();
-                if (connection == null) {
-                    return;
-                }
-
-                connection.setDisconnected(new DisconnectCause(DisconnectCause.LOCAL));
-                connection.destroy();
-                connection = null;
-
-                sendCallRequestToActivity(ACTION_END_CALL, null);
-            }
-
-            @Override
-            public void onAbort() {
-                super.onAbort();
-                if (connection == null) {
-                    return;
-                }
-
-                connection.setDisconnected(new DisconnectCause(DisconnectCause.CANCELED));
-                connection.destroy();
-
-                sendCallRequestToActivity(ACTION_END_CALL, null);
-            }
-
-            @Override
-            public void onHold() {
-                super.onHold();
-                connection.setOnHold();
-
-                sendCallRequestToActivity(ACTION_HOLD_CALL, null);
-            }
-
-            @Override
-            public void onUnhold() {
-                super.onUnhold();
-                connection.setActive();
-
-                sendCallRequestToActivity(ACTION_UNHOLD_CALL, null);
-            }
-
-            @Override
-            public void onReject() {
-                super.onReject();
-                if (connection == null) {
-                    return;
-                }
-
-                connection.setDisconnected(new DisconnectCause(DisconnectCause.CANCELED));
-                connection.destroy();
-
-                sendCallRequestToActivity(ACTION_END_CALL, null);
-            }
-        };
 
         Bundle extra = request.getExtras();
+        connection = new VoiceConnection(this, extra.getString(EXTRA_CALL_UUID));
 
         connection.setConnectionCapabilities(Connection.CAPABILITY_MUTE | Connection.CAPABILITY_HOLD | Connection.CAPABILITY_SUPPORT_HOLD);
         connection.setAddress(request.getAddress(), TelecomManager.PRESENTATION_ALLOWED);

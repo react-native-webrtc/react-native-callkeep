@@ -54,6 +54,7 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
 
     public static final String CHECKING_PERMS = "CHECKING_PERMS";
     public static final String EXTRA_CALLER_NAME = "EXTRA_CALLER_NAME";
+    public static final String EXTRA_CALL_UUID = "EXTRA_CALL_UUID";
     public static final String ACTION_END_CALL = "ACTION_END_CALL";
     public static final String ACTION_ANSWER_CALL = "ACTION_ANSWER_CALL";
     public static final String ACTION_MUTE_CALL = "ACTION_MUTE_CALL";
@@ -105,7 +106,7 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
     }
 
     @ReactMethod
-    public void displayIncomingCall(String number, String callerName) {
+    public void displayIncomingCall(String uuid, String number, String callerName) {
         if (!isConnectionServiceAvailable() || !hasPhoneAccount()) {
             return;
         }
@@ -115,6 +116,7 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
 
         extras.putParcelable(TelecomManager.EXTRA_INCOMING_CALL_ADDRESS, uri);
         extras.putString(EXTRA_CALLER_NAME, callerName);
+        extras.putString(EXTRA_CALL_UUID, uuid);
 
         telecomManager.addNewIncomingCall(handle, extras);
     }
@@ -339,10 +341,12 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
 
             switch (intent.getAction()) {
                 case ACTION_END_CALL:
-                    sendEventToJS("RNCallKeepPerformEndCallAction", null);
+                    args.putString("callUUID", intent.getStringExtra("attribute"));
+                    sendEventToJS("RNCallKeepPerformEndCallAction", args);
                     break;
                 case ACTION_ANSWER_CALL:
-                    sendEventToJS("RNCallKeepPerformAnswerCallAction", null);
+                    args.putString("callUUID", intent.getStringExtra("attribute"));
+                    sendEventToJS("RNCallKeepPerformAnswerCallAction", args);
                     break;
                 case ACTION_HOLD_CALL:
                     args.putBoolean("hold", true);
