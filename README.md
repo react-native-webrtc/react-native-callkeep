@@ -426,6 +426,14 @@ class RNCallKeepExample extends React.Component {
 
 - On iOS, you should call `setup` each time you want to use callKeep.
 
+## Debug
+
+### Android
+
+```
+adb logcat *:S RNCallKeepModule:V
+```
+
 ## Contributing
 
 Any pull request, issue report and suggestion are highly welcome!
