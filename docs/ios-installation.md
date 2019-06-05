@@ -11,7 +11,7 @@ react-native link react-native-callkeep
 Include in a Podfile in your react-native `ios` directory:
 
 ```
-pod 'react-native-callkeep', :path => '../node_modules/react-native-callkeep'
+pod 'RNCallKeep', :path => '../node_modules/react-native-callkeep'
 ```
 
 Then:

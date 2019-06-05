@@ -57,7 +57,7 @@ export default class RNCallKeep {
     uuid: string,
     handle: string,
     handleType?: HandleType,
-    hasVideo: boolean,
+    hasVideo?: boolean,
     contactIdentifier?: string,
   ) {
 
