@@ -49,6 +49,7 @@ import static io.wazo.callkeep.RNCallKeepModule.EXTRA_CALLER_NAME;
 public class VoiceConnectionService extends ConnectionService {
     private static Connection connection;
     private static Boolean isAvailable = false;
+    private static final String TAG = "RNCallKeepModule";
 
     public static Connection getConnection() {
         return connection;
@@ -60,6 +61,7 @@ public class VoiceConnectionService extends ConnectionService {
 
 
     public static void deinitConnection() {
+        Log.d(TAG, "deinitConnection");
         connection = null;
     }
 
@@ -109,6 +111,7 @@ public class VoiceConnectionService extends ConnectionService {
             @Override
             public void onAnswer() {
                 super.onAnswer();
+                Log.d(TAG, "onAnswer called");
                 if (connection == null) {
                     return;
                 }
@@ -118,6 +121,7 @@ public class VoiceConnectionService extends ConnectionService {
 
                 sendCallRequestToActivity(ACTION_ANSWER_CALL, null);
                 sendCallRequestToActivity(ACTION_AUDIO_SESSION, null);
+                Log.d(TAG, "onAnswer executed");
             }
 
             @Override
@@ -128,20 +132,24 @@ public class VoiceConnectionService extends ConnectionService {
             @Override
             public void onDisconnect() {
                 super.onDisconnect();
+                Log.d(TAG, "onDisconnect called");
                 if (connection == null) {
                     return;
                 }
+
 
                 connection.setDisconnected(new DisconnectCause(DisconnectCause.LOCAL));
                 connection.destroy();
                 connection = null;
 
                 sendCallRequestToActivity(ACTION_END_CALL, null);
+                Log.d(TAG, "onDisconnect executed");
             }
 
             @Override
             public void onAbort() {
                 super.onAbort();
+                Log.d(TAG, "onAbort called");
                 if (connection == null) {
                     return;
                 }
@@ -150,6 +158,7 @@ public class VoiceConnectionService extends ConnectionService {
                 connection.destroy();
 
                 sendCallRequestToActivity(ACTION_END_CALL, null);
+                Log.d(TAG, "onAbort executed");
             }
 
             @Override
@@ -171,6 +180,7 @@ public class VoiceConnectionService extends ConnectionService {
             @Override
             public void onReject() {
                 super.onReject();
+                Log.d(TAG, "onReject called");
                 if (connection == null) {
                     return;
                 }
@@ -179,6 +189,7 @@ public class VoiceConnectionService extends ConnectionService {
                 connection.destroy();
 
                 sendCallRequestToActivity(ACTION_END_CALL, null);
+                Log.d(TAG, "onReject executed");
             }
         };
 
