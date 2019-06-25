@@ -112,10 +112,10 @@ RNCallKeep.displayIncomingCall(uuid, handle);
 ### startCall
 
 When you make an outgoing call, tell the device that a call is occurring.
-_This feature is available only on iOs._
+_This feature is available only on iOS._
 
 ```js
-RNCallKeep.startCall(uuid, number);
+RNCallKeep.startCall(uuid, handle, handleType, hasVideo, contactIdentifier);
 ```
 
 - _uuid_: string
@@ -156,7 +156,7 @@ RNCallKeep.setCurrentCallActive();
 ### setMutedCall
 
 Switch the mic on/off.
-_This feature is available only on iOs._
+_This feature is available only on iOS._
 
 ```js
 RNCallKeep.setMutedCall(uuid, true);
@@ -169,7 +169,7 @@ RNCallKeep.setMutedCall(uuid, true);
 ### checkIfBusy
 
 Checks if there are any active calls on the device and returns a promise with a boolean value (`true` if there're active calls, `false` otherwise).
-_This feature is available only on iOs._
+_This feature is available only on iOS._
 
 ```js
 RNCallKeep.checkIfBusy();
@@ -178,7 +178,7 @@ RNCallKeep.checkIfBusy();
 ### checkSpeaker
 
 Checks if the device speaker is on and returns a promise with a boolean value (`true` if speaker is on, `false` otherwise).
-_This feature is available only on iOs._
+_This feature is available only on iOS._
 
 ```js
 RNCallKeep.checkSpeaker();
