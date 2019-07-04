@@ -90,12 +90,12 @@ class RNCallKeep {
   };
 
   checkIfBusy = () =>
-    Platform.OS === 'ios'
+    isIOS
       ? RNCallKeepModule.checkIfBusy()
       : Promise.reject('RNCallKeep.checkIfBusy was called from unsupported OS');
 
   checkSpeaker = () =>
-    Platform.OS === 'ios'
+    isIOS
       ? RNCallKeepModule.checkSpeaker()
       : Promise.reject('RNCallKeep.checkSpeaker was called from unsupported OS');
 
@@ -116,9 +116,9 @@ class RNCallKeep {
     RNCallKeepModule.setCurrentCallActive();
   };
 
-  reportUpdatedCall(uuid, localizedCallerName?: String) {
-    return Platform.OS === 'ios'
-      ? _RNCallKit.reportUpdatedCall(uuid, localizedCallerName)
+  reportUpdatedCall(uuid, localizedCallerName) {
+    return isIOS
+      ? RNCallKeepModule.reportUpdatedCall(uuid, localizedCallerName)
       : Promise.reject('RNCallKeep.reportUpdatedCall was called from unsupported OS');
   }
 
