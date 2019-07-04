@@ -132,7 +132,7 @@ RCT_EXPORT_METHOD(displayIncomingCall:(NSString *)uuidString
     callUpdate.supportsHolding = YES;
     callUpdate.supportsGrouping = YES;
     callUpdate.supportsUngrouping = YES;
-    callUpdate.hasVideo = NO;
+    callUpdate.hasVideo = hasVideo;
     callUpdate.localizedCallerName = localizedCallerName;
 
     [self.callKeepProvider reportNewIncomingCallWithUUID:uuid update:callUpdate completion:^(NSError * _Nullable error) {
