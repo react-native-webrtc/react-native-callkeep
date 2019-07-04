@@ -116,11 +116,10 @@ class RNCallKeep {
     RNCallKeepModule.setCurrentCallActive();
   };
 
-  reportUpdatedCall(uuid, localizedCallerName) {
-    return isIOS
+  reportUpdatedCall = (uuid, localizedCallerName) =>
+    isIOS
       ? RNCallKeepModule.reportUpdatedCall(uuid, localizedCallerName)
       : Promise.reject('RNCallKeep.reportUpdatedCall was called from unsupported OS');
-  }
 
   _setupIOS = async (options) => new Promise((resolve, reject) => {
     if (!options.appName) {
