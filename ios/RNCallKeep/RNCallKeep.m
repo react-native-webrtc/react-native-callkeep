@@ -444,7 +444,7 @@ RCT_EXPORT_METHOD(reportUpdatedCall:(NSString *)uuidString contactIdentifier:(NS
     CXCallUpdate *callUpdate = [[CXCallUpdate alloc] init];
     callUpdate.localizedCallerName = contactIdentifier;
 
-    [self.callKitProvider reportCallWithUUID:uuid updated:callUpdate];
+    [self.callKeepProvider reportCallWithUUID:uuid updated:callUpdate];
 }
 
 // Answering incoming call
