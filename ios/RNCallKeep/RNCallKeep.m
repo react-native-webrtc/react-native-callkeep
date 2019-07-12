@@ -34,6 +34,12 @@ static NSString *const RNCallKeepDidToggleHoldAction = @"RNCallKeepDidToggleHold
     BOOL _isStartCallActionEventListenerAdded;
 }
 
+static id sharedInstance;
+
++ (instancetype)sharedInstance {
+    return sharedInstance;
+}
+
 // should initialise in AppDelegate.m
 RCT_EXPORT_MODULE()
 
@@ -49,6 +55,7 @@ RCT_EXPORT_MODULE()
                                                    object:nil];
         _isStartCallActionEventListenerAdded = NO;
     }
+    sharedInstance = self;
     return self;
 }
 

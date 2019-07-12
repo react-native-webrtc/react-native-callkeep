@@ -19,6 +19,7 @@
 @property (nonatomic, strong) CXCallController *callKeepCallController;
 @property (nonatomic, strong) CXProvider *callKeepProvider;
 
++ (instancetype)sharedInstance;
 + (BOOL)application:(UIApplication *)application
             openURL:(NSURL *)url
             options:(NSDictionary<UIApplicationOpenURLOptionsKey, id> *)options NS_AVAILABLE_IOS(9_0);
@@ -27,4 +28,10 @@
 continueUserActivity:(NSUserActivity *)userActivity
   restorationHandler:(void(^)(NSArray * __nullable restorableObjects))restorationHandler;
 
+- (void)displayIncomingCall:(NSString *)uuidString
+                     handle:(NSString *)handle
+                 handleType:(NSString *)handleType
+                   hasVideo:(BOOL)hasVideo
+        localizedCallerName:(NSString * _Nullable)localizedCallerName;
 @end
+
