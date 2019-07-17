@@ -7,25 +7,16 @@ const RNCallKeepDidReceiveStartCallAction = 'RNCallKeepDidReceiveStartCallAction
 const RNCallKeepPerformAnswerCallAction = 'RNCallKeepPerformAnswerCallAction';
 const RNCallKeepPerformEndCallAction = 'RNCallKeepPerformEndCallAction';
 const RNCallKeepDidActivateAudioSession = 'RNCallKeepDidActivateAudioSession';
+const RNCallKeepDidDeactivateAudioSession = 'RNCallKeepDidDeactivateAudioSession';
 const RNCallKeepDidDisplayIncomingCall = 'RNCallKeepDidDisplayIncomingCall';
 const RNCallKeepDidPerformSetMutedCallAction = 'RNCallKeepDidPerformSetMutedCallAction';
 const RNCallKeepDidToggleHoldAction = 'RNCallKeepDidToggleHoldAction';
 const RNCallKeepDidPerformDTMFAction = 'RNCallKeepDidPerformDTMFAction';
+const RNCallKeepProviderReset = 'RNCallKeepProviderReset';
 const isIOS = Platform.OS === 'ios';
 
-const didReceiveStartCallAction = handler => {
-  const listener = eventEmitter.addListener(
-    RNCallKeepDidReceiveStartCallAction, (data) => {
-      handler(isIOS ? data : { handle: data.number });
-    }
-  );
-
-  if (isIOS) {
-    RNCallKeepModule._startCallActionEventListenerAdded();
-  }
-
-  return listener;
-};
+const didReceiveStartCallAction = handler => 
+  eventEmitter.addListener(RNCallKeepDidReceiveStartCallAction, (data) => handler(data));
 
 const answerCall = handler =>
   eventEmitter.addListener(RNCallKeepPerformAnswerCallAction, (data) => handler(data));
@@ -35,6 +26,9 @@ const endCall = handler =>
 
 const didActivateAudioSession = handler =>
   eventEmitter.addListener(RNCallKeepDidActivateAudioSession, handler);
+
+const didDeactivateAudioSession = handler =>
+  eventEmitter.addListener(RNCallKeepDidDeactivateAudioSession, handler);
 
 const didDisplayIncomingCall = handler =>
   eventEmitter.addListener(RNCallKeepDidDisplayIncomingCall, (data) => handler(data));
@@ -48,14 +42,19 @@ const didToggleHoldCallAction = handler =>
 const didPerformDTMFAction = handler =>
   eventEmitter.addListener(RNCallKeepDidPerformDTMFAction, (data) => handler(data));
 
+const didResetProvider = handler =>
+  eventEmitter.addListener(RNCallKeepProviderReset, handler);
+
 export const listeners = {
   didReceiveStartCallAction,
   answerCall,
   endCall,
   didActivateAudioSession,
+  didDeactivateAudioSession,
   didDisplayIncomingCall,
   didPerformSetMutedCallAction,
   didToggleHoldCallAction,
   didPerformDTMFAction,
+  didResetProvider,
 };
 

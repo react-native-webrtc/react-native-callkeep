@@ -54,21 +54,43 @@ class RNCallKeep {
     RNCallKeepModule.displayIncomingCall(uuid, handle, handleType, hasVideo, localizedCallerName);
   };
 
-  startCall = (uuid, handle, handleType = 'number', hasVideo = false, contactIdentifier) => {
+  answerIncomingCall = (uuid) => {
+    RNCallKeepModule.answerIncomingCall(uuid)
+  }
+
+  startCall = (uuid, handle, contactIdentifier, handleType = 'number', hasVideo = false ) => {
     if (!isIOS) {
-      RNCallKeepModule.startCall(uuid, andle, contactIdentifier);
+      RNCallKeepModule.startCall(uuid, handle, contactIdentifier);
       return;
     }
 
-    RNCallKeepModule.startCall(uuid, handle, handleType, hasVideo, contactIdentifier);
+    RNCallKeepModule.startCall(uuid, handle, contactIdentifier, handleType, hasVideo);
+  };
+
+  reportConnectingOutgoingCallWithUUID = (uuid) => {
+    //only available on iOS
+    if (isIOS) {
+      RNCallKeepModule.reportConnectingOutgoingCallWithUUID(uuid);
+    }
   };
 
   reportConnectedOutgoingCallWithUUID = (uuid) => {
-    RNCallKeepModule.reportConnectedOutgoingCallWithUUID(uuid);
+    //only available on iOS
+    if (isIOS) {
+      RNCallKeepModule.reportConnectedOutgoingCallWithUUID(uuid);
+    }
   };
 
+  reportEndCallWithUUID = (uuid, reason) => {
+    RNCallKeepModule.reportEndCallWithUUID(uuid, reason);
+  }
+
+  rejectCall = (uuid) => {
+    RNCallKeepModule.rejectCall(uuid);
+  }
+
   endCall = (uuid) => {
-    isIOS ? RNCallKeepModule.endCall(uuid) : RNCallKeepModule.endCall();
+    RNCallKeepModule.endCall(uuid);
   };
 
   endAllCalls = () => {
@@ -80,22 +102,21 @@ class RNCallKeep {
   hasPhoneAccount = async () =>
     isIOS ? true : await RNCallKeepModule.hasPhoneAccount();
 
-  setMutedCall = (uuid, muted) => {
-     if (!isIOS) {
-      // Can't mute on Android
-      return;
-    }
-
-    RNCallKeepModule.setMutedCall(uuid, muted);
+  setMutedCall = (uuid, shouldMute) => {
+    RNCallKeepModule.setMutedCall(uuid, shouldMute);
   };
 
+  sendDTMF = (uuid, key) => {
+    RNCallKeepModule.sendDTMF(uuid, key);
+  }
+
   checkIfBusy = () =>
-    Platform.OS === 'ios'
+    isIOS
       ? RNCallKeepModule.checkIfBusy()
       : Promise.reject('RNCallKeep.checkIfBusy was called from unsupported OS');
 
   checkSpeaker = () =>
-    Platform.OS === 'ios'
+    isIOS
       ? RNCallKeepModule.checkSpeaker()
       : Promise.reject('RNCallKeep.checkSpeaker was called from unsupported OS');
 
@@ -108,13 +129,29 @@ class RNCallKeep {
     RNCallKeepModule.setAvailable(state);
   };
 
-  setCurrentCallActive = () => {
+  setCurrentCallActive = (callUUID) => {
     if (isIOS) {
       return;
     }
 
-    RNCallKeepModule.setCurrentCallActive();
+    RNCallKeepModule.setCurrentCallActive(callUUID);
   };
+
+  updateDisplay = (uuid, displayName, uri) => {
+    if (isIOS) {
+      return;
+    }
+    RNCallKeepModule.updateDisplay(uuid, displayName, uri)
+  }
+
+  setOnHold = (uuid, shouldHold) => {
+    RNCallKeepModule.setOnHold(uuid, shouldHold);
+  }
+
+  reportUpdatedCall = (uuid, localizedCallerName) =>
+    isIOS
+      ? RNCallKeepModule.reportUpdatedCall(uuid, localizedCallerName)
+      : Promise.reject('RNCallKeep.reportUpdatedCall was called from unsupported OS');
 
   _setupIOS = async (options) => new Promise((resolve, reject) => {
     if (!options.appName) {
@@ -128,8 +165,10 @@ class RNCallKeep {
   });
 
   _setupAndroid = async (options) => {
-    const hasAccount = await RNCallKeepModule.checkPhoneAccountPermission();
-    const shouldOpenAccounts = await this._alert(options, hasAccount);
+    RNCallKeepModule.setup(options);
+
+    const showAccountAlert = await RNCallKeepModule.checkPhoneAccountPermission(options.additionalPermissions || []);
+    const shouldOpenAccounts = await this._alert(options, showAccountAlert);
 
     if (shouldOpenAccounts) {
       RNCallKeepModule.openPhoneAccounts();
@@ -146,7 +185,7 @@ class RNCallKeep {
   };
 
   _alert = async (options, condition) => new Promise((resolve, reject) => {
-    if (condition) {
+    if (!condition) {
       return resolve(false);
     }
 
@@ -175,11 +214,6 @@ class RNCallKeep {
     NativeModules.RNCallKeep.backToForeground();
   }
 
-  /*
-  static holdCall(uuid, onHold) {
-    RNCallKeepModule.setHeldCall(uuid, onHold);
-  }
-  */
 }
 
 export default new RNCallKeep();

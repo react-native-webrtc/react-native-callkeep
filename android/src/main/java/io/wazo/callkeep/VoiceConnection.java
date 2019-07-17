@@ -11,10 +11,14 @@ import android.support.v4.content.LocalBroadcastManager;
 import android.telecom.CallAudioState;
 import android.telecom.Connection;
 import android.telecom.DisconnectCause;
+import android.telecom.TelecomManager;
+import android.net.Uri;
 import android.util.Log;
 
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import java.util.HashMap;
 
 import static io.wazo.callkeep.RNCallKeepModule.ACTION_ANSWER_CALL;
 import static io.wazo.callkeep.RNCallKeepModule.ACTION_AUDIO_SESSION;
@@ -24,24 +28,37 @@ import static io.wazo.callkeep.RNCallKeepModule.ACTION_HOLD_CALL;
 import static io.wazo.callkeep.RNCallKeepModule.ACTION_MUTE_CALL;
 import static io.wazo.callkeep.RNCallKeepModule.ACTION_UNHOLD_CALL;
 import static io.wazo.callkeep.RNCallKeepModule.ACTION_UNMUTE_CALL;
+import static io.wazo.callkeep.RNCallKeepModule.EXTRA_CALLER_NAME;
+import static io.wazo.callkeep.RNCallKeepModule.EXTRA_CALL_NUMBER;
 import static io.wazo.callkeep.RNCallKeepModule.EXTRA_CALL_UUID;
 
 @TargetApi(Build.VERSION_CODES.M)
-public class VoiceConnection extends Connection {private String TAG = "VoiceConnection";
+public class VoiceConnection extends Connection {
     private boolean isMuted = false;
-    private String handle = "";
+    private HashMap<String, String> handle;
     private Context context;
+    private static final String TAG = "RNCK:VoiceConnection";
 
-    VoiceConnection(Context context, String handle) {
+    VoiceConnection(Context context, HashMap<String, String> handle) {
         super();
         this.handle = handle;
         this.context = context;
+
+        String number = handle.get(EXTRA_CALL_NUMBER);
+        String name = handle.get(EXTRA_CALLER_NAME);
+
+        if (number != null) {
+            setAddress(Uri.parse(number), TelecomManager.PRESENTATION_ALLOWED);
+        }
+        if (name != null && !name.equals("")) {
+            setCallerDisplayName(name, TelecomManager.PRESENTATION_ALLOWED);
+        }
     }
 
     @Override
     public void onExtrasChanged(Bundle extras) {
         super.onExtrasChanged(extras);
-        handle = extras.getString(EXTRA_CALL_UUID);
+        handle = (HashMap<String, String>)extras.getSerializable("attributeMap");
     }
 
     @Override
@@ -57,16 +74,21 @@ public class VoiceConnection extends Connection {private String TAG = "VoiceConn
     @Override
     public void onAnswer() {
         super.onAnswer();
+        Log.d(TAG, "onAnswer called");
 
+        setConnectionCapabilities(getConnectionCapabilities() | Connection.CAPABILITY_HOLD);
         setActive();
         setAudioModeIsVoip(true);
 
         sendCallRequestToActivity(ACTION_ANSWER_CALL, handle);
+        sendCallRequestToActivity(ACTION_AUDIO_SESSION, null);
+        Log.d(TAG, "onAnswer executed");
     }
 
     @Override
     public void onPlayDtmfTone(char dtmf) {
-        sendCallRequestToActivity(ACTION_DTMF_TONE, String.valueOf(dtmf));
+        handle.put("DTMF", Character.toString(dtmf));
+        sendCallRequestToActivity(ACTION_DTMF_TONE, handle);
     }
 
     @Override
@@ -74,21 +96,44 @@ public class VoiceConnection extends Connection {private String TAG = "VoiceConn
         super.onDisconnect();
         setDisconnected(new DisconnectCause(DisconnectCause.LOCAL));
         sendCallRequestToActivity(ACTION_END_CALL, handle);
+        Log.d(TAG, "onDisconnect executed");
+        ((VoiceConnectionService)context).deinitConnection(handle.get(EXTRA_CALL_UUID));
+        destroy();
+    }
+
+    public void reportDisconnect(int reason) {
+        super.onDisconnect();
+        switch (reason) {
+            case 1:
+                setDisconnected(new DisconnectCause(DisconnectCause.ERROR));
+                break;
+            case 2:
+                setDisconnected(new DisconnectCause(DisconnectCause.REMOTE));
+                break;
+            case 3:
+                setDisconnected(new DisconnectCause(DisconnectCause.BUSY));
+                break;
+            default:
+                break;
+        }
+        ((VoiceConnectionService)context).deinitConnection(handle.get(EXTRA_CALL_UUID));
         destroy();
     }
 
     @Override
     public void onAbort() {
         super.onAbort();
-
-        setDisconnected(new DisconnectCause(DisconnectCause.CANCELED));
+        setDisconnected(new DisconnectCause(DisconnectCause.REJECTED));
         sendCallRequestToActivity(ACTION_END_CALL, handle);
+        Log.d(TAG, "onAbort executed");
+        ((VoiceConnectionService)context).deinitConnection(handle.get(EXTRA_CALL_UUID));
         destroy();
     }
 
     @Override
     public void onHold() {
         super.onHold();
+        this.setOnHold();
         sendCallRequestToActivity(ACTION_HOLD_CALL, handle);
     }
 
@@ -102,16 +147,17 @@ public class VoiceConnection extends Connection {private String TAG = "VoiceConn
     @Override
     public void onReject() {
         super.onReject();
-
-        setDisconnected(new DisconnectCause(DisconnectCause.CANCELED));
+        setDisconnected(new DisconnectCause(DisconnectCause.REJECTED));
         sendCallRequestToActivity(ACTION_END_CALL, handle);
+        Log.d(TAG, "onReject executed");
+        ((VoiceConnectionService)context).deinitConnection(handle.get(EXTRA_CALL_UUID));
         destroy();
     }
 
     /*
      * Send call request to the RNCallKeepModule
      */
-    private void sendCallRequestToActivity(final String action, @Nullable final String attribute) {
+    private void sendCallRequestToActivity(final String action, @Nullable final HashMap attributeMap) {
         final VoiceConnection instance = this;
         final Handler handler = new Handler();
 
@@ -119,8 +165,10 @@ public class VoiceConnection extends Connection {private String TAG = "VoiceConn
             @Override
             public void run() {
                 Intent intent = new Intent(action);
-                if (attribute != null) {
-                    intent.putExtra("attribute", attribute);
+                if (attributeMap != null) {
+                    Bundle extras = new Bundle();
+                    extras.putSerializable("attributeMap", attributeMap);
+                    intent.putExtras(extras);
                 }
 
                 LocalBroadcastManager.getInstance(context).sendBroadcast(intent);
