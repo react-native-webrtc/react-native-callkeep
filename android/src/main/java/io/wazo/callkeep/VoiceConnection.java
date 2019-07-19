@@ -77,7 +77,6 @@ public class VoiceConnection extends Connection {
         Log.d(TAG, "onAnswer called");
 
         setConnectionCapabilities(getConnectionCapabilities() | Connection.CAPABILITY_HOLD);
-        setActive();
         setAudioModeIsVoip(true);
 
         sendCallRequestToActivity(ACTION_ANSWER_CALL, handle);

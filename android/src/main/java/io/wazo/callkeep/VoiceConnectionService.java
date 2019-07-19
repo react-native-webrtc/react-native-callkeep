@@ -96,6 +96,7 @@ public class VoiceConnectionService extends ConnectionService {
         String name = extra.getString(EXTRA_CALLER_NAME);
         Connection incomingCallConnection = createConnection(request);
         incomingCallConnection.setRinging();
+        incomingCallConnection.setInitialized();
 
         return incomingCallConnection;
     }
@@ -125,6 +126,7 @@ public class VoiceConnectionService extends ConnectionService {
         outgoingCallConnection.setDialing();
         outgoingCallConnection.setAudioModeIsVoip(true);
         outgoingCallConnection.setCallerDisplayName(name, TelecomManager.PRESENTATION_ALLOWED);
+        outgoingCallConnection.setInitialized();
 
         HashMap<String, String> extrasMap = this.bundleToMap(extras);
 
@@ -159,7 +161,6 @@ public class VoiceConnectionService extends ConnectionService {
         List<Connection> conferenceConnections = new ArrayList<Connection>(otherConnections.values());
         connection.setConferenceableConnections(conferenceConnections);
 
-        connection.setInitialized();
         return connection;
     }
 

@@ -225,7 +225,7 @@ RCT_EXPORT_METHOD(reportConnectedOutgoingCallWithUUID:(NSString *)uuidString)
     [self.callKeepProvider reportOutgoingCallWithUUID:uuid connectedAtDate:[NSDate date]];
 }
 
-RCT_EXPORT_METHOD(reportEndCallWithUUID:(NSString *)uuidString reason:(int)reason)
+RCT_EXPORT_METHOD(reportEndCallWithUUID:(NSString *)uuidString :(int)reason)
 {
 #ifdef DEBUG
     NSLog(@"[RNCallKeep][reportEndCallWithUUID] uuidString = %@ reason = %d", uuidString, reason);
@@ -246,7 +246,20 @@ RCT_EXPORT_METHOD(reportEndCallWithUUID:(NSString *)uuidString reason:(int)reaso
     }
 }
 
-RCT_EXPORT_METHOD(setMutedCall:(NSString *)uuidString muted:(BOOL)muted)
+RCT_EXPORT_METHOD(updateDisplay:(NSString *)uuidString :(NSString *)displayName :(NSString *)uri)
+{
+#ifdef DEBUG
+    NSLog(@"[RNCallKeep][updateDisplay] uuidString = %@ displayName = %@ uri = %@", uuidString, displayName, uri);
+#endif
+    NSUUID *uuid = [[NSUUID alloc] initWithUUIDString:uuidString];
+    CXHandle *callHandle = [[CXHandle alloc] initWithType:CXHandleTypePhoneNumber value:uri];
+    CXCallUpdate *callUpdate = [[CXCallUpdate alloc] init];
+    callUpdate.localizedCallerName = displayName;
+    callUpdate.remoteHandle = callHandle;
+    [self.callKeepProvider reportCallWithUUID:uuid updated:callUpdate];
+}
+
+RCT_EXPORT_METHOD(setMutedCall:(NSString *)uuidString :(BOOL)muted)
 {
 #ifdef DEBUG
     NSLog(@"[RNCallKeep][setMutedCall] muted = %i", muted);

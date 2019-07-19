@@ -106,6 +106,7 @@ _This feature is available only on Android._
 
 Mark the current call as active (eg: when the callee has answered).
 Necessary to set the correct Android capabilities (hold, mute) once the call is set as active.
+Be sure to set this only after your call is ready for two way audio; used both incoming and outgoing calls.
 
 ```js
 RNCallKeep.setCurrentCallActive(uuid);
