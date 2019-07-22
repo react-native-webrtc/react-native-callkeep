@@ -138,9 +138,6 @@ class RNCallKeep {
   };
 
   updateDisplay = (uuid, displayName, uri) => {
-    if (isIOS) {
-      return;
-    }
     RNCallKeepModule.updateDisplay(uuid, displayName, uri)
   }
 
