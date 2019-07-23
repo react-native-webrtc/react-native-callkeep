@@ -485,6 +485,9 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
         public void onReceive(Context context, Intent intent) {
             WritableMap args = Arguments.createMap();
             HashMap<String, String> attributeMap = (HashMap<String, String>)intent.getSerializableExtra("attributeMap");
+            if (attributeMap == null) {
+                return;
+            }
 
             switch (intent.getAction()) {
                 case ACTION_END_CALL:
