@@ -197,9 +197,8 @@ public class VoiceConnectionService extends ConnectionService {
                     Bundle extras = new Bundle();
                     extras.putSerializable("attributeMap", attributeMap);
                     intent.putExtras(extras);
+                    LocalBroadcastManager.getInstance(instance).sendBroadcast(intent);
                 }
-
-                LocalBroadcastManager.getInstance(instance).sendBroadcast(intent);
             }
         });
     }

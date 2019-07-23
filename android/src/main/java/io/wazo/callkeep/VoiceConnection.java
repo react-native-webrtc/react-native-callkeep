@@ -53,12 +53,16 @@ public class VoiceConnection extends Connection {
         if (name != null && !name.equals("")) {
             setCallerDisplayName(name, TelecomManager.PRESENTATION_ALLOWED);
         }
+        Log.e(TAG, "Constructor");
     }
 
     @Override
     public void onExtrasChanged(Bundle extras) {
         super.onExtrasChanged(extras);
-        handle = (HashMap<String, String>)extras.getSerializable("attributeMap");
+        HashMap attributeMap = (HashMap<String, String>)extras.getSerializable("attributeMap");
+        if (attributeMap != null) {
+            handle = attributeMap;
+        }
     }
 
     @Override
@@ -86,7 +90,11 @@ public class VoiceConnection extends Connection {
 
     @Override
     public void onPlayDtmfTone(char dtmf) {
-        handle.put("DTMF", Character.toString(dtmf));
+        try {
+            handle.put("DTMF", Character.toString(dtmf));
+        } catch (Throwable exception) {
+            Log.e(TAG, "Handle map error", exception);
+        }
         sendCallRequestToActivity(ACTION_DTMF_TONE, handle);
     }
 
@@ -96,7 +104,11 @@ public class VoiceConnection extends Connection {
         setDisconnected(new DisconnectCause(DisconnectCause.LOCAL));
         sendCallRequestToActivity(ACTION_END_CALL, handle);
         Log.d(TAG, "onDisconnect executed");
-        ((VoiceConnectionService)context).deinitConnection(handle.get(EXTRA_CALL_UUID));
+        try {
+            ((VoiceConnectionService) context).deinitConnection(handle.get(EXTRA_CALL_UUID));
+        } catch(Throwable exception) {
+            Log.e(TAG, "Handle map error", exception);
+        }
         destroy();
     }
 
@@ -125,7 +137,11 @@ public class VoiceConnection extends Connection {
         setDisconnected(new DisconnectCause(DisconnectCause.REJECTED));
         sendCallRequestToActivity(ACTION_END_CALL, handle);
         Log.d(TAG, "onAbort executed");
-        ((VoiceConnectionService)context).deinitConnection(handle.get(EXTRA_CALL_UUID));
+        try {
+            ((VoiceConnectionService) context).deinitConnection(handle.get(EXTRA_CALL_UUID));
+        } catch(Throwable exception) {
+            Log.e(TAG, "Handle map error", exception);
+        }
         destroy();
     }
 
@@ -149,7 +165,11 @@ public class VoiceConnection extends Connection {
         setDisconnected(new DisconnectCause(DisconnectCause.REJECTED));
         sendCallRequestToActivity(ACTION_END_CALL, handle);
         Log.d(TAG, "onReject executed");
-        ((VoiceConnectionService)context).deinitConnection(handle.get(EXTRA_CALL_UUID));
+        try {
+            ((VoiceConnectionService) context).deinitConnection(handle.get(EXTRA_CALL_UUID));
+        } catch(Throwable exception) {
+            Log.e(TAG, "Handle map error", exception);
+        }
         destroy();
     }
 
@@ -168,9 +188,8 @@ public class VoiceConnection extends Connection {
                     Bundle extras = new Bundle();
                     extras.putSerializable("attributeMap", attributeMap);
                     intent.putExtras(extras);
+                    LocalBroadcastManager.getInstance(context).sendBroadcast(intent);
                 }
-
-                LocalBroadcastManager.getInstance(context).sendBroadcast(intent);
             }
         });
     }
