@@ -307,6 +307,11 @@ RCT_EXPORT_METHOD(setMutedCall:(NSString *)uuidString muted:(BOOL)muted)
     if (_settings[@"ringtoneSound"]) {
         providerConfiguration.ringtoneSound = _settings[@"ringtoneSound"];
     }
+    if (@available(iOS 11.0, *)) {
+        if (_settings[@"includesCallsInRecents"]) {
+            providerConfiguration.includesCallsInRecents = [_settings[@"includesCallsInRecents"] boolValue];
+        }
+    }
     return providerConfiguration;
 }
 

@@ -60,6 +60,8 @@ RNCallKeep.setup(options);
       - If provided, it will be displayed on system UI during the call
     - `ringtoneSound`: string (optional)
       - If provided, it will be played when incoming calls received; the system will use the default ringtone if this is not provided
+    - `includesCallsInRecents`: boolean (optional)
+      - If provided, calls will be shown in the recent calls when true and not when false (ios 11 and above)
   - `android`: object
     - `alertTitle`: string (required)
       When asking for _phone account_ permission, we need to provider a title for the `Alert` to ask the user for it
