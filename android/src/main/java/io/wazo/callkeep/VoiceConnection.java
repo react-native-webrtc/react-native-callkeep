@@ -53,7 +53,6 @@ public class VoiceConnection extends Connection {
         if (name != null && !name.equals("")) {
             setCallerDisplayName(name, TelecomManager.PRESENTATION_ALLOWED);
         }
-        Log.e(TAG, "Constructor");
     }
 
     @Override
