@@ -166,6 +166,15 @@ RNCallKeep.setMutedCall(uuid, true);
   - uuid of the current call.
 - `muted`: boolean
 
+### endAllCalls
+
+End all calls that have been started on the device.
+
+```js
+RNCallKeep.endAllCalls();
+```
+
+
 ### checkIfBusy
 
 Checks if there are any active calls on the device and returns a promise with a boolean value (`true` if there're active calls, `false` otherwise).
