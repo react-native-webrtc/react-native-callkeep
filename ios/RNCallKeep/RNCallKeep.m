@@ -151,7 +151,7 @@ RCT_EXPORT_METHOD(displayIncomingCall:(NSString *)uuidString
 }
 
 RCT_EXPORT_METHOD(startCall:(NSString *)uuidString
-                     number:(NSString *)number
+                     handle:(NSString *)handle
           contactIdentifier:(NSString * _Nullable)contactIdentifier
                  handleType:(NSString *)handleType
                       video:(BOOL)video)
@@ -161,7 +161,7 @@ RCT_EXPORT_METHOD(startCall:(NSString *)uuidString
 #endif
     int _handleType = [self getHandleType:handleType];
     NSUUID *uuid = [[NSUUID alloc] initWithUUIDString:uuidString];
-    CXHandle *callHandle = [[CXHandle alloc] initWithType:_handleType value:number];
+    CXHandle *callHandle = [[CXHandle alloc] initWithType:_handleType value:handle];
     CXStartCallAction *startCallAction = [[CXStartCallAction alloc] initWithCallUUID:uuid handle:callHandle];
     [startCallAction setVideo:video];
     [startCallAction setContactIdentifier:contactIdentifier];
@@ -495,7 +495,7 @@ continueUserActivity:(NSUserActivity *)userActivity
     //do this first, audio sessions are flakey
     [self configureAudioSession];
     //tell the JS to actually make the call
-    [self sendEventWithName:RNCallKeepDidReceiveStartCallAction body:@{ @"callUUID": [action.callUUID.UUIDString lowercaseString], @"number": action.handle.value }];
+    [self sendEventWithName:RNCallKeepDidReceiveStartCallAction body:@{ @"callUUID": [action.callUUID.UUIDString lowercaseString], @"handle": action.handle.value }];
     [action fulfill];
 }
 

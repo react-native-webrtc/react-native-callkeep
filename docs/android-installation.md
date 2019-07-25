@@ -46,8 +46,11 @@ public class MainActivity extends ReactActivity {
     // Permission results
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        if (grantResults.length > 0) {
-            RNCallKeepModule.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        switch (requestCode) {
+            case RNCallKeepModule.REQUEST_READ_PHONE_STATE:
+                RNCallKeepModule.onRequestPermissionsResult(requestCode, permissions, grantResults);
+                break;
         }
     }
 }

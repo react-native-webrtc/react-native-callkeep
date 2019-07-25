@@ -145,17 +145,17 @@ different on iOS and Android:
 
 iOS:
 ```js
-RNCallKeep.startCall(uuid, number, contactIdentifier, handleType, hasVideo);
+RNCallKeep.startCall(uuid, handle, contactIdentifier, handleType, hasVideo);
 ```
 
 Android:
 ```js
-RNCallKeep.startCall(uuid, number, contactIdentifier);
+RNCallKeep.startCall(uuid, handle, contactIdentifier);
 ```
 
-- _uuid_: string
+- `uuid`: string
   - An `uuid` that should be stored and re-used for `stopCall`.
-- `number`: string
+- `handle`: string
   - Phone number of the callee
 - `contactIdentifier`: string
   - The identifier is displayed in the native call UI, and is typically the name of the call recipient.
@@ -175,8 +175,10 @@ Sets the Android caller name and number
 Use this to update the Android display after an outgoing call has started
 
 ```js
-RNCallKeep.updateDisplay(localizedCallerName, handle)
+RNCallKeep.updateDisplay(uuid, localizedCallerName, handle)
 ```
+- `uuid`: string
+  - The `uuid` used for `startCall` or `displayIncomingCall`
 - `handle`: string
   - Phone number of the caller
 - `localizedCallerName`: string (optional)
@@ -313,13 +315,17 @@ or by the app calling `RNCallKeep.startCall`.
 Try to start your app call action from here (e.g. get credentials of the user by `data.handle` and/or send INVITE to your SIP server)
 
 ```js
-RNCallKeep.addEventListener('didReceiveStartCallAction', ({ number, callUUID, name }) => {
+RNCallKeep.addEventListener('didReceiveStartCallAction', ({ handle, callUUID, name }) => {
 
 });
 ```
 
 - `handle` (string)
-  - The number/name got from Recents in built-in Phone app
+  - Phone number of the callee
+- `callUUID` (string)
+  - The UUID of the call that is to be answered
+- `name` (string)
+  - Name of the callee
 
 ### - answerCall
 
@@ -332,7 +338,7 @@ RNCallKeep.addEventListener('answerCall', ({ callUUID }) => {
 ```
 
 - `callUUID` (string)
-  - The UUID of the call that is to be answered (iOS only).
+  - The UUID of the call that is to be answered.
 
 ### - endCall
 
@@ -345,7 +351,7 @@ RNCallKeep.addEventListener('endCall', ({ callUUID }) => {
 ```
 
 - `callUUID` (string)
-  - The UUID of the call that is to be answered (iOS only).
+  - The UUID of the call that is to be ended.
 
 ### - didActivateAudioSession
 
@@ -380,8 +386,12 @@ A call was muted by the system or the user:
 RNCallKeep.addEventListener('didPerformSetMutedCallAction', ({ muted, callUUID }) => {
 
 });
-
 ```
+
+- `muted` (boolean)
+- `callUUID` (string)
+  - The UUID of the call.
+
 ### - didToggleHoldCallAction
 
 A call was held or unheld by the current user
@@ -394,7 +404,7 @@ RNCallKeep.addEventListener('didToggleHoldCallAction', ({ hold, callUUID }) => {
 
 - `hold` (boolean)
 - `callUUID` (string)
-  - The UUID of the call that is to be answered (iOS only).
+  - The UUID of the call.
 
 ### - didPerformDTMFAction
 
@@ -407,7 +417,9 @@ RNCallKeep.addEventListener('didPerformDTMFAction', ({ digits, callUUID }) => {
 ```
 
 - `digits` (string)
+  - The digits that emit the dtmf tone
 - `callUUID` (string)
+  - The UUID of the call.
 
 ## Example
 
@@ -477,7 +489,7 @@ class RNCallKeepExample extends React.Component {
   // Event Listener Callbacks
 
   didReceiveStartCallAction(data) => {
-    let { number, callUUID, name } = data;
+    let { handle, callUUID, name } = data;
     // Get this event after the system decides you can start a call
     // You can now start a call from within your app
   };
