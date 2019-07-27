@@ -32,11 +32,21 @@ static NSString *const RNCallKeepDidToggleHoldAction = @"RNCallKeepDidToggleHold
     NSMutableDictionary *_settings;
     NSOperatingSystemVersion _version;
     BOOL _isStartCallActionEventListenerAdded;
+    BOOL _isInitialized;
 }
 
 static id sharedInstance;
 
 + (instancetype)sharedInstance {
+    if (sharedInstance) {
+        return sharedInstance;
+    }
+    static dispatch_once_t once;
+    dispatch_once(&once, ^{
+        sharedInstance = [[self alloc] init];
+    });
+    NSDictionary *settings = [[NSUserDefaults standardUserDefaults] dictionaryForKey:@"RNCallKeepSettings"];
+    [sharedInstance setup:settings];
     return sharedInstance;
 }
 
@@ -48,6 +58,9 @@ RCT_EXPORT_MODULE()
 #ifdef DEBUG
     NSLog(@"[RNCallKeep][init]");
 #endif
+    if (sharedInstance) {
+        return sharedInstance;
+    }
     if (self = [super init]) {
         [[NSNotificationCenter defaultCenter] addObserver:self
                                                  selector:@selector(handleStartCallNotification:)
@@ -91,11 +104,18 @@ RCT_EXPORT_METHOD(setup:(NSDictionary *)options)
 #ifdef DEBUG
     NSLog(@"[RNCallKeep][setup] options = %@", options);
 #endif
+    if (_isInitialized) return;
+    
     _version = [[[NSProcessInfo alloc] init] operatingSystemVersion];
     self.callKeepCallController = [[CXCallController alloc] init];
     _settings = [[NSMutableDictionary alloc] initWithDictionary:options];
+    // Store settings in NSUserDefault
+    [[NSUserDefaults standardUserDefaults] setObject:_settings forKey:@"RNCallKeepSettings"];
+    [[NSUserDefaults standardUserDefaults] synchronize];
+
     self.callKeepProvider = [[CXProvider alloc] initWithConfiguration:[self getProviderConfiguration]];
     [self.callKeepProvider setDelegate:self queue:nil];
+    _isInitialized = YES;
 }
 
 RCT_REMAP_METHOD(checkIfBusy,
