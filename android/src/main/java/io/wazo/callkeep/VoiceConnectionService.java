@@ -63,7 +63,7 @@ import static io.wazo.callkeep.RNCallKeepModule.handle;
 public class VoiceConnectionService extends ConnectionService {
     private static Boolean isAvailable = false;
     private static String TAG = "RNCK:VoiceConnectionService";
-    private static Map<String, VoiceConnection> currentConnections = new HashMap<>();
+    public static Map<String, VoiceConnection> currentConnections = new HashMap<>();
 
     public static Connection getConnection(String connectionId) {
         if (currentConnections.containsKey(connectionId)) {
