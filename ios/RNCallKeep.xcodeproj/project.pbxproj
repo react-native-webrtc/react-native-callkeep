@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		23DBCD131E13B465003D485F /* RNCallKeep.m in Sources */ = {isa = PBXBuildFile; fileRef = 23DBCD121E13B465003D485F /* RNCallKeep.m */; };
+		62500C3922F88400000D6F47 /* RNCallKeepModule.m in Sources */ = {isa = PBXBuildFile; fileRef = 62500C3822F88400000D6F47 /* RNCallKeepModule.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -26,6 +27,8 @@
 		234528921E0B88C700D1A033 /* libRNCallKeep.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libRNCallKeep.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		23DBCD111E13B465003D485F /* RNCallKeep.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = RNCallKeep.h; path = RNCallKeep/RNCallKeep.h; sourceTree = SOURCE_ROOT; };
 		23DBCD121E13B465003D485F /* RNCallKeep.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = RNCallKeep.m; path = RNCallKeep/RNCallKeep.m; sourceTree = SOURCE_ROOT; };
+		62500C3722F88400000D6F47 /* RNCallKeepModule.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RNCallKeepModule.h; sourceTree = "<group>"; };
+		62500C3822F88400000D6F47 /* RNCallKeepModule.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = RNCallKeepModule.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -60,8 +63,9 @@
 			children = (
 				23DBCD111E13B465003D485F /* RNCallKeep.h */,
 				23DBCD121E13B465003D485F /* RNCallKeep.m */,
+				62500C3722F88400000D6F47 /* RNCallKeepModule.h */,
+				62500C3822F88400000D6F47 /* RNCallKeepModule.m */,
 			);
-			name = RNCallKeep;
 			path = RNCallKeep;
 			sourceTree = "<group>";
 		};
@@ -92,7 +96,7 @@
 			isa = PBXProject;
 			attributes = {
 				LastUpgradeCheck = 0810;
-				ORGANIZATIONNAME = "Wazo";
+				ORGANIZATIONNAME = Wazo;
 				TargetAttributes = {
 					234528911E0B88C700D1A033 = {
 						CreatedOnToolsVersion = 8.1;
@@ -105,6 +109,7 @@
 			developmentRegion = English;
 			hasScannedForEncodings = 0;
 			knownRegions = (
+				English,
 				en,
 			);
 			mainGroup = 234528891E0B88C700D1A033;
@@ -122,6 +127,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				62500C3922F88400000D6F47 /* RNCallKeepModule.m in Sources */,
 				23DBCD131E13B465003D485F /* RNCallKeep.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
