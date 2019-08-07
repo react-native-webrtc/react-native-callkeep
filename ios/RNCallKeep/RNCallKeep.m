@@ -31,7 +31,6 @@ static NSString *const RNCallKeepDidToggleHoldAction = @"RNCallKeepDidToggleHold
 {
     NSOperatingSystemVersion _version;
     BOOL _isStartCallActionEventListenerAdded;
-    BOOL _isInitialized;
 }
 
 static CXProvider* sharedProvider;
@@ -93,8 +92,6 @@ RCT_EXPORT_METHOD(setup:(NSDictionary *)options)
 #ifdef DEBUG
     NSLog(@"[RNCallKeep][setup] options = %@", options);
 #endif
-    if (_isInitialized) return;
-    
     _version = [[[NSProcessInfo alloc] init] operatingSystemVersion];
     self.callKeepCallController = [[CXCallController alloc] init];
     NSDictionary *settings = [[NSMutableDictionary alloc] initWithDictionary:options];
@@ -106,7 +103,6 @@ RCT_EXPORT_METHOD(setup:(NSDictionary *)options)
     
     self.callKeepProvider = sharedProvider;
     [self.callKeepProvider setDelegate:self queue:nil];
-    _isInitialized = YES;
 }
 
 RCT_REMAP_METHOD(checkIfBusy,
