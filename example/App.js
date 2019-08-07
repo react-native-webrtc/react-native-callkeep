@@ -20,6 +20,12 @@ const styles = StyleSheet.create({
     marginTop: 20,
     marginBottom: 20,
   },
+  callButtons: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingHorizontal: 30,
+    width: '100%',
+  },
   logContainer: {
     flex: 3,
     width: '100%',
@@ -50,6 +56,8 @@ const getRandomNumber = () => String(Math.floor(Math.random() * 100000));
 
 export default function App() {
   const [logText, setLog] = useState('');
+  const [heldCalls, setHeldCalls] = useState({}); // callKeep uuid: held
+  const [mutedCalls, setMutedCalls] = useState({}); // callKeep uuid: muted
   const [calls, setCalls] = useState({}); // callKeep uuid: number
 
   const log = (text) => {
@@ -57,10 +65,25 @@ export default function App() {
     setLog(logText + "\n" + text);
   };
 
-  const addCall = (callUUID, number) => setCalls({ ...calls, [callUUID]: number });
+  const addCall = (callUUID, number) => {
+    setHeldCalls({ ...heldCalls, [callUUID]: false });
+    setCalls({ ...calls, [callUUID]: number });
+  };
+
   const removeCall = (callUUID) => {
     const { [callUUID]: _, ...updated } = calls;
+    const { [callUUID]: __, ...updatedHeldCalls } = heldCalls;
+
     setCalls(updated);
+    setCalls(updatedHeldCalls);
+  };
+
+  const setCallHeld = (callUUID, held) => {
+    setHeldCalls({ ...heldCalls, [callUUID]: held });
+  };
+
+  const setCallMuted = (callUUID, muted) => {
+    setMutedCalls({ ...mutedCalls, [callUUID]: muted });
   };
 
   const displayIncomingCall = (number) => {
@@ -87,7 +110,11 @@ export default function App() {
     log(`[answerCall] ${format(callUUID)}, number: ${number}`);
 
     RNCallKeep.startCall(callUUID, number, number);
-    RNCallKeep.setCurrentCallActive(callUUID);
+
+    BackgroundTimer.setTimeout(() => {
+      log(`[setCurrentCallActive] ${format(callUUID)}, number: ${number}`);
+      RNCallKeep.setCurrentCallActive(callUUID);
+    }, 1000);
   };
 
   const didPerformDTMFAction = ({ callUUID, digits }) => {
@@ -106,23 +133,30 @@ export default function App() {
     log(`[didReceiveStartCallAction] ${callUUID}, number: ${handle}`);
 
     RNCallKeep.startCall(callUUID, handle, handle);
-    RNCallKeep.setCurrentCallActive(callUUID);
+
+    BackgroundTimer.setTimeout(() => {
+      log(`[setCurrentCallActive] ${format(callUUID)}, number: ${handle}`);
+      RNCallKeep.setCurrentCallActive(callUUID);
+    }, 1000);
   };
 
   const didPerformSetMutedCallAction = ({ muted, callUUID }) => {
     const number = calls[callUUID];
     log(`[didPerformSetMutedCallAction] ${format(callUUID)}, number: ${number} (${muted})`);
+
+    setCallMuted(callUUID, muted);
   };
 
   const didToggleHoldCallAction = ({ hold, callUUID }) => {
     const number = calls[callUUID];
     log(`[didToggleHoldCallAction] ${format(callUUID)}, number: ${number} (${hold})`);
+
+    setCallHeld(callUUID, hold);
   };
 
   const endCall = ({ callUUID }) => {
     const handle = calls[callUUID];
     log(`[endCall] ${format(callUUID)}, number: ${handle}`);
-    console.log('handle', handle);
 
     removeCall(callUUID);
   };
@@ -130,6 +164,22 @@ export default function App() {
   const hangup = (callUUID) => {
     RNCallKeep.endCall(callUUID);
     removeCall(callUUID);
+  };
+
+  const setOnHold = (callUUID, held) => {
+    const handle = calls[callUUID];
+    RNCallKeep.setOnHold(callUUID, held);
+    log(`[setOnHold: ${held}] ${format(callUUID)}, number: ${handle}`);
+
+    setCallHeld(callUUID, held);
+  };
+
+  const setOnMute = (callUUID, muted) => {
+    const handle = calls[callUUID];
+    RNCallKeep.setMutedCall(callUUID, muted);
+    log(`[setMutedCall: ${muted}] ${format(callUUID)}, number: ${handle}`);
+
+    setCallMuted(callUUID, muted);
   };
 
   useEffect(() => {
@@ -148,7 +198,7 @@ export default function App() {
       RNCallKeep.removeEventListener('didToggleHoldCallAction', didToggleHoldCallAction);
       RNCallKeep.removeEventListener('endCall', endCall);
     }
-  });
+  }, []);
 
   if (Platform.OS === 'ios' && DeviceInfo.isEmulator()) {
     return <Text style={styles.container}>CallKeep doesn't work on iOS emulator</Text>;
@@ -165,9 +215,27 @@ export default function App() {
       </TouchableOpacity>
 
       {Object.keys(calls).map(callUUID => (
-        <TouchableOpacity key={callUUID} onPress={() => hangup(callUUID)} style={styles.button} hitSlop={hitSlop}>
-          <Text>Hangup {calls[callUUID]}</Text>
-        </TouchableOpacity>
+        <View key={callUUID} style={styles.callButtons}>
+          <TouchableOpacity
+            onPress={() => setOnHold(callUUID, !heldCalls[callUUID])}
+            style={styles.button}
+            hitSlop={hitSlop}
+          >
+            <Text>{heldCalls[callUUID] ? 'Unhold' : 'Hold'} {calls[callUUID]}</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            onPress={() => setOnMute(callUUID, !mutedCalls[callUUID])}
+            style={styles.button}
+            hitSlop={hitSlop}
+          >
+            <Text>{mutedCalls[callUUID] ? 'Unmute' : 'Mute'} {calls[callUUID]}</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity onPress={() => hangup(callUUID)} style={styles.button} hitSlop={hitSlop}>
+            <Text>Hangup {calls[callUUID]}</Text>
+          </TouchableOpacity>
+        </View>
       ))}
 
       <ScrollView style={styles.logContainer}>
