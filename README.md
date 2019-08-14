@@ -137,6 +137,17 @@ RNCallKeep.displayIncomingCall(uuid, handle, localizedCallerName);
   - `false` (default)
   - `true` (you know... when not false)
 
+### answerIncomingCall
+_This feature is available only on Android._
+
+Use this to tell the sdk a user answered a call from the app UI.
+
+```js
+RNCallKeep.answerIncomingCall(uuid)
+```
+- `uuid`: string
+  - The `uuid` used for `startCall` or `displayIncomingCall`
+
 
 ### startCall
 
@@ -191,6 +202,17 @@ When you finish an incoming/outgoing call.
 
 ```js
 RNCallKeep.endCall(uuid);
+```
+
+- `uuid`: string
+  - The `uuid` used for `startCall` or `displayIncomingCall`
+
+### rejectCall
+
+When you reject an incoming call.
+
+```js
+RNCallKeep.rejectCall(uuid);
 ```
 
 - `uuid`: string

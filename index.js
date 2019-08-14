@@ -55,7 +55,9 @@ class RNCallKeep {
   };
 
   answerIncomingCall = (uuid) => {
-    RNCallKeepModule.answerIncomingCall(uuid)
+    if (!isIOS) {
+      RNCallKeepModule.answerIncomingCall(uuid);
+    }
   }
 
   startCall = (uuid, handle, contactIdentifier, handleType = 'number', hasVideo = false ) => {
@@ -85,8 +87,16 @@ class RNCallKeep {
     RNCallKeepModule.reportEndCallWithUUID(uuid, reason);
   }
 
+  /*
+   * Android explicitly states we reject a call
+   * On iOS we just notify of an endCall
+   */
   rejectCall = (uuid) => {
-    RNCallKeepModule.rejectCall(uuid);
+    if (!isIOS) {
+      RNCallKeepModule.rejectCall(uuid);
+    } else {
+      RNCallKeepModule.endCall(uuid);
+    }
   }
 
   endCall = (uuid) => {
