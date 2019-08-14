@@ -104,7 +104,7 @@ class RNCallKeep {
   };
 
   endAllCalls = () => {
-    isIOS ? RNCallKeepModule.endAllCalls() : RNCallKeepModule.endCall();
+    RNCallKeepModule.endAllCalls();
   };
 
   supportConnectionService = () => supportConnectionService;

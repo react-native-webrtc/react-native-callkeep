@@ -207,6 +207,14 @@ RNCallKeep.endCall(uuid);
 - `uuid`: string
   - The `uuid` used for `startCall` or `displayIncomingCall`
 
+### endAllCalls
+
+End all ongoing connections.
+
+```js
+RNCallKeep.endAllCalls();
+```
+
 ### rejectCall
 
 When you reject an incoming call.

@@ -61,6 +61,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.ResourceBundle;
 
 import static android.support.v4.app.ActivityCompat.requestPermissions;
@@ -190,6 +191,22 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
         conn.onDisconnect();
 
         Log.d(TAG, "endCall executed");
+    }
+
+    @ReactMethod
+    public void endAllCalls() {
+        Log.d(TAG, "endAllCalls called");
+        if (!isConnectionServiceAvailable() || !hasPhoneAccount()) {
+            return;
+        }
+
+        Map<String, VoiceConnection> currentConnections = VoiceConnectionService.currentConnections;
+        for (Map.Entry<String, VoiceConnection> connectionEntry : currentConnections.entrySet()) {
+            Connection connectionToEnd = connectionEntry.getValue();
+            connectionToEnd.onDisconnect();
+        }
+
+        Log.d(TAG, "endAllCalls executed");
     }
 
     @ReactMethod
