@@ -1,4 +1,5 @@
-export type Events = 'didReceiveStartCallAction' |
+export type Events = 
+  'didReceiveStartCallAction' |
   'answerCall' |
   'endCall' |
   'didActivateAudioSession' |
@@ -96,6 +97,13 @@ export default class RNCallKeep {
      * @description setMutedCall method is available only on iOS.
   */
   static setMutedCall(uuid: string, muted: boolean) {
+
+  }
+
+  /**
+     * @descriptions sendDTMF is used to send DTMF tones to the PBX.
+  */
+  static sendDTMF(uuid: string, key: string) {
 
   }
 
