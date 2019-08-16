@@ -461,7 +461,7 @@ RNCallKeep.addEventListener('didPerformDTMFAction', ({ digits, callUUID }) => {
 
 ## Example
 
-A full example is available in the [wazo-react-native-demo](https://github.com/wazo-pbx/wazo-react-native-demo) repository.
+A full example is available in the [example](https://github.com/react-native-webrtc/react-native-callkeep/tree/master/example) folder.
 
 ```javascript
 import React from 'react';
@@ -583,10 +583,6 @@ class RNCallKeepExample extends React.Component {
   }
 }
 ```
-
-## Notes
-
-- Call setup once to initiate callkeep.
 
 ## Debug
 

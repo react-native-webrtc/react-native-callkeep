@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2018 The CallKeep Authors (see the AUTHORS file)
+ * Copyright (c) 2016-2019 The CallKeep Authors (see the AUTHORS file)
  * SPDX-License-Identifier: ISC, MIT
  *
  * Permission to use, copy, modify, and distribute this software for any

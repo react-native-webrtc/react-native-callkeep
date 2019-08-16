@@ -2,7 +2,7 @@
 //  RNCallKeep.m
 //  RNCallKeep
 //
-//  Copyright 2016-2018 The CallKeep Authors (see the AUTHORS file)
+//  Copyright 2016-2019 The CallKeep Authors (see the AUTHORS file)
 //  SPDX-License-Identifier: ISC, MIT
 //
 
@@ -573,6 +573,13 @@ RCT_EXPORT_METHOD(reportUpdatedCall:(NSString *)uuidString contactIdentifier:(NS
 #ifdef DEBUG
     NSLog(@"[RNCallKeep][CXProviderDelegate][provider:didActivateAudioSession]");
 #endif
+    NSDictionary *userInfo
+        = @{
+            AVAudioSessionInterruptionTypeKey: [NSNumber numberWithInt:AVAudioSessionInterruptionTypeEnded],
+            AVAudioSessionInterruptionOptionKey: [NSNumber numberWithInt:AVAudioSessionInterruptionOptionShouldResume]
+            };
+    [[NSNotificationCenter defaultCenter] postNotificationName:AVAudioSessionInterruptionNotification object:nil userInfo:userInfo];
+
     [self configureAudioSession];
     [self sendEventWithName:RNCallKeepDidActivateAudioSession body:nil];
 }
