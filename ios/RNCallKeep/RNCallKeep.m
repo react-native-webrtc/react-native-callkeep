@@ -63,6 +63,7 @@ RCT_EXPORT_MODULE()
     if (self.callKeepProvider != nil) {
         [self.callKeepProvider invalidate];
     }
+    sharedProvider = nil;
 }
 
 // Override method of RCTEventEmitter
