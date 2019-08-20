@@ -90,9 +90,10 @@ RNCallKeep.setup(options);
 ### setAvailable
 _This feature is available only on Android._
 
-Tell _ConnectionService_ that the device is ready to make outgoing calls.
+Tell _ConnectionService_ that the device is ready to make outgoing calls via the native Phone app.
 If not the user will be stuck in the build UI screen without any actions.
-Eg: Call it with `false` when disconnected from the sip client, when your token expires ...
+Eg: Call it with `false` when disconnected from the sip client, when your token expires, when your user log out ...
+Eg: When your used log out (or the connection to your server is broken, etc..), you have to call `setAvailable(false)` so CallKeep will refuse the call and your user will not be stuck in the native UI.
 
 ```js
 RNCallKeep.setAvailable(true);
