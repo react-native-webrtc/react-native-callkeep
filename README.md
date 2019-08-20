@@ -352,6 +352,8 @@ or by the app calling `RNCallKeep.startCall`.
 
 Try to start your app call action from here (e.g. get credentials of the user by `data.handle` and/or send INVITE to your SIP server)
 
+Note: on iOS `callUUID` is not defined as the call is not yet managed by CallKit. You have to generate your own and call `startCall`.
+
 ```js
 RNCallKeep.addEventListener('didReceiveStartCallAction', ({ handle, callUUID, name }) => {
 

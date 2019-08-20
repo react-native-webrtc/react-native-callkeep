@@ -19,6 +19,8 @@ package io.wazo.callkeep;
 
 import android.annotation.TargetApi;
 import android.content.Intent;
+import android.content.Context;
+import android.content.ComponentName;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -34,6 +36,13 @@ import android.telecom.DisconnectCause;
 import android.telecom.PhoneAccountHandle;
 import android.telecom.TelecomManager;
 import android.util.Log;
+
+import android.app.ActivityManager;
+import android.app.ActivityManager.RunningTaskInfo;
+
+import com.facebook.react.HeadlessJsTaskService;
+import com.facebook.react.bridge.ReactContext;
+import com.facebook.react.common.LifecycleState;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -103,29 +112,46 @@ public class VoiceConnectionService extends ConnectionService {
 
     @Override
     public Connection onCreateOutgoingConnection(PhoneAccountHandle connectionManagerPhoneAccount, ConnectionRequest request) {
-        if (!this.canMakeOutgoingCall()) {
-            return Connection.createFailedConnection(new DisconnectCause(DisconnectCause.LOCAL));
-        }
-        // TODO: Hold all other calls
-
         Bundle extras = request.getExtras();
         Connection outgoingCallConnection = null;
         String number = request.getAddress().getSchemeSpecificPart();
         String extrasNumber = extras.getString(EXTRA_CALL_NUMBER);
-        String name = extras.getString(EXTRA_CALLER_NAME);
+        String displayName = extras.getString(EXTRA_CALLER_NAME);
+        String uuid = UUID.randomUUID().toString();
 
+         Log.d(TAG, "onCreateOutgoingConnection:" + uuid + ", number: " + number);
+
+        // Wakeup application if needed
+        if (!VoiceConnectionService.isRunning(this.getApplicationContext())) {
+            Log.d(TAG, "onCreateOutgoingConnection: Waking up application");
+            Intent headlessIntent = new Intent(
+                this.getApplicationContext(),
+                RNCallKeepBackgroundMessagingService.class
+            );
+            headlessIntent.putExtra("callUUID", uuid);
+            headlessIntent.putExtra("name", displayName);
+            headlessIntent.putExtra("handle", number);
+            ComponentName name = this.getApplicationContext().startService(headlessIntent);
+            if (name != null) {
+              HeadlessJsTaskService.acquireWakeLockNow(this.getApplicationContext());
+            }
+        } else if (!this.canMakeOutgoingCall()) {
+            return Connection.createFailedConnection(new DisconnectCause(DisconnectCause.LOCAL));
+        }
+
+        // TODO: Hold all other calls
         if (extrasNumber != null && extrasNumber.equals(number)) {
             outgoingCallConnection = createConnection(request);
         } else {
-            String uuid = UUID.randomUUID().toString();
             extras.putString(EXTRA_CALL_UUID, uuid);
-            extras.putString(EXTRA_CALLER_NAME, name);
+            extras.putString(EXTRA_CALLER_NAME, displayName);
             extras.putString(EXTRA_CALL_NUMBER, number);
             outgoingCallConnection = createConnection(request);
         }
+
         outgoingCallConnection.setDialing();
         outgoingCallConnection.setAudioModeIsVoip(true);
-        outgoingCallConnection.setCallerDisplayName(name, TelecomManager.PRESENTATION_ALLOWED);
+        outgoingCallConnection.setCallerDisplayName(displayName, TelecomManager.PRESENTATION_ALLOWED);
         outgoingCallConnection.setInitialized();
 
         HashMap<String, String> extrasMap = this.bundleToMap(extras);
@@ -197,8 +223,8 @@ public class VoiceConnectionService extends ConnectionService {
                     Bundle extras = new Bundle();
                     extras.putSerializable("attributeMap", attributeMap);
                     intent.putExtras(extras);
-                    LocalBroadcastManager.getInstance(instance).sendBroadcast(intent);
                 }
+                LocalBroadcastManager.getInstance(instance).sendBroadcast(intent);
             }
         });
     }
@@ -215,5 +241,23 @@ public class VoiceConnectionService extends ConnectionService {
             }
         }
         return extrasMap;
+    }
+
+    /**
+     * https://stackoverflow.com/questions/5446565/android-how-do-i-check-if-activity-is-running
+     *
+     * @param context Context
+     * @return boolean
+     */
+    public static boolean isRunning(Context context) {
+        ActivityManager activityManager = (ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE);
+        List<RunningTaskInfo> tasks = activityManager.getRunningTasks(Integer.MAX_VALUE);
+
+        for (RunningTaskInfo task : tasks) {
+            if (context.getPackageName().equalsIgnoreCase(task.baseActivity.getPackageName()))
+                return true;
+        }
+
+        return false;
     }
 }

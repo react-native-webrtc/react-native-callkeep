@@ -79,3 +79,22 @@ public class MainActivity extends ReactActivity {
     // ....
 </application>
 ```
+
+2. To be able to wake up your killed application when making an outgoing call form the native Phone application:
+
+Add this in the `application` node of `android/app/src/main/AndroidManifest.xml` :
+
+```xml
+<service android:name="io.wazo.callkeep.RNCallKeepBackgroundMessagingService" />
+```
+
+
+In your `index.android.js` file :
+
+```js
+AppRegistry.registerHeadlessTask('RNCallKeepBackgroundMessage', () => ({ name, callUUID, handle }) => {
+  // Make your call here
+  
+  return Promise.resolve();
+});
+```

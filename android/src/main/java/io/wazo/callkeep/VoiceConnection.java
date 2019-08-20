@@ -204,8 +204,8 @@ public class VoiceConnection extends Connection {
                     Bundle extras = new Bundle();
                     extras.putSerializable("attributeMap", attributeMap);
                     intent.putExtras(extras);
-                    LocalBroadcastManager.getInstance(context).sendBroadcast(intent);
                 }
+                LocalBroadcastManager.getInstance(context).sendBroadcast(intent);
             }
         });
     }
