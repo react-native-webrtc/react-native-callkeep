@@ -8,20 +8,9 @@
     "type": "git",
     "url": "git+https://github.com/react-native-webrtc/react-native-callkeep.git"
   },
-  "author": "Check AUTHORS file",
-  "maintainers": [
-    "Wazo Team <dev@wazo.io> (https://github.com/wazo-pbx)"
-  ],
-  "contributors": [
-    "Wazo Team <dev@wazo.io> (https://github.com/wazo-pbx)",
-    "Dan Jenkins <dan@nimbleape.com>",
-    "Kyle Kurz <kyle@doublekaudio.com>",
-    "bhuangy <brandon.sh.huang@gmail.com>",
-    "Chevon Christie",
-    "Linus Unnebäck <linus@folkdatorn.se>",
-    "Geraint White <mail@geraintwhite.co.uk>",
-    "Samuel Bégin"
-  ],
+  "author": "See AUTHORS file",
+  "maintainers": ["See AUTHORS file"],
+  "contributors": ["See AUTHORS file"],
   "license": "ISC",
   "bugs": {
     "url": "https://github.com/react-native-webrtc/react-native-callkeep/issues"
