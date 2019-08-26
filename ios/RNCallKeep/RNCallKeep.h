@@ -27,4 +27,9 @@
 continueUserActivity:(NSUserActivity *)userActivity
   restorationHandler:(void(^)(NSArray * __nullable restorableObjects))restorationHandler;
 
++ (void)reportNewIncomingCall:(NSString *)uuidString
+                       handle:(NSString *)handle
+                   handleType:(NSString *)handleType
+                     hasVideo:(BOOL)hasVideo
+          localizedCallerName:(NSString * _Nullable)localizedCallerName;
 @end
