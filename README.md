@@ -325,6 +325,20 @@ _This feature is available only on Android._
 await RNCallKeep.hasPhoneAccount();
 ```
 
+### hasOutgoingCall (async)
+
+_This feature is available only on Android, useful when waking up the application for an outgoing call._
+
+When waking up the Android application in background mode (eg: when the application is killed and the user make a call from the native Phone application).
+The user can hang up the call before your application has been started in background mode, and you can lost the `RNCallKeepPerformEndCallAction` event.
+
+To be sure that the outgoing call is still here, you can call `hasOutgoingCall` when you app waken up.
+
+
+```js
+const hasOutgoingCall = await RNCallKeep.hasOutgoingCall();
+```
+
 ### hasDefaultPhoneAccount
 
 Checks if the user has set a default [phone account](https://developer.android.com/reference/android/telecom/PhoneAccount).
