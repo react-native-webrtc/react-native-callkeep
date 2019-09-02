@@ -420,7 +420,7 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
         handle = new PhoneAccountHandle(cName, appName);
 
         PhoneAccount.Builder builder = new PhoneAccount.Builder(handle, appName)
-                .setCapabilities(PhoneAccount.CAPABILITY_CALL_PROVIDER);
+                .setCapabilities(PhoneAccount.CAPABILITY_SELF_MANAGED);
 
         if (_settings != null && _settings.hasKey("imageName")) {
             int identifier = appContext.getResources().getIdentifier(_settings.getString("imageName"), "drawable", appContext.getPackageName());
