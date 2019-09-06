@@ -341,6 +341,11 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
     }
 
     @ReactMethod
+    public void hasOutgoingCall(Promise promise) {
+        promise.resolve(VoiceConnectionService.hasOutgoingCall);
+    }
+
+    @ReactMethod
     public void hasPermissions(Promise promise) {
         promise.resolve(this.hasPermissions());
     }
