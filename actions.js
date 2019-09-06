@@ -15,8 +15,14 @@ const RNCallKeepDidPerformDTMFAction = 'RNCallKeepDidPerformDTMFAction';
 const RNCallKeepProviderReset = 'RNCallKeepProviderReset';
 const isIOS = Platform.OS === 'ios';
 
-const didReceiveStartCallAction = handler => 
+const didReceiveStartCallAction = handler => {
   eventEmitter.addListener(RNCallKeepDidReceiveStartCallAction, (data) => handler(data));
+
+  if (isIOS) {
+    // Tell CallKeep that we are ready to receive `RNCallKeepDidReceiveStartCallAction` event and prevent delay
+    RNCallKeepModule._startCallActionEventListenerAdded();
+  }
+};
 
 const answerCall = handler =>
   eventEmitter.addListener(RNCallKeepPerformAnswerCallAction, (data) => handler(data));
