@@ -30,7 +30,6 @@ import android.content.res.Resources;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Icon;
 import android.net.Uri;
-import android.util.Log;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -44,6 +43,8 @@ import android.telecom.DisconnectCause;
 import android.telecom.PhoneAccount;
 import android.telecom.PhoneAccountHandle;
 import android.telecom.TelecomManager;
+import android.telephony.TelephonyManager;
+import android.util.Log;
 
 import com.facebook.react.bridge.Arguments;
 import com.facebook.react.bridge.Dynamic;
@@ -92,6 +93,7 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
 
     private static final String TAG = "RNCallKeepModule";
     private static TelecomManager telecomManager;
+    private static TelephonyManager telephonyManager;
     private static Promise hasPhoneAccountPromise;
     private ReactApplicationContext reactContext;
     public static PhoneAccountHandle handle;
@@ -251,7 +253,10 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
             return;
         }
 
-        promise.resolve(telecomManager.getDefaultOutgoingPhoneAccount("tel") != null);
+        boolean hasSim = telephonyManager.getSimState() != TelephonyManager.SIM_STATE_ABSENT;
+        boolean hasDefaultAccount = telecomManager.getDefaultOutgoingPhoneAccount("tel") != null;
+
+        promise.resolve(!hasSim || hasDefaultAccount);
     }
 
     @ReactMethod
@@ -435,7 +440,9 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
 
         PhoneAccount account = builder.build();
 
-        telecomManager = (TelecomManager) this.getAppContext().getSystemService(this.getAppContext().TELECOM_SERVICE);
+        telephonyManager = (TelephonyManager) this.getAppContext().getSystemService(Context.TELEPHONY_SERVICE);
+        telecomManager = (TelecomManager) this.getAppContext().getSystemService(Context.TELECOM_SERVICE);
+
         telecomManager.registerPhoneAccount(account);
     }
 
