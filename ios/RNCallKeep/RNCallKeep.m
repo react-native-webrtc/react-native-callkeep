@@ -15,7 +15,11 @@
 
 #import <AVFoundation/AVAudioSession.h>
 
-static int const DelayInSeconds = 3;
+#ifdef DEBUG
+static int const OUTGOING_CALL_WAKEUP_DELAY = 10;
+#else
+static int const OUTGOING_CALL_WAKEUP_DELAY = 5;
+#endif
 
 static NSString *const RNCallKeepHandleStartCallNotification = @"RNCallKeepHandleStartCallNotification";
 static NSString *const RNCallKeepDidReceiveStartCallAction = @"RNCallKeepDidReceiveStartCallAction";
@@ -45,13 +49,18 @@ RCT_EXPORT_MODULE()
     NSLog(@"[RNCallKeep][init]");
 #endif
     if (self = [super init]) {
-        [[NSNotificationCenter defaultCenter] addObserver:self
-                                                 selector:@selector(handleStartCallNotification:)
-                                                     name:RNCallKeepHandleStartCallNotification
-                                                   object:nil];
         _isStartCallActionEventListenerAdded = NO;
     }
     return self;
+}
+
++ (id)allocWithZone:(NSZone *)zone {
+    static RNCallKeep *sharedInstance = nil;
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        sharedInstance = [super allocWithZone:zone];
+    });
+    return sharedInstance;
 }
 
 - (void)dealloc
@@ -281,7 +290,7 @@ RCT_EXPORT_METHOD(sendDTMF:(NSString *)uuidString dtmf:(NSString *)key)
     CXPlayDTMFCallAction *dtmfAction = [[CXPlayDTMFCallAction alloc] initWithCallUUID:uuid digits:key type:CXPlayDTMFCallActionTypeHardPause];
     CXTransaction *transaction = [[CXTransaction alloc] init];
     [transaction addAction:dtmfAction];
-    
+
     [self requestTransaction:transaction];
 }
 
@@ -444,9 +453,8 @@ continueUserActivity:(NSUserActivity *)userActivity
                                    @"video": @(isVideoCall)
                                    };
 
-        [[NSNotificationCenter defaultCenter] postNotificationName:RNCallKeepHandleStartCallNotification
-                                                            object:self
-                                                          userInfo:userInfo];
+        RNCallKeep *callKeep = [RNCallKeep allocWithZone: nil];
+        [callKeep handleStartCallNotification: userInfo];
         return YES;
     }
     return NO;
@@ -457,21 +465,21 @@ continueUserActivity:(NSUserActivity *)userActivity
     return YES;
 }
 
-- (void)handleStartCallNotification:(NSNotification *)notification
+- (void)handleStartCallNotification:(NSDictionary *)userInfo
 {
 #ifdef DEBUG
-    NSLog(@"[RNCallKeep][handleStartCallNotification] userInfo = %@", notification.userInfo);
+    NSLog(@"[RNCallKeep][handleStartCallNotification] userInfo = %@", userInfo);
 #endif
     int delayInSeconds;
     if (!_isStartCallActionEventListenerAdded) {
         // Workaround for when app is just launched and JS side hasn't registered to the event properly
-        delayInSeconds = DelayInSeconds;
+        delayInSeconds = OUTGOING_CALL_WAKEUP_DELAY;
     } else {
         delayInSeconds = 0;
     }
     dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, (int64_t)(delayInSeconds * NSEC_PER_SEC));
     dispatch_after(popTime, dispatch_get_main_queue(), ^{
-        [self sendEventWithName:RNCallKeepDidReceiveStartCallAction body:notification.userInfo];
+        [self sendEventWithName:RNCallKeepDidReceiveStartCallAction body:userInfo];
     });
 }
 
