@@ -219,12 +219,6 @@ public class VoiceConnection extends Connection {
             String callerName = handle.get(EXTRA_CALLER_NAME);
             String callUuid = handle.get(EXTRA_CALL_UUID);
 
-            /*Class mainActivityClass = Class.forName("com.telzio.softphone.android.MainActivity");
-            Intent mainActivityIntent = new Intent(Intent.ACTION_MAIN, null);
-            mainActivityIntent.setFlags(Intent.FLAG_ACTIVITY_NO_USER_ACTION | Intent.FLAG_ACTIVITY_NEW_TASK);
-            mainActivityIntent.setClass(context, mainActivityClass);
-            PendingIntent pendingMainActivityIntent = PendingIntent.getActivity(context, 1, mainActivityIntent, 0);*/
-
 
             Class ringerActivityClass = Class.forName("com.telzio.softphone.android.RingerActivity");
             Intent ringerActivityIntent = new Intent(Intent.ACTION_MAIN, null);

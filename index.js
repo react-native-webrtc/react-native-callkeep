@@ -171,6 +171,22 @@ class RNCallKeep {
     resolve(RNCallKeepModule.setup(options));
   });
 
+  signalAnswer = (uuid) => {
+    RNCallKeepModule.signalAnswer(uuid);
+  };
+
+  signalReject = (uuid) => {
+    RNCallKeepModule.signalReject(uuid);
+  };
+
+  endCall = (uuid) => {
+    RNCallKeepModule.endCall(uuid);
+  };
+
+  finishRingActivity = () => {
+    RNCallKeepModule.finishRingActivity();
+  };
+
   _setupAndroid = async (options) => {
     RNCallKeepModule.setup(options);
 

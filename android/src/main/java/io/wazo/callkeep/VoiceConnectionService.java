@@ -83,7 +83,6 @@ public class VoiceConnectionService extends ConnectionService {
 
     public VoiceConnectionService() {
         super();
-        Log.e(TAG, "Constructor");
     }
 
     public static void setAvailable(Boolean value) {
