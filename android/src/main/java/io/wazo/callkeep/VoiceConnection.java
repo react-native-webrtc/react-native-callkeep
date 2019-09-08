@@ -18,6 +18,9 @@
 package io.wazo.callkeep;
 
 import android.annotation.TargetApi;
+import android.app.Notification;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
@@ -56,6 +59,8 @@ public class VoiceConnection extends Connection {
     private Context context;
     private static final String TAG = "RNCK:VoiceConnection";
 
+    private int notificationId;
+
     VoiceConnection(Context context, HashMap<String, String> handle) {
         super();
         this.handle = handle;
@@ -70,6 +75,8 @@ public class VoiceConnection extends Connection {
         if (name != null && !name.equals("")) {
             setCallerDisplayName(name, TelecomManager.PRESENTATION_ALLOWED);
         }
+
+        notificationId = (int)System.currentTimeMillis();
     }
 
     @Override
@@ -104,6 +111,12 @@ public class VoiceConnection extends Connection {
         Log.d(TAG, "onAnswer executed");
     }
 
+    public void signalAnswerToRN() {
+        Log.d(TAG, "signalAnswerToRN executed");
+
+        sendCallRequestToActivity(ACTION_ANSWER_CALL, handle);
+    }
+
     @Override
     public void onPlayDtmfTone(char dtmf) {
         try {
@@ -126,6 +139,7 @@ public class VoiceConnection extends Connection {
             Log.e(TAG, "Handle map error", exception);
         }
         destroy();
+        cancelNotification();
     }
 
     public void reportDisconnect(int reason) {
@@ -189,9 +203,88 @@ public class VoiceConnection extends Connection {
         destroy();
     }
 
+    public void signalRejectToRN() {
+        Log.d(TAG, "signalRejectToRN executed");
+        setDisconnected(new DisconnectCause(DisconnectCause.REJECTED));
+        sendCallRequestToActivity(ACTION_END_CALL, handle);
+        destroy();
+    }
+
     @Override
     public void onShowIncomingCallUi() {
         Log.d(TAG, "onShowIncomingCallUi()");
+
+        try {
+            String callerNum = handle.get(EXTRA_CALL_NUMBER);
+            String callerName = handle.get(EXTRA_CALLER_NAME);
+            String callUuid = handle.get(EXTRA_CALL_UUID);
+
+            /*Class mainActivityClass = Class.forName("com.telzio.softphone.android.MainActivity");
+            Intent mainActivityIntent = new Intent(Intent.ACTION_MAIN, null);
+            mainActivityIntent.setFlags(Intent.FLAG_ACTIVITY_NO_USER_ACTION | Intent.FLAG_ACTIVITY_NEW_TASK);
+            mainActivityIntent.setClass(context, mainActivityClass);
+            PendingIntent pendingMainActivityIntent = PendingIntent.getActivity(context, 1, mainActivityIntent, 0);*/
+
+
+            Class ringerActivityClass = Class.forName("com.telzio.softphone.android.RingerActivity");
+            Intent ringerActivityIntent = new Intent(Intent.ACTION_MAIN, null);
+
+            ringerActivityIntent.putExtra("CALLER_NUMBER", callerNum);
+            ringerActivityIntent.putExtra("CALLER_NAME", callerName);
+            ringerActivityIntent.putExtra(EXTRA_CALL_UUID, callUuid);
+            ringerActivityIntent.setFlags(Intent.FLAG_ACTIVITY_NO_USER_ACTION | Intent.FLAG_ACTIVITY_NEW_TASK);
+            ringerActivityIntent.setClass(context, ringerActivityClass);
+            PendingIntent pendingRingerActivityIntent = PendingIntent.getActivity(context, 1, ringerActivityIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+
+
+            Intent answerIntent = new Intent(context, RingerBroadcastReceiver.class);
+            answerIntent.putExtra("actionPerformed", "ANSWER");
+            answerIntent.putExtra("NOTIFICATION_ID", notificationId);
+            answerIntent.putExtra(EXTRA_CALL_UUID, callUuid);
+            PendingIntent answerPendingIntent = PendingIntent.getBroadcast(context, 0, answerIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+
+            Intent rejectIntent = new Intent(context, RingerBroadcastReceiver.class);
+            rejectIntent.putExtra("actionPerformed", "REJECT");
+            rejectIntent.putExtra("NOTIFICATION_ID", notificationId);
+            rejectIntent.putExtra(EXTRA_CALL_UUID, callUuid);
+            PendingIntent rejectPendingIntent = PendingIntent.getBroadcast(context, 1, rejectIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+
+
+            // Build the notification as an ongoing high priority item; this ensures it will show as
+            // a heads up notification which slides down over top of the current content.
+            final Notification.Builder builder = new Notification.Builder(context, "TELZIO_RING_NOTIFICATIONS");
+            builder.setOngoing(true);
+
+            // Set notification content intent to take user to fullscreen UI if user taps on the
+            // notification body.
+            builder.setContentIntent(answerPendingIntent);
+            builder.setAutoCancel(true);
+
+            // Set full screen intent to trigger display of the fullscreen UI when the notification
+            // manager deems it appropriate.
+            builder.setFullScreenIntent(pendingRingerActivityIntent, true);
+
+            // Setup notification content.
+            int appIconResourceId = context.getApplicationInfo().icon;
+
+            builder.setSmallIcon( appIconResourceId );
+            builder.setContentTitle("Telzio");
+            builder.setContentText("Call from " + callerNum + " (" + callerName + ")");
+
+            builder.addAction(appIconResourceId, "Answer", answerPendingIntent);
+            builder.addAction(appIconResourceId, "Reject", rejectPendingIntent);
+
+            // Set notification as insistent to cause your ringtone to loop.
+            Notification notification = builder.build();
+            notification.flags |= Notification.FLAG_INSISTENT;
+
+            // Use builder.addAction(..) to add buttons to answer or reject the call.
+            NotificationManager notificationManager = context.getSystemService(NotificationManager.class);
+            notificationManager.notify(notificationId, notification);
+        }
+        catch(Exception e) {
+            Log.e(TAG, "Exception", e);
+        }
     }
 
     /*
@@ -213,5 +306,13 @@ public class VoiceConnection extends Connection {
                 LocalBroadcastManager.getInstance(context).sendBroadcast(intent);
             }
         });
+    }
+
+    public void cancelNotification() {
+        String callUuid = handle.get(EXTRA_CALL_UUID);
+
+        NotificationManager manager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+        Log.d(TAG, "Canceling notification " + notificationId + " " + callUuid);
+        manager.cancel(notificationId);
     }
 }
