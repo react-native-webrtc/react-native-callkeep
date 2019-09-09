@@ -58,7 +58,7 @@ class RNCallKeep {
     if (!isIOS) {
       RNCallKeepModule.answerIncomingCall(uuid);
     }
-  }
+  };
 
   startCall = (uuid, handle, contactIdentifier, handleType = 'number', hasVideo = false ) => {
     if (!isIOS) {
@@ -83,9 +83,8 @@ class RNCallKeep {
     }
   };
 
-  reportEndCallWithUUID = (uuid, reason) => {
+  reportEndCallWithUUID = (uuid, reason) =>
     RNCallKeepModule.reportEndCallWithUUID(uuid, reason);
-  }
 
   /*
    * Android explicitly states we reject a call
@@ -97,15 +96,11 @@ class RNCallKeep {
     } else {
       RNCallKeepModule.endCall(uuid);
     }
-  }
-
-  endCall = (uuid) => {
-    RNCallKeepModule.endCall(uuid);
   };
 
-  endAllCalls = () => {
-    RNCallKeepModule.endAllCalls();
-  };
+  endCall = (uuid) => RNCallKeepModule.endCall(uuid);
+
+  endAllCalls = () => RNCallKeepModule.endAllCalls();
 
   supportConnectionService = () => supportConnectionService;
 
@@ -119,9 +114,7 @@ class RNCallKeep {
     RNCallKeepModule.setMutedCall(uuid, shouldMute);
   };
 
-  sendDTMF = (uuid, key) => {
-    RNCallKeepModule.sendDTMF(uuid, key);
-  };
+  sendDTMF = (uuid, key) => RNCallKeepModule.sendDTMF(uuid, key);
 
   checkIfBusy = () =>
     isIOS
@@ -150,18 +143,18 @@ class RNCallKeep {
     RNCallKeepModule.setCurrentCallActive(callUUID);
   };
 
-  updateDisplay = (uuid, displayName, uri) => {
-    RNCallKeepModule.updateDisplay(uuid, displayName, uri)
-  }
+  updateDisplay = (uuid, displayName, handle) => RNCallKeepModule.updateDisplay(uuid, displayName, handle);
 
-  setOnHold = (uuid, shouldHold) => {
-    RNCallKeepModule.setOnHold(uuid, shouldHold);
-  }
+  setOnHold = (uuid, shouldHold) => RNCallKeepModule.setOnHold(uuid, shouldHold);
 
-  reportUpdatedCall = (uuid, localizedCallerName) =>
-    isIOS
+  // @deprecated
+  reportUpdatedCall = (uuid, localizedCallerName) => {
+    console.warn('RNCallKeep.reportUpdatedCall is deprecarted, use RNCallKeep.updateDisplay instead');
+
+    return isIOS
       ? RNCallKeepModule.reportUpdatedCall(uuid, localizedCallerName)
       : Promise.reject('RNCallKeep.reportUpdatedCall was called from unsupported OS');
+  };
 
   _setupIOS = async (options) => new Promise((resolve, reject) => {
     if (!options.appName) {
