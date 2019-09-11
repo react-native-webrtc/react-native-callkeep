@@ -221,6 +221,7 @@ public class VoiceConnection extends Connection {
 
 
             Class ringerActivityClass = Class.forName("com.telzio.softphone.android.RingerActivity");
+            Class ringerBroadcastReceiver = Class.forName("com.telzio.softphone.android.RingerBroadcastReceiver");
             Intent ringerActivityIntent = new Intent(Intent.ACTION_MAIN, null);
 
             ringerActivityIntent.putExtra("CALLER_NUMBER", callerNum);
@@ -231,18 +232,17 @@ public class VoiceConnection extends Connection {
             PendingIntent pendingRingerActivityIntent = PendingIntent.getActivity(context, 1, ringerActivityIntent, PendingIntent.FLAG_UPDATE_CURRENT);
 
 
-            Intent answerIntent = new Intent(context, RingerBroadcastReceiver.class);
+            Intent answerIntent = new Intent(context, ringerBroadcastReceiver);
             answerIntent.putExtra("actionPerformed", "ANSWER");
             answerIntent.putExtra("NOTIFICATION_ID", notificationId);
             answerIntent.putExtra(EXTRA_CALL_UUID, callUuid);
             PendingIntent answerPendingIntent = PendingIntent.getBroadcast(context, 0, answerIntent, PendingIntent.FLAG_UPDATE_CURRENT);
 
-            Intent rejectIntent = new Intent(context, RingerBroadcastReceiver.class);
+            Intent rejectIntent = new Intent(context, ringerBroadcastReceiver);
             rejectIntent.putExtra("actionPerformed", "REJECT");
             rejectIntent.putExtra("NOTIFICATION_ID", notificationId);
             rejectIntent.putExtra(EXTRA_CALL_UUID, callUuid);
             PendingIntent rejectPendingIntent = PendingIntent.getBroadcast(context, 1, rejectIntent, PendingIntent.FLAG_UPDATE_CURRENT);
-
 
             // Build the notification as an ongoing high priority item; this ensures it will show as
             // a heads up notification which slides down over top of the current content.
