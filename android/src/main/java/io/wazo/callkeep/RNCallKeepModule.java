@@ -87,6 +87,7 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
     public static final String ACTION_UNHOLD_CALL = "ACTION_UNHOLD_CALL";
     public static final String ACTION_ONGOING_CALL = "ACTION_ONGOING_CALL";
     public static final String ACTION_AUDIO_SESSION = "ACTION_AUDIO_SESSION";
+    public static final String ACTION_SHOW_INCOMING_CALL_UI = "ACTION_SHOW_INCOMING_CALL_UI";
 
     private static final String E_ACTIVITY_DOES_NOT_EXIST = "E_ACTIVITY_DOES_NOT_EXIST";
     private static final String REACT_NATIVE_MODULE_NAME = "RNCallKeep";
@@ -236,7 +237,7 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
 
         if (!this.hasPermissions()) {
             requestPermissions(currentActivity, allPermissions, REQUEST_READ_PHONE_STATE);
-             return;
+            return;
         }
 
         promise.resolve(!hasPhoneAccount());
@@ -529,6 +530,7 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
             intentFilter.addAction(ACTION_HOLD_CALL);
             intentFilter.addAction(ACTION_ONGOING_CALL);
             intentFilter.addAction(ACTION_AUDIO_SESSION);
+            intentFilter.addAction(ACTION_SHOW_INCOMING_CALL_UI);
             LocalBroadcastManager.getInstance(this.reactContext).registerReceiver(voiceBroadcastReceiver, intentFilter);
             isReceiverRegistered = true;
         }
@@ -602,6 +604,12 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
                     break;
                 case ACTION_AUDIO_SESSION:
                     sendEventToJS("RNCallKeepDidActivateAudioSession", null);
+                    break;
+                case ACTION_SHOW_INCOMING_CALL_UI:
+                    args.putString("handle", attributeMap.get(EXTRA_CALL_NUMBER));
+                    args.putString("callUUID", attributeMap.get(EXTRA_CALL_UUID));
+                    args.putString("name", attributeMap.get(EXTRA_CALLER_NAME));
+                    sendEventToJS("RNCallKeepShowIncomingCallUi", args);
                     break;
             }
         }
