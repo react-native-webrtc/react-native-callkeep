@@ -19,9 +19,6 @@ package io.wazo.callkeep;
 
 import android.Manifest;
 import android.app.Activity;
-import android.app.Notification;
-import android.app.NotificationManager;
-import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
@@ -411,57 +408,6 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
 
         Activity activity = getCurrentActivity();
         activity.startActivity(focusIntent);
-    }
-
-    @ReactMethod
-    public void signalAnswer(String uuid) {
-        VoiceConnection conn = (VoiceConnection)VoiceConnectionService.getConnection(uuid);
-        if (conn == null) {
-            return;
-        }
-
-        Log.d(TAG, "signalAnswerToRN");
-        conn.signalAnswerToRN();
-
-        Activity currentActivity = getCurrentActivity();
-        String currentActivityName = currentActivity.getClass().getName();
-        if("com.telzio.softphone.android.RingerActivity".equals(currentActivityName)) {
-            //Finish it
-            //Log.d(TAG, "Finish ringer screen");
-            //currentActivity.finish();
-        }
-    }
-
-    @ReactMethod
-    public void signalReject(String uuid) {
-        VoiceConnection conn = (VoiceConnection)VoiceConnectionService.getConnection(uuid);
-        if (conn == null) {
-            return;
-        }
-
-        Activity currentActivity = getCurrentActivity();
-        String currentActivityName = currentActivity.getClass().getName();
-        if("com.telzio.softphone.android.RingerActivity".equals(currentActivityName)) {
-            //Finish it
-            Log.d(TAG, "Finish ringer screen");
-            currentActivity.finish();
-        }
-
-        Log.d(TAG, "signalRejectToRN");
-        conn.signalRejectToRN();
-    }
-
-    @ReactMethod
-    public void finishRingActivity() {
-        Log.d(TAG, "finishRingActivity");
-
-        Activity currentActivity = getCurrentActivity();
-        String currentActivityName = currentActivity.getClass().getName();
-        if("com.telzio.softphone.android.RingerActivity".equals(currentActivityName)) {
-            //Finish it
-            Log.d(TAG, "Finish ringer screen");
-            currentActivity.finish();
-        }
     }
 
     private void registerPhoneAccount(Context appContext) {
