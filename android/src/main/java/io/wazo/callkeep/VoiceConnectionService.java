@@ -74,6 +74,7 @@ public class VoiceConnectionService extends ConnectionService {
     private static Boolean isAvailable = false;
     private static String TAG = "RNCK:VoiceConnectionService";
     public static Map<String, VoiceConnection> currentConnections = new HashMap<>();
+    public static Boolean hasOutgoingCall = false;
 
     public static Connection getConnection(String connectionId) {
         if (currentConnections.containsKey(connectionId)) {
@@ -93,6 +94,8 @@ public class VoiceConnectionService extends ConnectionService {
 
     public static void deinitConnection(String connectionId) {
         Log.d(TAG, "deinitConnection:" + connectionId);
+        VoiceConnectionService.hasOutgoingCall = false;
+
         if (currentConnections.containsKey(connectionId)) {
             currentConnections.remove(connectionId);
         }
@@ -112,6 +115,8 @@ public class VoiceConnectionService extends ConnectionService {
 
     @Override
     public Connection onCreateOutgoingConnection(PhoneAccountHandle connectionManagerPhoneAccount, ConnectionRequest request) {
+        VoiceConnectionService.hasOutgoingCall = true;
+
         Bundle extras = request.getExtras();
         Connection outgoingCallConnection = null;
         String number = request.getAddress().getSchemeSpecificPart();
