@@ -105,12 +105,6 @@ public class VoiceConnection extends Connection {
         Log.d(TAG, "onAnswer executed");
     }
 
-    public void signalAnswerToRN() {
-        Log.d(TAG, "signalAnswerToRN executed");
-
-        sendCallRequestToActivity(ACTION_ANSWER_CALL, handle);
-    }
-
     @Override
     public void onPlayDtmfTone(char dtmf) {
         try {
@@ -193,13 +187,6 @@ public class VoiceConnection extends Connection {
         } catch(Throwable exception) {
             Log.e(TAG, "Handle map error", exception);
         }
-        destroy();
-    }
-
-    public void signalRejectToRN() {
-        Log.d(TAG, "signalRejectToRN executed");
-        setDisconnected(new DisconnectCause(DisconnectCause.REJECTED));
-        sendCallRequestToActivity(ACTION_END_CALL, handle);
         destroy();
     }
 
