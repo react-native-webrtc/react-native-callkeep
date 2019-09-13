@@ -166,13 +166,27 @@ public class VoiceConnectionService extends ConnectionService {
     }
 
     private Connection createConnection(ConnectionRequest request) {
-
         Bundle extras = request.getExtras();
         HashMap<String, String> extrasMap = this.bundleToMap(extras);
         extrasMap.put(EXTRA_CALL_NUMBER, request.getAddress().toString());
         VoiceConnection connection = new VoiceConnection(this, extrasMap);
         connection.setConnectionCapabilities(Connection.CAPABILITY_MUTE | Connection.CAPABILITY_SUPPORT_HOLD);
-        connection.setConnectionProperties(Connection.PROPERTY_SELF_MANAGED);
+
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            Context context = getApplicationContext();
+            TelecomManager telecomManager = (TelecomManager) context.getSystemService(context.TELECOM_SERVICE);
+            PhoneAccount phoneAccount = telecomManager.getPhoneAccount(request.getAccountHandle());
+
+            //If the phone account is self managed, then this connection must also be self managed.
+            if((phoneAccount.getCapabilities() & PhoneAccount.CAPABILITY_SELF_MANAGED) == PhoneAccount.CAPABILITY_SELF_MANAGED) {
+                Log.d(TAG, "PhoneAccount is SELF_MANAGED, so connection will be too");
+                connection.setConnectionProperties(Connection.PROPERTY_SELF_MANAGED);
+            }
+            else {
+                Log.d(TAG, "PhoneAccount is not SELF_MANAGED, so connection won't be either");
+            }
+        }
+
         connection.setInitializing();
         connection.setExtras(extras);
         currentConnections.put(extras.getString(EXTRA_CALL_UUID), connection);

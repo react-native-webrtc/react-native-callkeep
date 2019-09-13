@@ -420,8 +420,25 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
 
         handle = new PhoneAccountHandle(cName, appName);
 
-        PhoneAccount.Builder builder = new PhoneAccount.Builder(handle, appName)
-                .setCapabilities(PhoneAccount.CAPABILITY_SELF_MANAGED);
+        Boolean selfManaged = Build.VERSION.SDK_INT >= Build.VERSION_CODES.O;
+        if(selfManaged) {
+            if(_settings.hasKey("allowSelfManaged") && _settings.getBoolean("allowSelfManaged")) {
+                Log.d(TAG, "API Version supports self managed, and is enabled in setup");
+                selfManaged = true;
+            }
+            else {
+                Log.d(TAG, "API Version supports self managed, but it is not enabled in setup");
+                selfManaged = false;
+            }
+        }
+
+        PhoneAccount.Builder builder = new PhoneAccount.Builder(handle, appName);
+        if(selfManaged) {
+            builder.setCapabilities(PhoneAccount.CAPABILITY_SELF_MANAGED);
+        }
+        else {
+            builder.setCapabilities(PhoneAccount.CAPABILITY_CALL_PROVIDER);
+        }
 
         if (_settings != null && _settings.hasKey("imageName")) {
             int identifier = appContext.getResources().getIdentifier(_settings.getString("imageName"), "drawable", appContext.getPackageName());
