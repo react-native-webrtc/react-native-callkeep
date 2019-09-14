@@ -89,8 +89,7 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
 
     private static final String E_ACTIVITY_DOES_NOT_EXIST = "E_ACTIVITY_DOES_NOT_EXIST";
     private static final String REACT_NATIVE_MODULE_NAME = "RNCallKeep";
-    private static final String[] permissions = { Manifest.permission.READ_PHONE_STATE,
-            Manifest.permission.CALL_PHONE, Manifest.permission.RECORD_AUDIO };
+    private static String[] permissions = { Manifest.permission.READ_PHONE_STATE, Manifest.permission.CALL_PHONE, Manifest.permission.RECORD_AUDIO };
 
     private static final String TAG = "RNCK:Module";
     private static TelecomManager telecomManager;
@@ -115,8 +114,18 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
 
     @ReactMethod
     public void setup(ReadableMap options) {
-        VoiceConnectionService.setAvailable(false);
         this._settings = options;
+
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            if(_settings.hasKey("allowSelfManaged") && _settings.getBoolean("allowSelfManaged")) {
+                permissions = new String[]{ Manifest.permission.RECORD_AUDIO };
+            }
+            else {
+                permissions = new String[]{ Manifest.permission.READ_PHONE_STATE, Manifest.permission.CALL_PHONE, Manifest.permission.RECORD_AUDIO };
+            }
+        }
+
+        VoiceConnectionService.setAvailable(false);
 
         if (isConnectionServiceAvailable()) {
             this.registerPhoneAccount(this.getAppContext());
@@ -161,6 +170,7 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
     @ReactMethod
     public void startCall(String uuid, String number, String callerName) {
         if (!isConnectionServiceAvailable() || !hasPhoneAccount() || !hasPermissions() || number == null) {
+            Log.d(TAG, "startCall ignored: " + isConnectionServiceAvailable() + ", " + hasPhoneAccount() + ", " + hasPermissions() + ", " + number);
             return;
         }
 
