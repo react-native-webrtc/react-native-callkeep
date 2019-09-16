@@ -8,6 +8,7 @@ export type Events =
   'didToggleHoldCallAction' |
   'didPerformDTMFAction' |
   'didResetProvider' |
+  'checkReachability' |
   'didPerformSetMutedCallAction';
 
 type HandleType = 'generic' | 'number' | 'email';
@@ -107,6 +108,10 @@ export default class RNCallKeep {
   }
 
   static endAllCalls() {
+
+  }
+
+  static setReachable() {
 
   }
 

@@ -9,24 +9,23 @@ const supportConnectionService = !isIOS && Platform.Version >= 23;
 class RNCallKeep {
 
   constructor() {
-    this._callkitEventHandlers = new Map();
+    this._callkeepEventHandlers = new Map();
   }
-
 
   addEventListener = (type, handler) => {
     const listener = listeners[type](handler);
 
-    this._callkitEventHandlers.set(handler, listener);
+    this._callkeepEventHandlers.set(type, listener);
   };
 
-  removeEventListener = (type, handler) => {
-    const listener = this._callkitEventHandlers.get(handler);
+  removeEventListener = (type) => {
+    const listener = this._callkeepEventHandlers.get(type);
     if (!listener) {
       return;
     }
 
     listener.remove();
-    this._callkitEventHandlers.delete(handler);
+    this._callkeepEventHandlers.delete(type);
   };
 
   setup = async (options) => {
@@ -83,8 +82,7 @@ class RNCallKeep {
     }
   };
 
-  reportEndCallWithUUID = (uuid, reason) =>
-    RNCallKeepModule.reportEndCallWithUUID(uuid, reason);
+  reportEndCallWithUUID = (uuid, reason) => RNCallKeepModule.reportEndCallWithUUID(uuid, reason);
 
   /*
    * Android explicitly states we reject a call
@@ -146,6 +144,8 @@ class RNCallKeep {
   updateDisplay = (uuid, displayName, handle) => RNCallKeepModule.updateDisplay(uuid, displayName, handle);
 
   setOnHold = (uuid, shouldHold) => RNCallKeepModule.setOnHold(uuid, shouldHold);
+
+  setReachable = () => RNCallKeepModule.setReachable();
 
   // @deprecated
   reportUpdatedCall = (uuid, localizedCallerName) => {
