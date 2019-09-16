@@ -54,6 +54,8 @@ const format = uuid => uuid.split('-')[0];
 
 const getRandomNumber = () => String(Math.floor(Math.random() * 100000));
 
+const isIOS = Platform.OS === 'ios';
+
 export default function App() {
   const [logText, setLog] = useState('');
   const [heldCalls, setHeldCalls] = useState({}); // callKeep uuid: held
@@ -182,6 +184,18 @@ export default function App() {
     setCallMuted(callUUID, muted);
   };
 
+  const updateDisplay = (callUUID) => {
+    const number = calls[callUUID];
+    // Workaround because Android doesn't display well displayName, se we have to switch ...
+    if (isIOS) {
+      RNCallKeep.updateDisplay(callUUID, 'New Name', number);
+    } else {
+      RNCallKeep.updateDisplay(callUUID, number, 'New Name');
+    }
+
+    log(`[updateDisplay: ${number}] ${format(callUUID)}`);
+  };
+
   useEffect(() => {
     RNCallKeep.addEventListener('answerCall', answerCall);
     RNCallKeep.addEventListener('didPerformDTMFAction', didPerformDTMFAction);
@@ -200,7 +214,7 @@ export default function App() {
     }
   }, []);
 
-  if (Platform.OS === 'ios' && DeviceInfo.isEmulator()) {
+  if (isIOS && DeviceInfo.isEmulator()) {
     return <Text style={styles.container}>CallKeep doesn't work on iOS emulator</Text>;
   }
 
@@ -222,6 +236,14 @@ export default function App() {
             hitSlop={hitSlop}
           >
             <Text>{heldCalls[callUUID] ? 'Unhold' : 'Hold'} {calls[callUUID]}</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            onPress={() => updateDisplay(callUUID)}
+            style={styles.button}
+            hitSlop={hitSlop}
+          >
+            <Text>Update display</Text>
           </TouchableOpacity>
 
           <TouchableOpacity

@@ -508,6 +508,7 @@ continueUserActivity:(NSUserActivity *)userActivity
 }
 
 // Update call contact info
+// @deprecated
 RCT_EXPORT_METHOD(reportUpdatedCall:(NSString *)uuidString contactIdentifier:(NSString *)contactIdentifier)
 {
 #ifdef DEBUG

@@ -187,15 +187,14 @@ Sets the Android caller name and number
 Use this to update the Android display after an outgoing call has started
 
 ```js
-RNCallKeep.updateDisplay(uuid, localizedCallerName, handle)
+RNCallKeep.updateDisplay(uuid, displayName, handle)
 ```
 - `uuid`: string
   - The `uuid` used for `startCall` or `displayIncomingCall`
+- `displayName`: string (optional)
+  - Name of the caller to be displayed on the native UI
 - `handle`: string
   - Phone number of the caller
-- `localizedCallerName`: string (optional)
-  - Name of the caller to be displayed on the native UI
-
 
 ### endCall
 

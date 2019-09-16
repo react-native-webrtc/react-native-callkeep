@@ -91,7 +91,7 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
     private static final String[] permissions = { Manifest.permission.READ_PHONE_STATE,
             Manifest.permission.CALL_PHONE, Manifest.permission.RECORD_AUDIO };
 
-    private static final String TAG = "RNCallKeepModule";
+    private static final String TAG = "RNCK:RNCallKeepModule";
     private static TelecomManager telecomManager;
     private static TelephonyManager telephonyManager;
     private static Promise hasPhoneAccountPromise;
