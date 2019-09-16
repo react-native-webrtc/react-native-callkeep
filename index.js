@@ -149,7 +149,7 @@ class RNCallKeep {
 
   // @deprecated
   reportUpdatedCall = (uuid, localizedCallerName) => {
-    console.warn('RNCallKeep.reportUpdatedCall is deprecarted, use RNCallKeep.updateDisplay instead');
+    console.warn('RNCallKeep.reportUpdatedCall is deprecated, use RNCallKeep.updateDisplay instead');
 
     return isIOS
       ? RNCallKeepModule.reportUpdatedCall(uuid, localizedCallerName)
