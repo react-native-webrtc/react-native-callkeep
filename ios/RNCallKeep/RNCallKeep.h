@@ -31,5 +31,6 @@ continueUserActivity:(NSUserActivity *)userActivity
                        handle:(NSString *)handle
                    handleType:(NSString *)handleType
                      hasVideo:(BOOL)hasVideo
-          localizedCallerName:(NSString * _Nullable)localizedCallerName;
+          localizedCallerName:(NSString * _Nullable)localizedCallerName
+                  fromPushKit:(BOOL)fromPushKit;
 @end

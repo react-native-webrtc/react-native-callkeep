@@ -410,7 +410,7 @@ RNCallKeep.addEventListener('didActivateAudioSession', () => {
 Callback for `RNCallKeep.displayIncomingCall`
 
 ```js
-RNCallKeep.addEventListener('didDisplayIncomingCall', ({ error }) => {
+RNCallKeep.addEventListener('didDisplayIncomingCall', ({ error, uuid, handle, localizedCallerName, fromPushKit }) => {
   // you might want to do following things when receiving this event:
   // - Start playing ringback if it is an outgoing call
 });
@@ -567,7 +567,7 @@ class RNCallKeepExample extends React.Component {
   onDTMFAction = (data) => {
     let { digits, callUUID } = data;
     // Called when the system or user performs a DTMF action
-  }
+  };
 
   audioSessionActivated = (data) => {
     // you might want to do following things when receiving this event:
@@ -584,6 +584,33 @@ class RNCallKeepExample extends React.Component {
 
   render() {
   }
+}
+```
+
+## Receiving a call when the application is not reachable.
+
+In some case your application can be unreachable :
+- when the user kill the application 
+- when it's in background since a long time (eg: after ~5mn the os will kill all connections).
+
+To be able to wake up your application to display the incoming call, you can use [https://github.com/ianlin/react-native-voip-push-notification](react-native-voip-push-notification) on iOS or BackgroundMessaging from [react-native-firebase](https://rnfirebase.io/docs/v5.x.x/messaging/receiving-messages#4)-(Optional)(Android-only)-Listen-for-FCM-messages-in-the-background).
+
+You have to send a push to your application, like with Firebase for Android and with a library supporting PushKit pushes for iOS.
+
+### PushKit
+
+Since iOS 13, you'll have to report the incoming calls that wakes up your application, like in your `AppDelegate.m` :
+
+```objective-c
+- (void)pushRegistry:(PKPushRegistry *)registry didReceiveIncomingPushWithPayload:(PKPushPayload *)payload forType:(PKPushType)type withCompletionHandler:(void (^)(void))completion {
+  // Process the received push
+  [RNVoipPushNotificationManager didReceiveIncomingPushWithPayload:payload forType:(NSString *)type];
+  
+  // Retrieve information like handle and callerName here
+  
+  [RNCallKeep reportNewIncomingCall:uuid handle:handle handleType:@"generic" hasVideo:false localizedCallerName:callerName fromPushKit: YES];
+
+  completion();
 }
 ```
 
