@@ -623,7 +623,7 @@ You have to send a push to your application, like with Firebase for Android and 
 
 ### PushKit
 
-Since iOS 13, you'll have to report the incoming calls that wakes up your application, like in your `AppDelegate.m` :
+Since iOS 13, you'll have to report the incoming calls that wakes up your application with a VoIP push. Add this in your `AppDelegate.m` if you're using VoIP pushes to wake up your application :
 
 ```objective-c
 - (void)pushRegistry:(PKPushRegistry *)registry didReceiveIncomingPushWithPayload:(PKPushPayload *)payload forType:(PKPushType)type withCompletionHandler:(void (^)(void))completion {
