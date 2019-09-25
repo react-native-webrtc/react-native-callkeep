@@ -181,10 +181,7 @@ RNCallKeep.startCall(uuid, handle, contactIdentifier);
 
 
 ### updateDisplay
-_This feature is available only on Android._
-
-Sets the Android caller name and number
-Use this to update the Android display after an outgoing call has started
+Use this to update the display after an outgoing call has started.
 
 ```js
 RNCallKeep.updateDisplay(uuid, displayName, handle)
