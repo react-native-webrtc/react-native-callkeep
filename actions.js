@@ -13,15 +13,16 @@ const RNCallKeepDidPerformSetMutedCallAction = 'RNCallKeepDidPerformSetMutedCall
 const RNCallKeepDidToggleHoldAction = 'RNCallKeepDidToggleHoldAction';
 const RNCallKeepDidPerformDTMFAction = 'RNCallKeepDidPerformDTMFAction';
 const RNCallKeepProviderReset = 'RNCallKeepProviderReset';
+const RNCallKeepCheckReachability = 'RNCallKeepCheckReachability';
 const isIOS = Platform.OS === 'ios';
 
 const didReceiveStartCallAction = handler => {
-  eventEmitter.addListener(RNCallKeepDidReceiveStartCallAction, (data) => handler(data));
-
   if (isIOS) {
     // Tell CallKeep that we are ready to receive `RNCallKeepDidReceiveStartCallAction` event and prevent delay
     RNCallKeepModule._startCallActionEventListenerAdded();
   }
+
+  return eventEmitter.addListener(RNCallKeepDidReceiveStartCallAction, (data) => handler(data));
 };
 
 const answerCall = handler =>
@@ -51,6 +52,9 @@ const didPerformDTMFAction = handler =>
 const didResetProvider = handler =>
   eventEmitter.addListener(RNCallKeepProviderReset, handler);
 
+const checkReachability = handler =>
+  eventEmitter.addListener(RNCallKeepCheckReachability, handler);
+
 export const listeners = {
   didReceiveStartCallAction,
   answerCall,
@@ -62,5 +66,5 @@ export const listeners = {
   didToggleHoldCallAction,
   didPerformDTMFAction,
   didResetProvider,
+  checkReachability,
 };
-

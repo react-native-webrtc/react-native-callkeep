@@ -85,6 +85,7 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
     public static final String ACTION_UNHOLD_CALL = "ACTION_UNHOLD_CALL";
     public static final String ACTION_ONGOING_CALL = "ACTION_ONGOING_CALL";
     public static final String ACTION_AUDIO_SESSION = "ACTION_AUDIO_SESSION";
+    public static final String ACTION_CHECK_REACHABILITY = "ACTION_CHECK_REACHABILITY";
 
     private static final String E_ACTIVITY_DOES_NOT_EXIST = "E_ACTIVITY_DOES_NOT_EXIST";
     private static final String REACT_NATIVE_MODULE_NAME = "RNCallKeep";
@@ -361,6 +362,11 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
     }
 
     @ReactMethod
+    public void setReachable() {
+        VoiceConnectionService.setReachable();
+    }
+
+    @ReactMethod
     public void setCurrentCallActive(String uuid) {
         Connection conn = VoiceConnectionService.getConnection(uuid);
         if (conn == null) {
@@ -487,6 +493,7 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
             intentFilter.addAction(ACTION_HOLD_CALL);
             intentFilter.addAction(ACTION_ONGOING_CALL);
             intentFilter.addAction(ACTION_AUDIO_SESSION);
+            intentFilter.addAction(ACTION_CHECK_REACHABILITY);
             LocalBroadcastManager.getInstance(this.reactContext).registerReceiver(voiceBroadcastReceiver, intentFilter);
             isReceiverRegistered = true;
         }
@@ -514,9 +521,6 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
         public void onReceive(Context context, Intent intent) {
             WritableMap args = Arguments.createMap();
             HashMap<String, String> attributeMap = (HashMap<String, String>)intent.getSerializableExtra("attributeMap");
-            if (attributeMap == null) {
-                return;
-            }
 
             switch (intent.getAction()) {
                 case ACTION_END_CALL:
@@ -560,6 +564,9 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
                     break;
                 case ACTION_AUDIO_SESSION:
                     sendEventToJS("RNCallKeepDidActivateAudioSession", null);
+                    break;
+                case ACTION_CHECK_REACHABILITY:
+                    sendEventToJS("RNCallKeepCheckReachability", null);
                     break;
             }
         }

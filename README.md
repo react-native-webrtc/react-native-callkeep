@@ -474,6 +474,17 @@ RNCallKeep.addEventListener('didPerformDTMFAction', ({ digits, callUUID }) => {
   - The digits that emit the dtmf tone
 - `callUUID` (string)
   - The UUID of the call.
+  
+### - checkReachability
+
+On Android when the application is in background, after a certain delay the OS will close every connection with informing about it.
+So we have to check if the application is reachable before making a call from the native phone application.
+
+```js
+RNCallKeep.addEventListener('checkReachability', () => {
+  RNCallKeep.setReachable();
+});
+```
 
 ## Example
 

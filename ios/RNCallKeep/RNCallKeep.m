@@ -32,6 +32,7 @@ static NSString *const RNCallKeepDidPerformSetMutedCallAction = @"RNCallKeepDidP
 static NSString *const RNCallKeepPerformPlayDTMFCallAction = @"RNCallKeepDidPerformDTMFAction";
 static NSString *const RNCallKeepDidToggleHoldAction = @"RNCallKeepDidToggleHoldAction";
 static NSString *const RNCallKeepProviderReset = @"RNCallKeepProviderReset";
+static NSString *const RNCallKeepCheckReachability = @"RNCallKeepCheckReachability";
 
 @implementation RNCallKeep
 {
@@ -90,7 +91,8 @@ RCT_EXPORT_MODULE()
         RNCallKeepDidPerformSetMutedCallAction,
         RNCallKeepPerformPlayDTMFCallAction,
         RNCallKeepDidToggleHoldAction,
-        RNCallKeepProviderReset
+        RNCallKeepProviderReset,
+        RNCallKeepCheckReachability
     ];
 }
 
