@@ -631,6 +631,9 @@ Since iOS 13, you'll have to report the incoming calls that wakes up your applic
   [RNVoipPushNotificationManager didReceiveIncomingPushWithPayload:payload forType:(NSString *)type];
   
   // Retrieve information like handle and callerName here
+  // NSString *uuid = /* fetch for payload or ... */ [[[NSUUID UUID] UUIDString] lowercaseString];
+  // NSString *callerName = @"caller name here";
+  // NSString *handle = @"caller number here";
   
   [RNCallKeep reportNewIncomingCall:uuid handle:handle handleType:@"generic" hasVideo:false localizedCallerName:callerName fromPushKit: YES];
 
