@@ -391,7 +391,7 @@ RCT_EXPORT_METHOD(sendDTMF:(NSString *)uuidString dtmf:(NSString *)key)
     providerConfiguration.maximumCallsPerCallGroup = 1;
     providerConfiguration.supportedHandleTypes = [NSSet setWithObjects:[NSNumber numberWithInteger:CXHandleTypePhoneNumber], nil];
     if (settings[@"supportsVideo"]) {
-        providerConfiguration.supportsVideo = settings[@"supportsVideo"];
+        providerConfiguration.supportsVideo = [settings[@"supportsVideo"] boolValue];
     }
     if (settings[@"maximumCallGroups"]) {
         providerConfiguration.maximumCallGroups = [settings[@"maximumCallGroups"] integerValue];
@@ -461,8 +461,17 @@ continueUserActivity:(NSUserActivity *)userActivity
     INInteraction *interaction = userActivity.interaction;
     INPerson *contact;
     NSString *handle;
-    BOOL isAudioCall = [userActivity.activityType isEqualToString:INStartAudioCallIntentIdentifier];
-    BOOL isVideoCall = [userActivity.activityType isEqualToString:INStartVideoCallIntentIdentifier];
+    BOOL isAudioCall;
+    BOOL isVideoCall;
+    // iOS 13 returns an INStartCallIntent userActivity type
+    if (@available(iOS 13, *)) {
+        INStartCallIntent *intent = (INStartCallIntent*)interaction.intent;
+        isAudioCall = intent.callCapability == INCallCapabilityAudioCall;
+        isVideoCall = intent.callCapability == INCallCapabilityVideoCall;
+    } else {
+        isAudioCall = [userActivity.activityType isEqualToString:INStartAudioCallIntentIdentifier];
+        isVideoCall = [userActivity.activityType isEqualToString:INStartVideoCallIntentIdentifier];
+    }
 
     if (isAudioCall) {
         INStartAudioCallIntent *startAudioCallIntent = (INStartAudioCallIntent *)interaction.intent;
