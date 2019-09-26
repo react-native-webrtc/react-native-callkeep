@@ -30,7 +30,6 @@ import android.content.res.Resources;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Icon;
 import android.net.Uri;
-import android.util.Log;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -44,6 +43,8 @@ import android.telecom.DisconnectCause;
 import android.telecom.PhoneAccount;
 import android.telecom.PhoneAccountHandle;
 import android.telecom.TelecomManager;
+import android.telephony.TelephonyManager;
+import android.util.Log;
 
 import com.facebook.react.bridge.Arguments;
 import com.facebook.react.bridge.Dynamic;
@@ -84,14 +85,16 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
     public static final String ACTION_UNHOLD_CALL = "ACTION_UNHOLD_CALL";
     public static final String ACTION_ONGOING_CALL = "ACTION_ONGOING_CALL";
     public static final String ACTION_AUDIO_SESSION = "ACTION_AUDIO_SESSION";
+    public static final String ACTION_CHECK_REACHABILITY = "ACTION_CHECK_REACHABILITY";
 
     private static final String E_ACTIVITY_DOES_NOT_EXIST = "E_ACTIVITY_DOES_NOT_EXIST";
     private static final String REACT_NATIVE_MODULE_NAME = "RNCallKeep";
     private static final String[] permissions = { Manifest.permission.READ_PHONE_STATE,
             Manifest.permission.CALL_PHONE, Manifest.permission.RECORD_AUDIO };
 
-    private static final String TAG = "RNCallKeepModule";
+    private static final String TAG = "RNCK:RNCallKeepModule";
     private static TelecomManager telecomManager;
+    private static TelephonyManager telephonyManager;
     private static Promise hasPhoneAccountPromise;
     private ReactApplicationContext reactContext;
     public static PhoneAccountHandle handle;
@@ -251,7 +254,10 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
             return;
         }
 
-        promise.resolve(telecomManager.getDefaultOutgoingPhoneAccount("tel") != null);
+        boolean hasSim = telephonyManager.getSimState() != TelephonyManager.SIM_STATE_ABSENT;
+        boolean hasDefaultAccount = telecomManager.getDefaultOutgoingPhoneAccount("tel") != null;
+
+        promise.resolve(!hasSim || hasDefaultAccount);
     }
 
     @ReactMethod
@@ -341,6 +347,11 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
     }
 
     @ReactMethod
+    public void hasOutgoingCall(Promise promise) {
+        promise.resolve(VoiceConnectionService.hasOutgoingCall);
+    }
+
+    @ReactMethod
     public void hasPermissions(Promise promise) {
         promise.resolve(this.hasPermissions());
     }
@@ -348,6 +359,11 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
     @ReactMethod
     public void setAvailable(Boolean active) {
         VoiceConnectionService.setAvailable(active);
+    }
+
+    @ReactMethod
+    public void setReachable() {
+        VoiceConnectionService.setReachable();
     }
 
     @ReactMethod
@@ -430,7 +446,9 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
 
         PhoneAccount account = builder.build();
 
-        telecomManager = (TelecomManager) this.getAppContext().getSystemService(this.getAppContext().TELECOM_SERVICE);
+        telephonyManager = (TelephonyManager) this.getAppContext().getSystemService(Context.TELEPHONY_SERVICE);
+        telecomManager = (TelecomManager) this.getAppContext().getSystemService(Context.TELECOM_SERVICE);
+
         telecomManager.registerPhoneAccount(account);
     }
 
@@ -475,6 +493,7 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
             intentFilter.addAction(ACTION_HOLD_CALL);
             intentFilter.addAction(ACTION_ONGOING_CALL);
             intentFilter.addAction(ACTION_AUDIO_SESSION);
+            intentFilter.addAction(ACTION_CHECK_REACHABILITY);
             LocalBroadcastManager.getInstance(this.reactContext).registerReceiver(voiceBroadcastReceiver, intentFilter);
             isReceiverRegistered = true;
         }
@@ -502,9 +521,6 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
         public void onReceive(Context context, Intent intent) {
             WritableMap args = Arguments.createMap();
             HashMap<String, String> attributeMap = (HashMap<String, String>)intent.getSerializableExtra("attributeMap");
-            if (attributeMap == null) {
-                return;
-            }
 
             switch (intent.getAction()) {
                 case ACTION_END_CALL:
@@ -548,6 +564,9 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
                     break;
                 case ACTION_AUDIO_SESSION:
                     sendEventToJS("RNCallKeepDidActivateAudioSession", null);
+                    break;
+                case ACTION_CHECK_REACHABILITY:
+                    sendEventToJS("RNCallKeepCheckReachability", null);
                     break;
             }
         }

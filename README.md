@@ -90,9 +90,10 @@ RNCallKeep.setup(options);
 ### setAvailable
 _This feature is available only on Android._
 
-Tell _ConnectionService_ that the device is ready to make outgoing calls.
+Tell _ConnectionService_ that the device is ready to make outgoing calls via the native Phone app.
 If not the user will be stuck in the build UI screen without any actions.
-Eg: Call it with `false` when disconnected from the sip client, when your token expires ...
+Eg: Call it with `false` when disconnected from the sip client, when your token expires, when your user log out ...
+Eg: When your used log out (or the connection to your server is broken, etc..), you have to call `setAvailable(false)` so CallKeep will refuse the call and your user will not be stuck in the native UI.
 
 ```js
 RNCallKeep.setAvailable(true);
@@ -180,21 +181,17 @@ RNCallKeep.startCall(uuid, handle, contactIdentifier);
 
 
 ### updateDisplay
-_This feature is available only on Android._
-
-Sets the Android caller name and number
-Use this to update the Android display after an outgoing call has started
+Use this to update the display after an outgoing call has started.
 
 ```js
-RNCallKeep.updateDisplay(uuid, localizedCallerName, handle)
+RNCallKeep.updateDisplay(uuid, displayName, handle)
 ```
 - `uuid`: string
   - The `uuid` used for `startCall` or `displayIncomingCall`
+- `displayName`: string (optional)
+  - Name of the caller to be displayed on the native UI
 - `handle`: string
   - Phone number of the caller
-- `localizedCallerName`: string (optional)
-  - Name of the caller to be displayed on the native UI
-
 
 ### endCall
 
@@ -324,6 +321,20 @@ _This feature is available only on Android._
 await RNCallKeep.hasPhoneAccount();
 ```
 
+### hasOutgoingCall (async)
+
+_This feature is available only on Android, useful when waking up the application for an outgoing call._
+
+When waking up the Android application in background mode (eg: when the application is killed and the user make a call from the native Phone application).
+The user can hang up the call before your application has been started in background mode, and you can lost the `RNCallKeepPerformEndCallAction` event.
+
+To be sure that the outgoing call is still here, you can call `hasOutgoingCall` when you app waken up.
+
+
+```js
+const hasOutgoingCall = await RNCallKeep.hasOutgoingCall();
+```
+
 ### hasDefaultPhoneAccount
 
 Checks if the user has set a default [phone account](https://developer.android.com/reference/android/telecom/PhoneAccount).
@@ -351,6 +362,8 @@ Device sends this event once it decides the app is allowed to start a call, eith
 or by the app calling `RNCallKeep.startCall`.
 
 Try to start your app call action from here (e.g. get credentials of the user by `data.handle` and/or send INVITE to your SIP server)
+
+Note: on iOS `callUUID` is not defined as the call is not yet managed by CallKit. You have to generate your own and call `startCall`.
 
 ```js
 RNCallKeep.addEventListener('didReceiveStartCallAction', ({ handle, callUUID, name }) => {
@@ -407,7 +420,7 @@ RNCallKeep.addEventListener('didActivateAudioSession', () => {
 Callback for `RNCallKeep.displayIncomingCall`
 
 ```js
-RNCallKeep.addEventListener('didDisplayIncomingCall', ({ error }) => {
+RNCallKeep.addEventListener('didDisplayIncomingCall', ({ error, uuid, handle, localizedCallerName, fromPushKit }) => {
   // you might want to do following things when receiving this event:
   // - Start playing ringback if it is an outgoing call
 });
@@ -458,6 +471,17 @@ RNCallKeep.addEventListener('didPerformDTMFAction', ({ digits, callUUID }) => {
   - The digits that emit the dtmf tone
 - `callUUID` (string)
   - The UUID of the call.
+  
+### - checkReachability
+
+On Android when the application is in background, after a certain delay the OS will close every connection with informing about it.
+So we have to check if the application is reachable before making a call from the native phone application.
+
+```js
+RNCallKeep.addEventListener('checkReachability', () => {
+  RNCallKeep.setReachable();
+});
+```
 
 ## Example
 
@@ -564,7 +588,7 @@ class RNCallKeepExample extends React.Component {
   onDTMFAction = (data) => {
     let { digits, callUUID } = data;
     // Called when the system or user performs a DTMF action
-  }
+  };
 
   audioSessionActivated = (data) => {
     // you might want to do following things when receiving this event:
@@ -581,6 +605,36 @@ class RNCallKeepExample extends React.Component {
 
   render() {
   }
+}
+```
+
+## Receiving a call when the application is not reachable.
+
+In some case your application can be unreachable :
+- when the user kill the application 
+- when it's in background since a long time (eg: after ~5mn the os will kill all connections).
+
+To be able to wake up your application to display the incoming call, you can use [https://github.com/ianlin/react-native-voip-push-notification](react-native-voip-push-notification) on iOS or BackgroundMessaging from [react-native-firebase](https://rnfirebase.io/docs/v5.x.x/messaging/receiving-messages#4)-(Optional)(Android-only)-Listen-for-FCM-messages-in-the-background).
+
+You have to send a push to your application, like with Firebase for Android and with a library supporting PushKit pushes for iOS.
+
+### PushKit
+
+Since iOS 13, you'll have to report the incoming calls that wakes up your application with a VoIP push. Add this in your `AppDelegate.m` if you're using VoIP pushes to wake up your application :
+
+```objective-c
+- (void)pushRegistry:(PKPushRegistry *)registry didReceiveIncomingPushWithPayload:(PKPushPayload *)payload forType:(PKPushType)type withCompletionHandler:(void (^)(void))completion {
+  // Process the received push
+  [RNVoipPushNotificationManager didReceiveIncomingPushWithPayload:payload forType:(NSString *)type];
+  
+  // Retrieve information like handle and callerName here
+  // NSString *uuid = /* fetch for payload or ... */ [[[NSUUID UUID] UUIDString] lowercaseString];
+  // NSString *callerName = @"caller name here";
+  // NSString *handle = @"caller number here";
+  
+  [RNCallKeep reportNewIncomingCall:uuid handle:handle handleType:@"generic" hasVideo:false localizedCallerName:callerName fromPushKit: YES];
+
+  completion();
 }
 ```
 

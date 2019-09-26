@@ -1,5 +1,12 @@
 CallKeep is a fork of react-native-callkit by ianlin.
-Since it only target iOS devices, we created CallKeep to target both Android and iOS.
+Since react-native-callkit only targets iOS devices, we created react-native-callkeep to target both Android and iOS.
 
     Ian Yu-Hsun Lin <ianyuhsunlin@gmail.com>
     Wazo Communication inc. <dev@wazo.io>
+    Dan Jenkins <dan@nimbleape.com>
+    Kyle Kurz <kyle@doublekaudio.com>
+    bhuangy <brandon.sh.huang@gmail.com>
+    Chevon Christie
+    Linus Unnebäck <linus@folkdatorn.se>
+    Geraint White <mail@geraintwhite.co.uk>
+    Samuel Bégin

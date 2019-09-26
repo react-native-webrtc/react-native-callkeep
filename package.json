@@ -1,25 +1,21 @@
 {
   "name": "react-native-callkeep",
-  "version": "3.0.0",
+  "version": "3.0.3",
   "description": "iOS 10 CallKit and Android ConnectionService Framework For React Native",
   "main": "index.js",
   "scripts": {},
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/wazo-pbx/react-native-callkeep.git"
+    "url": "git+https://github.com/react-native-webrtc/react-native-callkeep.git"
   },
-  "author": "Wazo (http://wazo.io)",
-  "maintainers": [
-    "Wazo Team <dev@wazo.io> (https://github.com/wazo-pbx)"
-  ],
-  "contributors": [
-    "Wazo Team <dev@wazo.io> (https://github.com/wazo-pbx)"
-  ],
+  "author": "See AUTHORS file",
+  "maintainers": ["See AUTHORS file"],
+  "contributors": ["See AUTHORS file"],
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/wazo-pbx/react-native-callkeep/issues"
+    "url": "https://github.com/react-native-webrtc/react-native-callkeep/issues"
   },
-  "homepage": "https://github.com/wazo-pbx/react-native-callkeep#readme",
+  "homepage": "https://github.com/react-native-webrtc/react-native-callkeep#readme",
   "typings": "./index.d.ts",
   "peerDependencies": {
     "react-native": ">=0.40.0"

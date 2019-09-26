@@ -3,7 +3,12 @@ export type Events =
   'answerCall' |
   'endCall' |
   'didActivateAudioSession' |
+  'didDeactivateAudioSession' |
   'didDisplayIncomingCall' |
+  'didToggleHoldCallAction' |
+  'didPerformDTMFAction' |
+  'didResetProvider' |
+  'checkReachability' |
   'didPerformSetMutedCallAction';
 
 type HandleType = 'generic' | 'number' | 'email';
@@ -12,6 +17,9 @@ interface IOptions {
   ios: {
     appName: string,
     imageName?: string,
+    supportsVideo: false,
+    maximumCallGroups: '1',
+    maximumCallsPerCallGroup: '1'
     ringtoneSound?: string,
   },
   android: {
@@ -19,6 +27,8 @@ interface IOptions {
     alertDescription: string,
     cancelButton: string,
     okButton: string,
+    imageName?: string,
+    additionalPermissions: string[],
   },
 }
 
@@ -41,6 +51,10 @@ export default class RNCallKeep {
 
   }
 
+  static hasDefaultPhoneAccount(): boolean {
+
+  }
+
   static displayIncomingCall(
     uuid: string,
     handle: string,
@@ -51,15 +65,19 @@ export default class RNCallKeep {
 
   }
 
-  /**
-   * @description startCall method is available only on iOS.
-  */
   static startCall(
     uuid: string,
     handle: string,
+    contactIdentifier?: string,
     handleType?: HandleType,
     hasVideo?: boolean,
-    contactIdentifier?: string,
+  ) {
+
+  }
+  static updateDisplay(
+    uuid: string,
+    displayName: string,
+    handle: string,
   ) {
 
   }
@@ -71,11 +89,29 @@ export default class RNCallKeep {
 
   }
 
+  /**
+     * @description reportConnectedOutgoingCallWithUUID method is available only on iOS.
+  */
+  static reportConnectingOutgoingCallWithUUID(uuid: string): void {
+
+  }
+  static reportEndCallWithUUID(uuid: string, reason: number): void {
+
+  }
+
+  static rejectCall(uuid: string) {
+
+  }
+
   static endCall(uuid: string) {
 
   }
 
   static endAllCalls() {
+
+  }
+
+  static setReachable() {
 
   }
 
@@ -93,10 +129,18 @@ export default class RNCallKeep {
 
   }
 
+  static async hasOutgoingCall(): Promise<boolean> {
+
+  }
+
   /**
      * @description setMutedCall method is available only on iOS.
   */
   static setMutedCall(uuid: string, muted: boolean) {
+
+  }
+
+  static setOnHold(uuid: string, held: boolean) {
 
   }
 
@@ -107,16 +151,10 @@ export default class RNCallKeep {
 
   }
 
-  /**
-     * @description setMutedCall method is available only on iOS.
-  */
   static checkIfBusy(): Promise<boolean> {
 
   }
 
-  /**
-     * @description setMutedCall method is available only on iOS.
-  */
   static checkSpeaker(): Promise<boolean> {
 
   }
@@ -128,16 +166,10 @@ export default class RNCallKeep {
 
   }
 
-  /**
-     * @description setAvailable method is available only on Android.
-  */
   static setCurrentCallActive() {
 
   }
 
-  /**
-     * @description setAvailable method is available only on Android.
-  */
   static backToForeground() {
 
   }
