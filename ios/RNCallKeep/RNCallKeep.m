@@ -481,15 +481,14 @@ continueUserActivity:(NSUserActivity *)userActivity
         contact = [startVideoCallIntent.contacts firstObject];
     }
 
-
     if (contact != nil) {
         handle = contact.personHandle.value;
     }
 
     if (handle != nil && handle.length > 0 ){
         NSDictionary *userInfo = @{
-           @"handle": handle,
-           @"video": @(isVideoCall)
+            @"handle": handle,
+            @"video": @(isVideoCall)
         };
 
         RNCallKeep *callKeep = [RNCallKeep allocWithZone: nil];
