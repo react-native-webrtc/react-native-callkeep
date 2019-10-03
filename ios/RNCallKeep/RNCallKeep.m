@@ -463,15 +463,26 @@ continueUserActivity:(NSUserActivity *)userActivity
     NSString *handle;
     BOOL isAudioCall;
     BOOL isVideoCall;
+
+//HACK TO AVOID XCODE 10 COMPILE CRASH
+//REMOVE ON NEXT MAJOR RELEASE OF RNCALLKIT
+#if __IPHONE_OS_VERSION_MAX_ALLOWED >= 130000
+    //XCode 11
     // iOS 13 returns an INStartCallIntent userActivity type
     if (@available(iOS 13, *)) {
         INStartCallIntent *intent = (INStartCallIntent*)interaction.intent;
         isAudioCall = intent.callCapability == INCallCapabilityAudioCall;
         isVideoCall = intent.callCapability == INCallCapabilityVideoCall;
     } else {
+#endif
+        //XCode 10 and below
         isAudioCall = [userActivity.activityType isEqualToString:INStartAudioCallIntentIdentifier];
         isVideoCall = [userActivity.activityType isEqualToString:INStartVideoCallIntentIdentifier];
+//HACK TO AVOID XCODE 10 COMPILE CRASH
+//REMOVE ON NEXT MAJOR RELEASE OF RNCALLKIT
+#if __IPHONE_OS_VERSION_MAX_ALLOWED >= 130000
     }
+#endif
 
     if (isAudioCall) {
         INStartAudioCallIntent *startAudioCallIntent = (INStartAudioCallIntent *)interaction.intent;
