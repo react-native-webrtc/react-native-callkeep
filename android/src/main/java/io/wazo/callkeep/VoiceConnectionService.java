@@ -188,7 +188,7 @@ public class VoiceConnectionService extends ConnectionService {
         HashMap<String, String> extrasMap = this.bundleToMap(extras);
 
         sendCallRequestToActivity(ACTION_ONGOING_CALL, extrasMap);
-        sendCallRequestToActivity(ACTION_AUDIO_SESSION, null);
+        sendCallRequestToActivity(ACTION_AUDIO_SESSION, extrasMap);
 
         Log.d(TAG, "onCreateOutgoingConnection: calling");
 

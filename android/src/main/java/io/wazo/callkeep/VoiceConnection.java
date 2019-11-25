@@ -100,7 +100,7 @@ public class VoiceConnection extends Connection {
         setAudioModeIsVoip(true);
 
         sendCallRequestToActivity(ACTION_ANSWER_CALL, handle);
-        sendCallRequestToActivity(ACTION_AUDIO_SESSION, null);
+        sendCallRequestToActivity(ACTION_AUDIO_SESSION, handle);
         Log.d(TAG, "onAnswer executed");
     }
 
