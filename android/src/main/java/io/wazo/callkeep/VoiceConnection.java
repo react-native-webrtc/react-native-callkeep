@@ -140,6 +140,9 @@ public class VoiceConnection extends Connection {
             case 3:
                 setDisconnected(new DisconnectCause(DisconnectCause.BUSY));
                 break;
+            case 4:
+                setDisconnected(new DisconnectCause(DisconnectCause.ANSWERED_ELSEWHERE));
+                break;
             default:
                 break;
         }

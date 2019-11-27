@@ -238,14 +238,13 @@ RNCallKeep.reportEndCallWithUUID(uuid, reason);
     - Call failed: 1
     - Remote user ended call: 2
     - Remote user did not answer: 3
-  - `CXCallEndedReason` constants used for iOS. `DisconnectCause` used for Android.
-  - Example enum for reasons
+    - Call Answered elsewhere: 4
+    - Call declined elsewhere: 5 (iOS only)
+  - Access reasons as constants
   ```js
-  END_CALL_REASON = {
-    failed: 1,
-    remoteEnded: 2,
-    unanswered: 3
-  }
+  const { CONSTANTS as CK_CONSTANTS, RNCallKeep } from 'react-native-callkeep';
+
+  RNCallKeep.reportEndCallWithUUID(uuid, CK_CONSTANTS.END_CALL_REASONS.FAILED);
   ```
 
 ### setMutedCall
@@ -471,7 +470,7 @@ RNCallKeep.addEventListener('didPerformDTMFAction', ({ digits, callUUID }) => {
   - The digits that emit the dtmf tone
 - `callUUID` (string)
   - The UUID of the call.
-  
+
 ### - checkReachability
 
 On Android when the application is in background, after a certain delay the OS will close every connection with informing about it.
@@ -611,7 +610,7 @@ class RNCallKeepExample extends React.Component {
 ## Receiving a call when the application is not reachable.
 
 In some case your application can be unreachable :
-- when the user kill the application 
+- when the user kill the application
 - when it's in background since a long time (eg: after ~5mn the os will kill all connections).
 
 To be able to wake up your application to display the incoming call, you can use [https://github.com/ianlin/react-native-voip-push-notification](react-native-voip-push-notification) on iOS or BackgroundMessaging from [react-native-firebase](https://rnfirebase.io/docs/v5.x.x/messaging/receiving-messages#4)-(Optional)(Android-only)-Listen-for-FCM-messages-in-the-background).
@@ -626,12 +625,12 @@ Since iOS 13, you'll have to report the incoming calls that wakes up your applic
 - (void)pushRegistry:(PKPushRegistry *)registry didReceiveIncomingPushWithPayload:(PKPushPayload *)payload forType:(PKPushType)type withCompletionHandler:(void (^)(void))completion {
   // Process the received push
   [RNVoipPushNotificationManager didReceiveIncomingPushWithPayload:payload forType:(NSString *)type];
-  
+
   // Retrieve information like handle and callerName here
   // NSString *uuid = /* fetch for payload or ... */ [[[NSUUID UUID] UUIDString] lowercaseString];
   // NSString *callerName = @"caller name here";
   // NSString *handle = @"caller number here";
-  
+
   [RNCallKeep reportNewIncomingCall:uuid handle:handle handleType:@"generic" hasVideo:false localizedCallerName:callerName fromPushKit: YES];
 
   completion();
