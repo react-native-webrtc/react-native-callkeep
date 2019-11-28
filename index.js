@@ -12,7 +12,7 @@ const CONSTANTS = {
     REMOTE_ENDED: 2,
     UNANSWERED: 3,
     ANSWERED_ELSEWHERE: 4,
-    DECLINED_ELSEWHERE: 5 //only works on ios
+    DECLINED_ELSEWHERE: isIOS ? 2 : 5 // make declined elsewhere link to "Remote ended" because that's kinda true
   }
 };
 
