@@ -236,19 +236,20 @@ RCT_EXPORT_METHOD(reportEndCallWithUUID:(NSString *)uuidString :(int)reason)
 #endif
     NSUUID *uuid = [[NSUUID alloc] initWithUUIDString:uuidString];
     switch (reason) {
-        case CXCallEndedReasonFailed:
+        case 1:
             [self.callKeepProvider reportCallWithUUID:uuid endedAtDate:[NSDate date] reason:CXCallEndedReasonFailed];
             break;
-        case CXCallEndedReasonRemoteEnded:
+        case 2:
+        case 6:
             [self.callKeepProvider reportCallWithUUID:uuid endedAtDate:[NSDate date] reason:CXCallEndedReasonRemoteEnded];
             break;
-        case CXCallEndedReasonUnanswered:
+        case 3:
             [self.callKeepProvider reportCallWithUUID:uuid endedAtDate:[NSDate date] reason:CXCallEndedReasonUnanswered];
             break;
-        case CXCallEndedReasonAnsweredElsewhere:
+        case 4:
             [self.callKeepProvider reportCallWithUUID:uuid endedAtDate:[NSDate date] reason:CXCallEndedReasonAnsweredElsewhere];
             break;
-        case CXCallEndedReasonDeclinedElsewhere:
+        case 5:
             [self.callKeepProvider reportCallWithUUID:uuid endedAtDate:[NSDate date] reason:CXCallEndedReasonDeclinedElsewhere];
             break;
         default:

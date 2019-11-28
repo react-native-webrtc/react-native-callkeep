@@ -96,7 +96,8 @@ const CONSTANTS = {
     REMOTE_ENDED: 2,
     UNANSWERED: 3,
     ANSWERED_ELSEWHERE: 4,
-    DECLINED_ELSEWHERE: 5
+    DECLINED_ELSEWHERE: 5,
+    MISSED: 6
   }
 };
 
@@ -260,6 +261,7 @@ RNCallKeep.reportEndCallWithUUID(uuid, reason);
     - Remote user did not answer: 3
     - Call Answered elsewhere: 4
     - Call declined elsewhere: 5 (on Android this will map to Remote user ended call if you use the constants)
+    - Missed: 6 (on iOS this will map to remote user ended call)
   - Access reasons as constants
   ```js
   const { CONSTANTS as CK_CONSTANTS, RNCallKeep } from 'react-native-callkeep';
