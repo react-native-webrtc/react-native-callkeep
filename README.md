@@ -259,7 +259,7 @@ RNCallKeep.reportEndCallWithUUID(uuid, reason);
     - Remote user ended call: 2
     - Remote user did not answer: 3
     - Call Answered elsewhere: 4
-    - Call declined elsewhere: 5 (on iOS this will map to Remote user ended call if you use the constants)
+    - Call declined elsewhere: 5 (on Android this will map to Remote user ended call if you use the constants)
   - Access reasons as constants
   ```js
   const { CONSTANTS as CK_CONSTANTS, RNCallKeep } from 'react-native-callkeep';
