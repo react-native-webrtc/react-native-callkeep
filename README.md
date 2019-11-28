@@ -85,6 +85,26 @@ RNCallKeep.setup(options);
       Any additional permissions you'd like your app to have at first launch. Can be used to simplify permission flows and avoid
       multiple popups to the user at different times.
 
+## Constants
+
+To make passing the right integer into methods easier, there are constants that are exported from the module.
+
+```
+const CONSTANTS = {
+  END_CALL_REASONS: {
+    FAILED: 1,
+    REMOTE_ENDED: 2,
+    UNANSWERED: 3,
+    ANSWERED_ELSEWHERE: 4,
+    DECLINED_ELSEWHERE: 5
+  }
+};
+
+const { CONSTANTS as CK_CONSTANTS, RNCallKeep } from 'react-native-callkeep';
+
+console.log(CK_CONSTANTS.END_CALL_REASONS.FAILED) // outputs 1
+```
+
 ## Methods
 
 ### setAvailable
@@ -239,7 +259,7 @@ RNCallKeep.reportEndCallWithUUID(uuid, reason);
     - Remote user ended call: 2
     - Remote user did not answer: 3
     - Call Answered elsewhere: 4
-    - Call declined elsewhere: 5 (iOS only)
+    - Call declined elsewhere: 5 (on iOS this will map to Remote user ended call if you use the constants)
   - Access reasons as constants
   ```js
   const { CONSTANTS as CK_CONSTANTS, RNCallKeep } from 'react-native-callkeep';
