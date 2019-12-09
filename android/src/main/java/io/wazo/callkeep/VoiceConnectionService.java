@@ -53,20 +53,12 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import static io.wazo.callkeep.RNCallKeepModule.ACTION_ANSWER_CALL;
-import static io.wazo.callkeep.RNCallKeepModule.ACTION_AUDIO_SESSION;
-import static io.wazo.callkeep.RNCallKeepModule.ACTION_DTMF_TONE;
-import static io.wazo.callkeep.RNCallKeepModule.ACTION_END_CALL;
-import static io.wazo.callkeep.RNCallKeepModule.ACTION_HOLD_CALL;
-import static io.wazo.callkeep.RNCallKeepModule.ACTION_MUTE_CALL;
-import static io.wazo.callkeep.RNCallKeepModule.ACTION_ONGOING_CALL;
-import static io.wazo.callkeep.RNCallKeepModule.ACTION_UNHOLD_CALL;
-import static io.wazo.callkeep.RNCallKeepModule.ACTION_UNMUTE_CALL;
-import static io.wazo.callkeep.RNCallKeepModule.ACTION_CHECK_REACHABILITY;
-import static io.wazo.callkeep.RNCallKeepModule.EXTRA_CALLER_NAME;
-import static io.wazo.callkeep.RNCallKeepModule.EXTRA_CALL_NUMBER;
-import static io.wazo.callkeep.RNCallKeepModule.EXTRA_CALL_UUID;
-import static io.wazo.callkeep.RNCallKeepModule.handle;
+import static io.wazo.callkeep.Constants.ACTION_AUDIO_SESSION;
+import static io.wazo.callkeep.Constants.ACTION_ONGOING_CALL;
+import static io.wazo.callkeep.Constants.ACTION_CHECK_REACHABILITY;
+import static io.wazo.callkeep.Constants.EXTRA_CALLER_NAME;
+import static io.wazo.callkeep.Constants.EXTRA_CALL_NUMBER;
+import static io.wazo.callkeep.Constants.EXTRA_CALL_UUID;
 
 // @see https://github.com/kbagchiGWC/voice-quickstart-android/blob/9a2aff7fbe0d0a5ae9457b48e9ad408740dfb968/exampleConnectionService/src/main/java/com/twilio/voice/examples/connectionservice/VoiceConnectionService.java
 @TargetApi(Build.VERSION_CODES.M)
@@ -76,6 +68,7 @@ public class VoiceConnectionService extends ConnectionService {
     private static Boolean isReachable;
     private static String notReachableCallUuid;
     private static ConnectionRequest currentConnectionRequest;
+    private static PhoneAccountHandle phoneAccountHandle;
     private static String TAG = "RNCK:VoiceConnectionService";
     public static Map<String, VoiceConnection> currentConnections = new HashMap<>();
     public static Boolean hasOutgoingCall = false;
@@ -96,6 +89,10 @@ public class VoiceConnectionService extends ConnectionService {
         isAvailable = false;
         currentConnectionRequest = null;
         currentConnectionService = this;
+    }
+
+    public static void setPhoneAccountHandle(PhoneAccountHandle phoneAccountHandle) {
+        VoiceConnectionService.phoneAccountHandle = phoneAccountHandle;
     }
 
     public static void setAvailable(Boolean value) {
@@ -271,9 +268,7 @@ public class VoiceConnectionService extends ConnectionService {
         VoiceConnection voiceConnection1 = (VoiceConnection) connection1;
         VoiceConnection voiceConnection2 = (VoiceConnection) connection2;
 
-        PhoneAccountHandle phoneAccountHandle = RNCallKeepModule.handle;
-
-        VoiceConference voiceConference = new VoiceConference(handle);
+        VoiceConference voiceConference = new VoiceConference(phoneAccountHandle);
         voiceConference.addConnection(voiceConnection1);
         voiceConference.addConnection(voiceConnection2);
 

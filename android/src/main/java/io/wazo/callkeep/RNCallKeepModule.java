@@ -67,25 +67,24 @@ import java.util.ResourceBundle;
 
 import static android.support.v4.app.ActivityCompat.requestPermissions;
 
+import static io.wazo.callkeep.Constants.EXTRA_CALLER_NAME;
+import static io.wazo.callkeep.Constants.EXTRA_CALL_UUID;
+import static io.wazo.callkeep.Constants.EXTRA_CALL_NUMBER;
+import static io.wazo.callkeep.Constants.ACTION_END_CALL;
+import static io.wazo.callkeep.Constants.ACTION_ANSWER_CALL;
+import static io.wazo.callkeep.Constants.ACTION_MUTE_CALL;
+import static io.wazo.callkeep.Constants.ACTION_UNMUTE_CALL;
+import static io.wazo.callkeep.Constants.ACTION_DTMF_TONE;
+import static io.wazo.callkeep.Constants.ACTION_HOLD_CALL;
+import static io.wazo.callkeep.Constants.ACTION_UNHOLD_CALL;
+import static io.wazo.callkeep.Constants.ACTION_ONGOING_CALL;
+import static io.wazo.callkeep.Constants.ACTION_AUDIO_SESSION;
+import static io.wazo.callkeep.Constants.ACTION_CHECK_REACHABILITY;
+
 // @see https://github.com/kbagchiGWC/voice-quickstart-android/blob/9a2aff7fbe0d0a5ae9457b48e9ad408740dfb968/exampleConnectionService/src/main/java/com/twilio/voice/examples/connectionservice/VoiceConnectionServiceActivity.java
 public class RNCallKeepModule extends ReactContextBaseJavaModule {
     public static final int REQUEST_READ_PHONE_STATE = 1337;
     public static final int REQUEST_REGISTER_CALL_PROVIDER = 394859;
-
-    public static final String CHECKING_PERMS = "CHECKING_PERMS";
-    public static final String EXTRA_CALLER_NAME = "EXTRA_CALLER_NAME";
-    public static final String EXTRA_CALL_UUID = "EXTRA_CALL_UUID";
-    public static final String EXTRA_CALL_NUMBER = "EXTRA_CALL_NUMBER";
-    public static final String ACTION_END_CALL = "ACTION_END_CALL";
-    public static final String ACTION_ANSWER_CALL = "ACTION_ANSWER_CALL";
-    public static final String ACTION_MUTE_CALL = "ACTION_MUTE_CALL";
-    public static final String ACTION_UNMUTE_CALL = "ACTION_UNMUTE_CALL";
-    public static final String ACTION_DTMF_TONE = "ACTION_DTMF_TONE";
-    public static final String ACTION_HOLD_CALL = "ACTION_HOLD_CALL";
-    public static final String ACTION_UNHOLD_CALL = "ACTION_UNHOLD_CALL";
-    public static final String ACTION_ONGOING_CALL = "ACTION_ONGOING_CALL";
-    public static final String ACTION_AUDIO_SESSION = "ACTION_AUDIO_SESSION";
-    public static final String ACTION_CHECK_REACHABILITY = "ACTION_CHECK_REACHABILITY";
 
     private static final String E_ACTIVITY_DOES_NOT_EXIST = "E_ACTIVITY_DOES_NOT_EXIST";
     private static final String REACT_NATIVE_MODULE_NAME = "RNCallKeep";
@@ -122,6 +121,7 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
             this.registerPhoneAccount(this.getAppContext());
             voiceBroadcastReceiver = new VoiceBroadcastReceiver();
             registerReceiver();
+            VoiceConnectionService.setPhoneAccountHandle(handle);
             VoiceConnectionService.setAvailable(true);
         }
     }
