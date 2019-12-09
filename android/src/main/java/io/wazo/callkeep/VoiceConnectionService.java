@@ -41,8 +41,6 @@ import android.app.ActivityManager;
 import android.app.ActivityManager.RunningTaskInfo;
 
 import com.facebook.react.HeadlessJsTaskService;
-import com.facebook.react.bridge.ReactContext;
-import com.facebook.react.common.LifecycleState;
 
 import java.util.ArrayList;
 import java.util.HashMap;
