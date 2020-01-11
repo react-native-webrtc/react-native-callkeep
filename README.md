@@ -667,6 +667,9 @@ Since iOS 13, you'll have to report the incoming calls that wakes up your applic
 adb logcat *:S RNCallKeepModule:V
 ```
 
+## Troubleshooting
+- Ensure that you use a valid `uuid` using the uuid library as shown in the examples (not a custom string), otherwise the incoming call screen will never be shown on iOS.
+
 ## Contributing
 
 Any pull request, issue report and suggestion are highly welcome!
