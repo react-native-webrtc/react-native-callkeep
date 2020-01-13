@@ -478,8 +478,14 @@ continueUserActivity:(NSUserActivity *)userActivity
     // iOS 13 returns an INStartCallIntent userActivity type
     if (@available(iOS 13, *)) {
         INStartCallIntent *intent = (INStartCallIntent*)interaction.intent;
-        isAudioCall = intent.callCapability == INCallCapabilityAudioCall;
-        isVideoCall = intent.callCapability == INCallCapabilityVideoCall;
+        // callCapability is not available on iOS > 13.2, but it is in 13.1 weirdly...
+        if ([intent respondsToSelector:@selector(callCapability)]) {
+            isAudioCall = intent.callCapability == INCallCapabilityAudioCall;
+            isVideoCall = intent.callCapability == INCallCapabilityVideoCall;
+        } else {
+            isAudioCall = [userActivity.activityType isEqualToString:INStartAudioCallIntentIdentifier];
+            isVideoCall = [userActivity.activityType isEqualToString:INStartVideoCallIntentIdentifier];
+        }
     } else {
 #endif
         //XCode 10 and below
