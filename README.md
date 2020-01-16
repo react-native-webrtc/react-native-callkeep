@@ -441,7 +441,7 @@ RNCallKeep.addEventListener('didActivateAudioSession', () => {
 Callback for `RNCallKeep.displayIncomingCall`
 
 ```js
-RNCallKeep.addEventListener('didDisplayIncomingCall', ({ error, uuid, handle, localizedCallerName, fromPushKit }) => {
+RNCallKeep.addEventListener('didDisplayIncomingCall', ({ error, callUUID, handle, localizedCallerName, hasVideo, fromPushKit }) => {
   // you might want to do following things when receiving this event:
   // - Start playing ringback if it is an outgoing call
 });
@@ -449,6 +449,18 @@ RNCallKeep.addEventListener('didDisplayIncomingCall', ({ error, uuid, handle, lo
 
 - `error` (string)
   - iOS only.
+- `callUUID` (string)
+  - The UUID of the call.
+- `handle` (string)
+  - Phone number of the caller
+- `localizedCallerName` (string)
+  - Name of the caller to be displayed on the native UI
+- `hasVideo` (string)
+  - `1` (video enabled)
+  - `0` (video not enabled)
+- `fromPushKit` (string)
+  - `1` (call triggered from PushKit)
+  - `0` (call not triggered from PushKit)
 
 ### - didPerformSetMutedCallAction
 
