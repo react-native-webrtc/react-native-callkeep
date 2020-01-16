@@ -17,9 +17,9 @@ interface IOptions {
   ios: {
     appName: string,
     imageName?: string,
-    supportsVideo: false,
-    maximumCallGroups: '1',
-    maximumCallsPerCallGroup: '1'
+    supportsVideo?: boolean,
+    maximumCallGroups?: string,
+    maximumCallsPerCallGroup?: string,
     ringtoneSound?: string,
   },
   android: {

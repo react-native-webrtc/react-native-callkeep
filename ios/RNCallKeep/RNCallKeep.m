@@ -236,14 +236,21 @@ RCT_EXPORT_METHOD(reportEndCallWithUUID:(NSString *)uuidString :(int)reason)
 #endif
     NSUUID *uuid = [[NSUUID alloc] initWithUUIDString:uuidString];
     switch (reason) {
-        case CXCallEndedReasonFailed:
+        case 1:
             [self.callKeepProvider reportCallWithUUID:uuid endedAtDate:[NSDate date] reason:CXCallEndedReasonFailed];
             break;
-        case CXCallEndedReasonRemoteEnded:
+        case 2:
+        case 6:
             [self.callKeepProvider reportCallWithUUID:uuid endedAtDate:[NSDate date] reason:CXCallEndedReasonRemoteEnded];
             break;
-        case CXCallEndedReasonUnanswered:
+        case 3:
             [self.callKeepProvider reportCallWithUUID:uuid endedAtDate:[NSDate date] reason:CXCallEndedReasonUnanswered];
+            break;
+        case 4:
+            [self.callKeepProvider reportCallWithUUID:uuid endedAtDate:[NSDate date] reason:CXCallEndedReasonAnsweredElsewhere];
+            break;
+        case 5:
+            [self.callKeepProvider reportCallWithUUID:uuid endedAtDate:[NSDate date] reason:CXCallEndedReasonDeclinedElsewhere];
             break;
         default:
             break;
@@ -345,7 +352,7 @@ RCT_EXPORT_METHOD(sendDTMF:(NSString *)uuidString dtmf:(NSString *)key)
     [RNCallKeep initCallKitProvider];
     [sharedProvider reportNewIncomingCallWithUUID:uuid update:callUpdate completion:^(NSError * _Nullable error) {
         RNCallKeep *callKeep = [RNCallKeep allocWithZone: nil];
-        [callKeep sendEventWithName:RNCallKeepDidDisplayIncomingCall body:@{ @"error": error ? error.localizedDescription : @"", @"callUUID": uuidString, @"handle": handle, @"localizedCallerName": localizedCallerName, @"fromPushKit": fromPushKit ? @"1" : @"0", @"payload": payload }];
+        [callKeep sendEventWithName:RNCallKeepDidDisplayIncomingCall body:@{ @"error": error ? error.localizedDescription : @"", @"callUUID": uuidString, @"handle": handle, @"localizedCallerName": localizedCallerName, @"hasVideo": hasVideo ? @"1" : @"0", @"fromPushKit": fromPushKit ? @"1" : @"0", @"payload": payload }];
         if (error == nil) {
             // Workaround per https://forums.developer.apple.com/message/169511
             if ([callKeep lessThanIos10_2]) {
@@ -472,8 +479,14 @@ continueUserActivity:(NSUserActivity *)userActivity
     // iOS 13 returns an INStartCallIntent userActivity type
     if (@available(iOS 13, *)) {
         INStartCallIntent *intent = (INStartCallIntent*)interaction.intent;
-        isAudioCall = intent.callCapability == INCallCapabilityAudioCall;
-        isVideoCall = intent.callCapability == INCallCapabilityVideoCall;
+        // callCapability is not available on iOS > 13.2, but it is in 13.1 weirdly...
+        if ([intent respondsToSelector:@selector(callCapability)]) {
+            isAudioCall = intent.callCapability == INCallCapabilityAudioCall;
+            isVideoCall = intent.callCapability == INCallCapabilityVideoCall;
+        } else {
+            isAudioCall = [userActivity.activityType isEqualToString:INStartAudioCallIntentIdentifier];
+            isVideoCall = [userActivity.activityType isEqualToString:INStartVideoCallIntentIdentifier];
+        }
     } else {
 #endif
         //XCode 10 and below
