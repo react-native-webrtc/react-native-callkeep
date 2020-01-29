@@ -63,6 +63,7 @@ import static io.wazo.callkeep.RNCallKeepModule.ACTION_MUTE_CALL;
 import static io.wazo.callkeep.RNCallKeepModule.ACTION_ONGOING_CALL;
 import static io.wazo.callkeep.RNCallKeepModule.ACTION_UNHOLD_CALL;
 import static io.wazo.callkeep.RNCallKeepModule.ACTION_UNMUTE_CALL;
+import static io.wazo.callkeep.RNCallKeepModule.ACTION_CHECK_REACHABILITY;
 import static io.wazo.callkeep.RNCallKeepModule.EXTRA_CALLER_NAME;
 import static io.wazo.callkeep.RNCallKeepModule.EXTRA_CALL_NUMBER;
 import static io.wazo.callkeep.RNCallKeepModule.EXTRA_CALL_UUID;
@@ -71,10 +72,15 @@ import static io.wazo.callkeep.RNCallKeepModule.handle;
 // @see https://github.com/kbagchiGWC/voice-quickstart-android/blob/9a2aff7fbe0d0a5ae9457b48e9ad408740dfb968/exampleConnectionService/src/main/java/com/twilio/voice/examples/connectionservice/VoiceConnectionService.java
 @TargetApi(Build.VERSION_CODES.M)
 public class VoiceConnectionService extends ConnectionService {
-    private static Boolean isAvailable = false;
+    private static Boolean isAvailable;
+    private static Boolean isInitialized;
+    private static Boolean isReachable;
+    private static String notReachableCallUuid;
+    private static ConnectionRequest currentConnectionRequest;
     private static String TAG = "RNCK:VoiceConnectionService";
     public static Map<String, VoiceConnection> currentConnections = new HashMap<>();
     public static Boolean hasOutgoingCall = false;
+    public static VoiceConnectionService currentConnectionService = null;
 
     public static Connection getConnection(String connectionId) {
         if (currentConnections.containsKey(connectionId)) {
@@ -85,12 +91,27 @@ public class VoiceConnectionService extends ConnectionService {
 
     public VoiceConnectionService() {
         super();
+        isReachable = false;
+        isInitialized = false;
+        isAvailable = false;
+        currentConnectionRequest = null;
+        currentConnectionService = this;
     }
 
     public static void setAvailable(Boolean value) {
+        Log.d(TAG, "setAvailable: " + (value ? "true" : "false"));
+        if (value) {
+            isInitialized = true;
+        }
+
         isAvailable = value;
     }
 
+    public static void setReachable() {
+        Log.d(TAG, "setReachable");
+        isReachable = true;
+        VoiceConnectionService.currentConnectionRequest = null;
+    }
 
     public static void deinitConnection(String connectionId) {
         Log.d(TAG, "deinitConnection:" + connectionId);
@@ -116,55 +137,105 @@ public class VoiceConnectionService extends ConnectionService {
     @Override
     public Connection onCreateOutgoingConnection(PhoneAccountHandle connectionManagerPhoneAccount, ConnectionRequest request) {
         VoiceConnectionService.hasOutgoingCall = true;
+        String uuid = UUID.randomUUID().toString();
 
+        if (!isInitialized && !isReachable) {
+            this.notReachableCallUuid = uuid;
+            this.currentConnectionRequest = request;
+            this.checkReachability();
+        }
+
+        return this.makeOutgoingCall(request, uuid, false);
+    }
+
+    private Connection makeOutgoingCall(ConnectionRequest request, String uuid, Boolean forceWakeUp) {
         Bundle extras = request.getExtras();
         Connection outgoingCallConnection = null;
         String number = request.getAddress().getSchemeSpecificPart();
         String extrasNumber = extras.getString(EXTRA_CALL_NUMBER);
         String displayName = extras.getString(EXTRA_CALLER_NAME);
-        String uuid = UUID.randomUUID().toString();
+        Boolean isForeground = VoiceConnectionService.isRunning(this.getApplicationContext());
 
-         Log.d(TAG, "onCreateOutgoingConnection:" + uuid + ", number: " + number);
+        Log.d(TAG, "makeOutgoingCall:" + uuid + ", number: " + number + ", displayName:" + displayName);
 
         // Wakeup application if needed
-        if (!VoiceConnectionService.isRunning(this.getApplicationContext())) {
+        if (!isForeground || forceWakeUp) {
             Log.d(TAG, "onCreateOutgoingConnection: Waking up application");
-            Intent headlessIntent = new Intent(
-                this.getApplicationContext(),
-                RNCallKeepBackgroundMessagingService.class
-            );
-            headlessIntent.putExtra("callUUID", uuid);
-            headlessIntent.putExtra("name", displayName);
-            headlessIntent.putExtra("handle", number);
-            ComponentName name = this.getApplicationContext().startService(headlessIntent);
-            if (name != null) {
-              HeadlessJsTaskService.acquireWakeLockNow(this.getApplicationContext());
-            }
-        } else if (!this.canMakeOutgoingCall()) {
+            this.wakeUpApplication(uuid, number, displayName);
+        } else if (!this.canMakeOutgoingCall() && isReachable) {
+            Log.d(TAG, "onCreateOutgoingConnection: not available");
             return Connection.createFailedConnection(new DisconnectCause(DisconnectCause.LOCAL));
         }
 
         // TODO: Hold all other calls
-        if (extrasNumber != null && extrasNumber.equals(number)) {
-            outgoingCallConnection = createConnection(request);
-        } else {
+        if (extrasNumber == null || !extrasNumber.equals(number)) {
             extras.putString(EXTRA_CALL_UUID, uuid);
             extras.putString(EXTRA_CALLER_NAME, displayName);
             extras.putString(EXTRA_CALL_NUMBER, number);
-            outgoingCallConnection = createConnection(request);
         }
 
+        outgoingCallConnection = createConnection(request);
         outgoingCallConnection.setDialing();
         outgoingCallConnection.setAudioModeIsVoip(true);
         outgoingCallConnection.setCallerDisplayName(displayName, TelecomManager.PRESENTATION_ALLOWED);
-        outgoingCallConnection.setInitialized();
+
+        // ‍️Weirdly on some Samsung phones (A50, S9...) using `setInitialized` will not display the native UI ...
+        // when making a call from the native Phone application. The call will still be displayed correctly without it.
+        if (!Build.MANUFACTURER.equalsIgnoreCase("Samsung")) {
+            outgoingCallConnection.setInitialized();
+        }
 
         HashMap<String, String> extrasMap = this.bundleToMap(extras);
 
         sendCallRequestToActivity(ACTION_ONGOING_CALL, extrasMap);
-        sendCallRequestToActivity(ACTION_AUDIO_SESSION, null);
+        sendCallRequestToActivity(ACTION_AUDIO_SESSION, extrasMap);
+
+        Log.d(TAG, "onCreateOutgoingConnection: calling");
 
         return outgoingCallConnection;
+    }
+
+    private void wakeUpApplication(String uuid, String number, String displayName) {
+        Intent headlessIntent = new Intent(
+            this.getApplicationContext(),
+            RNCallKeepBackgroundMessagingService.class
+        );
+        headlessIntent.putExtra("callUUID", uuid);
+        headlessIntent.putExtra("name", displayName);
+        headlessIntent.putExtra("handle", number);
+        Log.d(TAG, "wakeUpApplication: " + uuid + ", number : " + number + ", displayName:" + displayName);
+
+        ComponentName name = this.getApplicationContext().startService(headlessIntent);
+        if (name != null) {
+          HeadlessJsTaskService.acquireWakeLockNow(this.getApplicationContext());
+        }
+    }
+
+    private void wakeUpAfterReachabilityTimeout(ConnectionRequest request) {
+        if (this.currentConnectionRequest == null) {
+            return;
+        }
+        Log.d(TAG, "checkReachability timeout, force wakeup");
+        Bundle extras = request.getExtras();
+        String number = request.getAddress().getSchemeSpecificPart();
+        String displayName = extras.getString(EXTRA_CALLER_NAME);
+        wakeUpApplication(this.notReachableCallUuid, number, displayName);
+
+        VoiceConnectionService.currentConnectionRequest = null;
+    }
+
+    private void checkReachability() {
+        Log.d(TAG, "checkReachability");
+
+        final VoiceConnectionService instance = this;
+        sendCallRequestToActivity(ACTION_CHECK_REACHABILITY, null);
+
+        new android.os.Handler().postDelayed(
+            new Runnable() {
+                public void run() {
+                    instance.wakeUpAfterReachabilityTimeout(instance.currentConnectionRequest);
+                }
+            }, 2000);
     }
 
     private Boolean canMakeOutgoingCall() {

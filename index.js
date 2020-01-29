@@ -6,27 +6,38 @@ const RNCallKeepModule = NativeModules.RNCallKeep;
 const isIOS = Platform.OS === 'ios';
 const supportConnectionService = !isIOS && Platform.Version >= 23;
 
+const CONSTANTS = {
+  END_CALL_REASONS: {
+    FAILED: 1,
+    REMOTE_ENDED: 2,
+    UNANSWERED: 3,
+    ANSWERED_ELSEWHERE: 4,
+    DECLINED_ELSEWHERE: isIOS ? 5 : 2, // make declined elsewhere link to "Remote ended" on android because that's kinda true
+    MISSED: isIOS ? 2 : 6  }
+};
+
+export { CONSTANTS };
+
 class RNCallKeep {
 
   constructor() {
-    this._callkitEventHandlers = new Map();
+    this._callkeepEventHandlers = new Map();
   }
-
 
   addEventListener = (type, handler) => {
     const listener = listeners[type](handler);
 
-    this._callkitEventHandlers.set(handler, listener);
+    this._callkeepEventHandlers.set(type, listener);
   };
 
-  removeEventListener = (type, handler) => {
-    const listener = this._callkitEventHandlers.get(handler);
+  removeEventListener = (type) => {
+    const listener = this._callkeepEventHandlers.get(type);
     if (!listener) {
       return;
     }
 
     listener.remove();
-    this._callkitEventHandlers.delete(handler);
+    this._callkeepEventHandlers.delete(type);
   };
 
   setup = async (options) => {
@@ -58,7 +69,7 @@ class RNCallKeep {
     if (!isIOS) {
       RNCallKeepModule.answerIncomingCall(uuid);
     }
-  }
+  };
 
   startCall = (uuid, handle, contactIdentifier, handleType = 'number', hasVideo = false ) => {
     if (!isIOS) {
@@ -83,9 +94,7 @@ class RNCallKeep {
     }
   };
 
-  reportEndCallWithUUID = (uuid, reason) => {
-    RNCallKeepModule.reportEndCallWithUUID(uuid, reason);
-  }
+  reportEndCallWithUUID = (uuid, reason) => RNCallKeepModule.reportEndCallWithUUID(uuid, reason);
 
   /*
    * Android explicitly states we reject a call
@@ -97,15 +106,11 @@ class RNCallKeep {
     } else {
       RNCallKeepModule.endCall(uuid);
     }
-  }
-
-  endCall = (uuid) => {
-    RNCallKeepModule.endCall(uuid);
   };
 
-  endAllCalls = () => {
-    RNCallKeepModule.endAllCalls();
-  };
+  endCall = (uuid) => RNCallKeepModule.endCall(uuid);
+
+  endAllCalls = () => RNCallKeepModule.endAllCalls();
 
   supportConnectionService = () => supportConnectionService;
 
@@ -119,9 +124,7 @@ class RNCallKeep {
     RNCallKeepModule.setMutedCall(uuid, shouldMute);
   };
 
-  sendDTMF = (uuid, key) => {
-    RNCallKeepModule.sendDTMF(uuid, key);
-  };
+  sendDTMF = (uuid, key) => RNCallKeepModule.sendDTMF(uuid, key);
 
   checkIfBusy = () =>
     isIOS
@@ -150,18 +153,20 @@ class RNCallKeep {
     RNCallKeepModule.setCurrentCallActive(callUUID);
   };
 
-  updateDisplay = (uuid, displayName, uri) => {
-    RNCallKeepModule.updateDisplay(uuid, displayName, uri)
-  }
+  updateDisplay = (uuid, displayName, handle) => RNCallKeepModule.updateDisplay(uuid, displayName, handle);
 
-  setOnHold = (uuid, shouldHold) => {
-    RNCallKeepModule.setOnHold(uuid, shouldHold);
-  }
+  setOnHold = (uuid, shouldHold) => RNCallKeepModule.setOnHold(uuid, shouldHold);
 
-  reportUpdatedCall = (uuid, localizedCallerName) =>
-    isIOS
+  setReachable = () => RNCallKeepModule.setReachable();
+
+  // @deprecated
+  reportUpdatedCall = (uuid, localizedCallerName) => {
+    console.warn('RNCallKeep.reportUpdatedCall is deprecated, use RNCallKeep.updateDisplay instead');
+
+    return isIOS
       ? RNCallKeepModule.reportUpdatedCall(uuid, localizedCallerName)
       : Promise.reject('RNCallKeep.reportUpdatedCall was called from unsupported OS');
+  };
 
   _setupIOS = async (options) => new Promise((resolve, reject) => {
     if (!options.appName) {

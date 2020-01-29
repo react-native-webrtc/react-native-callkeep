@@ -101,7 +101,7 @@ public class VoiceConnection extends Connection {
         setAudioModeIsVoip(true);
 
         sendCallRequestToActivity(ACTION_ANSWER_CALL, handle);
-        sendCallRequestToActivity(ACTION_AUDIO_SESSION, null);
+        sendCallRequestToActivity(ACTION_AUDIO_SESSION, handle);
         Log.d(TAG, "onAnswer executed");
     }
 
@@ -136,10 +136,17 @@ public class VoiceConnection extends Connection {
                 setDisconnected(new DisconnectCause(DisconnectCause.ERROR));
                 break;
             case 2:
+            case 5:
                 setDisconnected(new DisconnectCause(DisconnectCause.REMOTE));
                 break;
             case 3:
                 setDisconnected(new DisconnectCause(DisconnectCause.BUSY));
+                break;
+            case 4:
+                setDisconnected(new DisconnectCause(DisconnectCause.ANSWERED_ELSEWHERE));
+                break;
+            case 6:
+                setDisconnected(new DisconnectCause(DisconnectCause.MISSED));
                 break;
             default:
                 break;

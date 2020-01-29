@@ -11,7 +11,7 @@
     "react-dom": "^16.8.6",
     "react-native": "0.59.8",
     "react-native-background-timer": "^2.1.1",
-    "react-native-callkeep": "https://github.com/react-native-webrtc/react-native-callkeep",
+    "react-native-callkeep": "3.0.7",
     "react-native-device-info": "^2.3.2",
     "react-native-gesture-handler": "~1.3.0",
     "react-native-reanimated": "~1.1.0",
