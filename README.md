@@ -51,7 +51,7 @@ const options = {
   }
 };
 
-RNCallKeep.setup(options);
+RNCallKeep.setup(options).then(accepted => {});
 ```
 
 - `options`: Object
