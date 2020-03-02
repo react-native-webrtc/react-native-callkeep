@@ -61,6 +61,7 @@ export default class RNCallKeep {
     localizedCallerName?: string,
     handleType?: HandleType,
     hasVideo?: boolean,
+    payload?: object,
   ) {
 
   }
