@@ -33,4 +33,8 @@ continueUserActivity:(NSUserActivity *)userActivity
                      hasVideo:(BOOL)hasVideo
           localizedCallerName:(NSString * _Nullable)localizedCallerName
                   fromPushKit:(BOOL)fromPushKit;
+
++ (void)reportEndCallWithUUID:(NSString *)uuidString
+                       reason:(int)reason;
+
 @end
