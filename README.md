@@ -62,6 +62,8 @@ RNCallKeep.setup(options).then(accepted => {});
       If provided, it will be displayed on system UI during the call
     - `ringtoneSound`: string (optional)
       If provided, it will be played when incoming calls received; the system will use the default ringtone if this is not provided
+    - `includesCallsInRecents`: boolean (optional)
+      If provided, calls will be shown in the recent calls when true and not when false (ios 11 and above)
     - `maximumCallGroups`: string (optional)
       If provided, the maximum number of call groups supported by this application (Default: 3)
     - `maximumCallsPerCallGroup`: string (optional)
