@@ -231,30 +231,7 @@ RCT_EXPORT_METHOD(reportConnectedOutgoingCallWithUUID:(NSString *)uuidString)
 
 RCT_EXPORT_METHOD(reportEndCallWithUUID:(NSString *)uuidString :(int)reason)
 {
-#ifdef DEBUG
-    NSLog(@"[RNCallKeep][reportEndCallWithUUID] uuidString = %@ reason = %d", uuidString, reason);
-#endif
-    NSUUID *uuid = [[NSUUID alloc] initWithUUIDString:uuidString];
-    switch (reason) {
-        case 1:
-            [self.callKeepProvider reportCallWithUUID:uuid endedAtDate:[NSDate date] reason:CXCallEndedReasonFailed];
-            break;
-        case 2:
-        case 6:
-            [self.callKeepProvider reportCallWithUUID:uuid endedAtDate:[NSDate date] reason:CXCallEndedReasonRemoteEnded];
-            break;
-        case 3:
-            [self.callKeepProvider reportCallWithUUID:uuid endedAtDate:[NSDate date] reason:CXCallEndedReasonUnanswered];
-            break;
-        case 4:
-            [self.callKeepProvider reportCallWithUUID:uuid endedAtDate:[NSDate date] reason:CXCallEndedReasonAnsweredElsewhere];
-            break;
-        case 5:
-            [self.callKeepProvider reportCallWithUUID:uuid endedAtDate:[NSDate date] reason:CXCallEndedReasonDeclinedElsewhere];
-            break;
-        default:
-            break;
-    }
+    [RNCallKeep endCallWithUUID: uuidString reason:reason];
 }
 
 RCT_EXPORT_METHOD(updateDisplay:(NSString *)uuidString :(NSString *)displayName :(NSString *)uri)
@@ -325,6 +302,35 @@ RCT_EXPORT_METHOD(sendDTMF:(NSString *)uuidString dtmf:(NSString *)key)
             }
         }
     }];
+}
+
++ (void)endCallWithUUID:(NSString *)uuidString
+                 reason:(int)reason
+{
+#ifdef DEBUG
+    NSLog(@"[RNCallKeep][reportEndCallWithUUID] uuidString = %@ reason = %d", uuidString, reason);
+#endif
+    NSUUID *uuid = [[NSUUID alloc] initWithUUIDString:uuidString];
+    switch (reason) {
+        case 1:
+            [sharedProvider reportCallWithUUID:uuid endedAtDate:[NSDate date] reason:CXCallEndedReasonFailed];
+            break;
+        case 2:
+        case 6:
+            [sharedProvider reportCallWithUUID:uuid endedAtDate:[NSDate date] reason:CXCallEndedReasonRemoteEnded];
+            break;
+        case 3:
+            [sharedProvider reportCallWithUUID:uuid endedAtDate:[NSDate date] reason:CXCallEndedReasonUnanswered];
+            break;
+        case 4:
+            [sharedProvider reportCallWithUUID:uuid endedAtDate:[NSDate date] reason:CXCallEndedReasonAnsweredElsewhere];
+            break;
+        case 5:
+            [sharedProvider reportCallWithUUID:uuid endedAtDate:[NSDate date] reason:CXCallEndedReasonDeclinedElsewhere];
+            break;
+        default:
+            break;
+    }
 }
 
 + (void)reportNewIncomingCall:(NSString *)uuidString

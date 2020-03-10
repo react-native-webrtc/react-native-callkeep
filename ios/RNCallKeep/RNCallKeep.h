@@ -34,4 +34,7 @@ continueUserActivity:(NSUserActivity *)userActivity
           localizedCallerName:(NSString * _Nullable)localizedCallerName
                   fromPushKit:(BOOL)fromPushKit
                       payload:(NSDictionary * _Nullable)payload;
+
++ (void)endCallWithUUID:(NSString *)uuidString
+                 reason:(int)reason;
 @end
