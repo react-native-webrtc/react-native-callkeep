@@ -136,7 +136,7 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
         Log.d(TAG, "displayIncomingCall identifier: " + identifier + ", callerName: " + callerName);
 
         Bundle extras = new Bundle();
-        Uri uri = Uri.fromParts((callerType.equals('sip') ? PhoneAccount.SCHEME_SIP : PhoneAccount.SCHEME_TEL), identifier, null);
+        Uri uri = Uri.fromParts((callerType.equals("sip") ? PhoneAccount.SCHEME_SIP : PhoneAccount.SCHEME_TEL), identifier, null);
 
         extras.putParcelable(TelecomManager.EXTRA_INCOMING_CALL_ADDRESS, uri);
         extras.putString(EXTRA_CALLER_NAME, callerName);
@@ -172,7 +172,7 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
         Log.d(TAG, "startCall identifer: " + identifer + ", callerName: " + callerName);
 
         Bundle extras = new Bundle();
-        Uri uri = Uri.fromParts((callerType.equals('sip') ? PhoneAccount.SCHEME_SIP : PhoneAccount.SCHEME_TEL), identifer, null);
+        Uri uri = Uri.fromParts((callerType.equals("sip") ? PhoneAccount.SCHEME_SIP : PhoneAccount.SCHEME_TEL), identifer, null);
 
         Bundle callExtras = new Bundle();
         callExtras.putString(EXTRA_CALLER_NAME, callerName);
