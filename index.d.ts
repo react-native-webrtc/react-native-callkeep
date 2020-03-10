@@ -43,7 +43,7 @@ export default class RNCallKeep {
 
   }
 
-  static removeEventListener(type: Events, handler: (args: any) => void) {
+  static removeEventListener(type: Events) {
 
   }
 
