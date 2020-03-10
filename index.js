@@ -6,6 +6,18 @@ const RNCallKeepModule = NativeModules.RNCallKeep;
 const isIOS = Platform.OS === 'ios';
 const supportConnectionService = !isIOS && Platform.Version >= 23;
 
+const CONSTANTS = {
+  END_CALL_REASONS: {
+    FAILED: 1,
+    REMOTE_ENDED: 2,
+    UNANSWERED: 3,
+    ANSWERED_ELSEWHERE: 4,
+    DECLINED_ELSEWHERE: isIOS ? 5 : 2, // make declined elsewhere link to "Remote ended" on android because that's kinda true
+    MISSED: isIOS ? 2 : 6  }
+};
+
+export { CONSTANTS };
+
 class RNCallKeep {
 
   constructor() {
@@ -175,7 +187,10 @@ class RNCallKeep {
 
     if (shouldOpenAccounts) {
       RNCallKeepModule.openPhoneAccounts();
+      return true;
     }
+
+    return false;
   };
 
   _hasDefaultPhoneAccount = async (options) => {
