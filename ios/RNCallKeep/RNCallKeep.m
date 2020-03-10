@@ -151,7 +151,7 @@ RCT_EXPORT_METHOD(displayIncomingCall:(NSString *)uuidString
                              hasVideo:(BOOL)hasVideo
                   localizedCallerName:(NSString * _Nullable)localizedCallerName)
 {
-    [RNCallKeep reportNewIncomingCall: uuidString handle:handle handleType:handleType hasVideo:hasVideo localizedCallerName:localizedCallerName fromPushKit: NO];
+    [RNCallKeep reportNewIncomingCall: uuidString handle:handle handleType:handleType hasVideo:hasVideo localizedCallerName:localizedCallerName fromPushKit: NO payload:nil];
 }
 
 RCT_EXPORT_METHOD(startCall:(NSString *)uuidString
@@ -333,6 +333,7 @@ RCT_EXPORT_METHOD(sendDTMF:(NSString *)uuidString dtmf:(NSString *)key)
                      hasVideo:(BOOL)hasVideo
           localizedCallerName:(NSString * _Nullable)localizedCallerName
                   fromPushKit:(BOOL)fromPushKit
+                      payload:(NSDictionary * _Nullable)payload
 {
 #ifdef DEBUG
     NSLog(@"[RNCallKeep][reportNewIncomingCall] uuidString = %@", uuidString);
@@ -351,7 +352,7 @@ RCT_EXPORT_METHOD(sendDTMF:(NSString *)uuidString dtmf:(NSString *)key)
     [RNCallKeep initCallKitProvider];
     [sharedProvider reportNewIncomingCallWithUUID:uuid update:callUpdate completion:^(NSError * _Nullable error) {
         RNCallKeep *callKeep = [RNCallKeep allocWithZone: nil];
-        [callKeep sendEventWithName:RNCallKeepDidDisplayIncomingCall body:@{ @"error": error ? error.localizedDescription : @"", @"callUUID": uuidString, @"handle": handle, @"localizedCallerName": localizedCallerName, @"hasVideo": hasVideo ? @"1" : @"0", @"fromPushKit": fromPushKit ? @"1" : @"0" }];
+        [callKeep sendEventWithName:RNCallKeepDidDisplayIncomingCall body:@{ @"error": error ? error.localizedDescription : @"", @"callUUID": uuidString, @"handle": handle, @"localizedCallerName": localizedCallerName, @"hasVideo": hasVideo ? @"1" : @"0", @"fromPushKit": fromPushKit ? @"1" : @"0", @"payload": payload }];
         if (error == nil) {
             // Workaround per https://forums.developer.apple.com/message/169511
             if ([callKeep lessThanIos10_2]) {
@@ -359,6 +360,16 @@ RCT_EXPORT_METHOD(sendDTMF:(NSString *)uuidString dtmf:(NSString *)key)
             }
         }
     }];
+}
+
++ (void)reportNewIncomingCall:(NSString *)uuidString
+                       handle:(NSString *)handle
+                   handleType:(NSString *)handleType
+                     hasVideo:(BOOL)hasVideo
+          localizedCallerName:(NSString * _Nullable)localizedCallerName
+                  fromPushKit:(BOOL)fromPushKit
+{
+    [RNCallKeep reportNewIncomingCall: uuidString handle:handle handleType:handleType hasVideo:hasVideo localizedCallerName:localizedCallerName fromPushKit: NO payload:nil];
 }
 
 - (BOOL)lessThanIos10_2
