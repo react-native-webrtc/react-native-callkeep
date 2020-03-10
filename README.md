@@ -441,7 +441,7 @@ RNCallKeep.addEventListener('didActivateAudioSession', () => {
 Callback for `RNCallKeep.displayIncomingCall`
 
 ```js
-RNCallKeep.addEventListener('didDisplayIncomingCall', ({ error, callUUID, handle, localizedCallerName, hasVideo, fromPushKit }) => {
+RNCallKeep.addEventListener('didDisplayIncomingCall', ({ error, callUUID, handle, localizedCallerName, hasVideo, fromPushKit, payload }) => {
   // you might want to do following things when receiving this event:
   // - Start playing ringback if it is an outgoing call
 });
@@ -461,6 +461,8 @@ RNCallKeep.addEventListener('didDisplayIncomingCall', ({ error, callUUID, handle
 - `fromPushKit` (string)
   - `1` (call triggered from PushKit)
   - `0` (call not triggered from PushKit)
+- `didDisplayIncomingCall` (object)
+  - VOIP push payload.
 
 ### - didPerformSetMutedCallAction
 
