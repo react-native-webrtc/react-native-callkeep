@@ -64,7 +64,7 @@ import static io.wazo.callkeep.RNCallKeepModule.ACTION_UNHOLD_CALL;
 import static io.wazo.callkeep.RNCallKeepModule.ACTION_UNMUTE_CALL;
 import static io.wazo.callkeep.RNCallKeepModule.ACTION_CHECK_REACHABILITY;
 import static io.wazo.callkeep.RNCallKeepModule.EXTRA_CALLER_NAME;
-import static io.wazo.callkeep.RNCallKeepModule.EXTRA_CALL_NUMBER;
+import static io.wazo.callkeep.RNCallKeepModule.EXTRA_CALL_IDENTIFIER;
 import static io.wazo.callkeep.RNCallKeepModule.EXTRA_CALL_UUID;
 import static io.wazo.callkeep.RNCallKeepModule.handle;
 
@@ -125,7 +125,7 @@ public class VoiceConnectionService extends ConnectionService {
     @Override
     public Connection onCreateIncomingConnection(PhoneAccountHandle connectionManagerPhoneAccount, ConnectionRequest request) {
         Bundle extra = request.getExtras();
-        Uri number = request.getAddress();
+        Uri identifier = request.getAddress();
         String name = extra.getString(EXTRA_CALLER_NAME);
         Connection incomingCallConnection = createConnection(request);
         incomingCallConnection.setRinging();
@@ -151,27 +151,27 @@ public class VoiceConnectionService extends ConnectionService {
     private Connection makeOutgoingCall(ConnectionRequest request, String uuid, Boolean forceWakeUp) {
         Bundle extras = request.getExtras();
         Connection outgoingCallConnection = null;
-        String number = request.getAddress().getSchemeSpecificPart();
-        String extrasNumber = extras.getString(EXTRA_CALL_NUMBER);
+        String identifier = request.getAddress().getSchemeSpecificPart();
+        String extrasIdentifier = extras.getString(EXTRA_CALL_IDENTIFIER);
         String displayName = extras.getString(EXTRA_CALLER_NAME);
         Boolean isForeground = VoiceConnectionService.isRunning(this.getApplicationContext());
 
-        Log.d(TAG, "makeOutgoingCall:" + uuid + ", number: " + number + ", displayName:" + displayName);
+        Log.d(TAG, "makeOutgoingCall:" + uuid + ", identifier: " + identifier + ", displayName:" + displayName);
 
         // Wakeup application if needed
         if (!isForeground || forceWakeUp) {
             Log.d(TAG, "onCreateOutgoingConnection: Waking up application");
-            this.wakeUpApplication(uuid, number, displayName);
+            this.wakeUpApplication(uuid, identifier, displayName);
         } else if (!this.canMakeOutgoingCall() && isReachable) {
             Log.d(TAG, "onCreateOutgoingConnection: not available");
             return Connection.createFailedConnection(new DisconnectCause(DisconnectCause.LOCAL));
         }
 
         // TODO: Hold all other calls
-        if (extrasNumber == null || !extrasNumber.equals(number)) {
+        if (extrasIdentifier == null || !extrasIdentifier.equals(number)) {
             extras.putString(EXTRA_CALL_UUID, uuid);
             extras.putString(EXTRA_CALLER_NAME, displayName);
-            extras.putString(EXTRA_CALL_NUMBER, number);
+            extras.putString(EXTRA_CALL_IDENTIFIER, identifier);
         }
 
         outgoingCallConnection = createConnection(request);
@@ -195,15 +195,15 @@ public class VoiceConnectionService extends ConnectionService {
         return outgoingCallConnection;
     }
 
-    private void wakeUpApplication(String uuid, String number, String displayName) {
+    private void wakeUpApplication(String uuid, String identifier, String displayName) {
         Intent headlessIntent = new Intent(
             this.getApplicationContext(),
             RNCallKeepBackgroundMessagingService.class
         );
         headlessIntent.putExtra("callUUID", uuid);
         headlessIntent.putExtra("name", displayName);
-        headlessIntent.putExtra("handle", number);
-        Log.d(TAG, "wakeUpApplication: " + uuid + ", number : " + number + ", displayName:" + displayName);
+        headlessIntent.putExtra("handle", identifier);
+        Log.d(TAG, "wakeUpApplication: " + uuid + ", identifier : " + identifier + ", displayName:" + displayName);
 
         ComponentName name = this.getApplicationContext().startService(headlessIntent);
         if (name != null) {
@@ -217,9 +217,9 @@ public class VoiceConnectionService extends ConnectionService {
         }
         Log.d(TAG, "checkReachability timeout, force wakeup");
         Bundle extras = request.getExtras();
-        String number = request.getAddress().getSchemeSpecificPart();
+        String identifier = request.getAddress().getSchemeSpecificPart();
         String displayName = extras.getString(EXTRA_CALLER_NAME);
-        wakeUpApplication(this.notReachableCallUuid, number, displayName);
+        wakeUpApplication(this.notReachableCallUuid, identifier, displayName);
 
         VoiceConnectionService.currentConnectionRequest = null;
     }
@@ -245,9 +245,9 @@ public class VoiceConnectionService extends ConnectionService {
     private Connection createConnection(ConnectionRequest request) {
         Bundle extras = request.getExtras();
         HashMap<String, String> extrasMap = this.bundleToMap(extras);
-        extrasMap.put(EXTRA_CALL_NUMBER, request.getAddress().toString());
+        extrasMap.put(EXTRA_CALL_IDENTIFIER, request.getAddress().toString());
         VoiceConnection connection = new VoiceConnection(this, extrasMap);
-        connection.setConnectionCapabilities(Connection.CAPABILITY_MUTE | Connection.CAPABILITY_SUPPORT_HOLD);
+        connection.setConnectionCapabilities(Connection.CAPABILITY_MUTE);
         connection.setInitializing();
         connection.setExtras(extras);
         currentConnections.put(extras.getString(EXTRA_CALL_UUID), connection);
