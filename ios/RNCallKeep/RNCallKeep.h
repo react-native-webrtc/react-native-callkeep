@@ -32,9 +32,9 @@ continueUserActivity:(NSUserActivity *)userActivity
                    handleType:(NSString *)handleType
                      hasVideo:(BOOL)hasVideo
           localizedCallerName:(NSString * _Nullable)localizedCallerName
-                  fromPushKit:(BOOL)fromPushKit;
+                  fromPushKit:(BOOL)fromPushKit
+                      payload:(NSDictionary * _Nullable)payload;
 
 + (void)endCallWithUUID:(NSString *)uuidString
                  reason:(int)reason;
-
 @end
