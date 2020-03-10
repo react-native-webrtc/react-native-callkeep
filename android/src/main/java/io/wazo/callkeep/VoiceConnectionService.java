@@ -168,7 +168,7 @@ public class VoiceConnectionService extends ConnectionService {
         }
 
         // TODO: Hold all other calls
-        if (extrasIdentifier == null || !extrasIdentifier.equals(number)) {
+        if (extrasIdentifier == null || !extrasIdentifier.equals(identifier)) {
             extras.putString(EXTRA_CALL_UUID, uuid);
             extras.putString(EXTRA_CALLER_NAME, displayName);
             extras.putString(EXTRA_CALL_IDENTIFIER, identifier);

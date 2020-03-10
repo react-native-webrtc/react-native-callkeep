@@ -143,7 +143,7 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
         extras.putString(EXTRA_CALL_UUID, uuid);
 
         if (callHasVideo) {
-            extras.putParcelable(TelecomManager.EXTRA_START_CALL_WITH_VIDEO_STATE, VideoProfile.STATE_BIDIRECTIONAL);
+            extras.putInt(TelecomManager.EXTRA_START_CALL_WITH_VIDEO_STATE, VideoProfile.STATE_BIDIRECTIONAL);
         }
 
         telecomManager.addNewIncomingCall(handle, extras);
@@ -183,7 +183,7 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
         extras.putParcelable(TelecomManager.EXTRA_OUTGOING_CALL_EXTRAS, callExtras);
 
         if (callHasVideo) {
-            extras.putParcelable(TelecomManager.EXTRA_INCOMING_VIDEO_STATE, VideoProfile.STATE_BIDIRECTIONAL);
+            extras.putInt(TelecomManager.EXTRA_INCOMING_VIDEO_STATE, VideoProfile.STATE_BIDIRECTIONAL);
         }
 
         telecomManager.placeCall(uri, extras);
@@ -566,7 +566,7 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
                     sendEventToJS("RNCallKeepDidPerformDTMFAction", args);
                     break;
                 case ACTION_ONGOING_CALL:
-                    args.putString("handle", attributeMap.get(EXTRA_CALL_NUMBER));
+                    args.putString("handle", attributeMap.get(EXTRA_CALL_IDENTIFIER));
                     args.putString("callUUID", attributeMap.get(EXTRA_CALL_UUID));
                     args.putString("name", attributeMap.get(EXTRA_CALLER_NAME));
                     sendEventToJS("RNCallKeepDidReceiveStartCallAction", args);
