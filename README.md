@@ -229,7 +229,7 @@ RNCallKeep.endCall(uuid);
 
 ### endAllCalls
 
-End all ongoing connections.
+End all ongoing calls.
 
 ```js
 RNCallKeep.endAllCalls();
@@ -294,14 +294,6 @@ RNCallKeep.setOnHold(uuid, true)
 - `uuid`: string
   - uuid of the current call.
 - `hold`: boolean
-
-### endAllCalls
-
-End all calls that have been started on the device.
-
-```js
-RNCallKeep.endAllCalls();
-```
 
 ### checkIfBusy
 
@@ -463,7 +455,7 @@ RNCallKeep.addEventListener('didDisplayIncomingCall', ({ error, callUUID, handle
 - `fromPushKit` (string)
   - `1` (call triggered from PushKit)
   - `0` (call not triggered from PushKit)
-- `didDisplayIncomingCall` (object)
+- `payload` (object)
   - VOIP push payload.
 
 ### - didPerformSetMutedCallAction
