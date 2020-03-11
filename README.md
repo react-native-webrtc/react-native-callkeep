@@ -218,7 +218,8 @@ RNCallKeep.updateDisplay(uuid, displayName, handle)
 
 ### endCall
 
-When you finish an incoming/outgoing call.
+When finish an incoming/outgoing call.  
+(When user actively chooses to end the call from your app's UI.)
 
 ```js
 RNCallKeep.endCall(uuid);
@@ -248,7 +249,9 @@ RNCallKeep.rejectCall(uuid);
 
 ### reportEndCallWithUUID
 
-Report that the call ended without the user initiating
+Report that the call ended without the user initiating.  
+(Not ended by user, is usually due to the following reasons)
+
 
 ```js
 RNCallKeep.reportEndCallWithUUID(uuid, reason);
