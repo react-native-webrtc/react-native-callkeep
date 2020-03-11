@@ -133,7 +133,7 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
             return;
         }
 
-        Log.d(TAG, "displayIncomingCall identifier: " + identifier + ", callerName: " + callerName);
+        Log.d(TAG, "displayIncomingCall identifier: " + identifier + ", callerName: " + callerName + ", callerType: " + callerType + ", callHasVideo: " + callHasVideo);
 
         Bundle extras = new Bundle();
         Uri uri = Uri.fromParts((callerType.equals("sip") ? PhoneAccount.SCHEME_SIP : PhoneAccount.SCHEME_TEL), identifier, null);
@@ -169,7 +169,7 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
             return;
         }
 
-        Log.d(TAG, "startCall identifer: " + identifer + ", callerName: " + callerName);
+        Log.d(TAG, "startCall identifer: " + identifer + ", callerName: " + callerName + ", callerType: " + callerType + ", callHasVideo: " + callHasVideo);
 
         Bundle extras = new Bundle();
         Uri uri = Uri.fromParts((callerType.equals("sip") ? PhoneAccount.SCHEME_SIP : PhoneAccount.SCHEME_TEL), identifer, null);
@@ -445,7 +445,8 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
         handle = new PhoneAccountHandle(cName, appName);
 
         PhoneAccount.Builder builder = new PhoneAccount.Builder(handle, appName)
-                .setCapabilities(PhoneAccount.CAPABILITY_CALL_PROVIDER);
+                .addSupportedUriScheme(PhoneAccount.SCHEME_SIP)
+                .setCapabilities(PhoneAccount.CAPABILITY_CALL_PROVIDER | PhoneAccount.CAPABILITY_VIDEO_CALLING);
 
         if (_settings != null && _settings.hasKey("imageName")) {
             int identifier = appContext.getResources().getIdentifier(_settings.getString("imageName"), "drawable", appContext.getPackageName());
