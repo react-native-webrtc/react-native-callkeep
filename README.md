@@ -218,7 +218,8 @@ RNCallKeep.updateDisplay(uuid, displayName, handle)
 
 ### endCall
 
-When you finish an incoming/outgoing call.
+When finish an incoming/outgoing call.  
+(When user actively chooses to end the call from your app's UI.)
 
 ```js
 RNCallKeep.endCall(uuid);
@@ -229,7 +230,7 @@ RNCallKeep.endCall(uuid);
 
 ### endAllCalls
 
-End all ongoing connections.
+End all ongoing calls.
 
 ```js
 RNCallKeep.endAllCalls();
@@ -248,7 +249,9 @@ RNCallKeep.rejectCall(uuid);
 
 ### reportEndCallWithUUID
 
-Report that the call ended without the user initiating
+Report that the call ended without the user initiating.  
+(Not ended by user, is usually due to the following reasons)
+
 
 ```js
 RNCallKeep.reportEndCallWithUUID(uuid, reason);
@@ -294,14 +297,6 @@ RNCallKeep.setOnHold(uuid, true)
 - `uuid`: string
   - uuid of the current call.
 - `hold`: boolean
-
-### endAllCalls
-
-End all calls that have been started on the device.
-
-```js
-RNCallKeep.endAllCalls();
-```
 
 ### checkIfBusy
 
@@ -463,7 +458,7 @@ RNCallKeep.addEventListener('didDisplayIncomingCall', ({ error, callUUID, handle
 - `fromPushKit` (string)
   - `1` (call triggered from PushKit)
   - `0` (call not triggered from PushKit)
-- `didDisplayIncomingCall` (object)
+- `payload` (object)
   - VOIP push payload.
 
 ### - didPerformSetMutedCallAction
