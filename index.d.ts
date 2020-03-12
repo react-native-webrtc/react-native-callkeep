@@ -1,4 +1,4 @@
-export type Events = 
+export type Events =
   'didReceiveStartCallAction' |
   'answerCall' |
   'endCall' |

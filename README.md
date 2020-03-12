@@ -51,7 +51,7 @@ const options = {
   }
 };
 
-RNCallKeep.setup(options);
+RNCallKeep.setup(options).then(accepted => {});
 ```
 
 - `options`: Object
@@ -62,6 +62,8 @@ RNCallKeep.setup(options);
       If provided, it will be displayed on system UI during the call
     - `ringtoneSound`: string (optional)
       If provided, it will be played when incoming calls received; the system will use the default ringtone if this is not provided
+    - `includesCallsInRecents`: boolean (optional)
+      If provided, calls will be shown in the recent calls when true and not when false (ios 11 and above)
     - `maximumCallGroups`: string (optional)
       If provided, the maximum number of call groups supported by this application (Default: 3)
     - `maximumCallsPerCallGroup`: string (optional)
@@ -216,7 +218,8 @@ RNCallKeep.updateDisplay(uuid, displayName, handle)
 
 ### endCall
 
-When you finish an incoming/outgoing call.
+When finish an incoming/outgoing call.  
+(When user actively chooses to end the call from your app's UI.)
 
 ```js
 RNCallKeep.endCall(uuid);
@@ -227,7 +230,7 @@ RNCallKeep.endCall(uuid);
 
 ### endAllCalls
 
-End all ongoing connections.
+End all ongoing calls.
 
 ```js
 RNCallKeep.endAllCalls();
@@ -246,7 +249,9 @@ RNCallKeep.rejectCall(uuid);
 
 ### reportEndCallWithUUID
 
-Report that the call ended without the user initiating
+Report that the call ended without the user initiating.  
+(Not ended by user, is usually due to the following reasons)
+
 
 ```js
 RNCallKeep.reportEndCallWithUUID(uuid, reason);
@@ -292,14 +297,6 @@ RNCallKeep.setOnHold(uuid, true)
 - `uuid`: string
   - uuid of the current call.
 - `hold`: boolean
-
-### endAllCalls
-
-End all calls that have been started on the device.
-
-```js
-RNCallKeep.endAllCalls();
-```
 
 ### checkIfBusy
 
@@ -441,7 +438,7 @@ RNCallKeep.addEventListener('didActivateAudioSession', () => {
 Callback for `RNCallKeep.displayIncomingCall`
 
 ```js
-RNCallKeep.addEventListener('didDisplayIncomingCall', ({ error, callUUID, handle, localizedCallerName, hasVideo, fromPushKit }) => {
+RNCallKeep.addEventListener('didDisplayIncomingCall', ({ error, callUUID, handle, localizedCallerName, hasVideo, fromPushKit, payload }) => {
   // you might want to do following things when receiving this event:
   // - Start playing ringback if it is an outgoing call
 });
@@ -461,6 +458,8 @@ RNCallKeep.addEventListener('didDisplayIncomingCall', ({ error, callUUID, handle
 - `fromPushKit` (string)
   - `1` (call triggered from PushKit)
   - `0` (call not triggered from PushKit)
+- `payload` (object)
+  - VOIP push payload.
 
 ### - didPerformSetMutedCallAction
 
@@ -684,8 +683,9 @@ Since iOS 13, you'll have to report the incoming calls that wakes up your applic
   // NSString *uuid = /* fetch for payload or ... */ [[[NSUUID UUID] UUIDString] lowercaseString];
   // NSString *callerName = @"caller name here";
   // NSString *handle = @"caller number here";
+  // NSDictionary *extra = [payload.dictionaryPayload valueForKeyPath:@"custom.path.to.data"]; /* use this to pass any special data (ie. from your notification) down to RN. Can also be `nil` */
 
-  [RNCallKeep reportNewIncomingCall:uuid handle:handle handleType:@"generic" hasVideo:false localizedCallerName:callerName fromPushKit: YES];
+  [RNCallKeep reportNewIncomingCall:uuid handle:handle handleType:@"generic" hasVideo:false localizedCallerName:callerName fromPushKit: YES payload:extra];
 
   completion();
 }
