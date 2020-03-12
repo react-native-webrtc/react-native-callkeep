@@ -187,7 +187,10 @@ class RNCallKeep {
 
     if (shouldOpenAccounts) {
       RNCallKeepModule.openPhoneAccounts();
+      return true;
     }
+
+    return false;
   };
 
   _hasDefaultPhoneAccount = async (options) => {

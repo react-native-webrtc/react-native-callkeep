@@ -182,7 +182,7 @@ RCT_EXPORT_METHOD(displayIncomingCall:(NSString *)uuidString
                              hasVideo:(BOOL)hasVideo
                   localizedCallerName:(NSString * _Nullable)localizedCallerName)
 {
-    [RNCallKeep reportNewIncomingCall: uuidString handle:handle handleType:handleType hasVideo:hasVideo localizedCallerName:localizedCallerName fromPushKit: NO];
+    [RNCallKeep reportNewIncomingCall: uuidString handle:handle handleType:handleType hasVideo:hasVideo localizedCallerName:localizedCallerName fromPushKit: NO payload:nil];
 }
 
 RCT_EXPORT_METHOD(startCall:(NSString *)uuidString
@@ -262,30 +262,7 @@ RCT_EXPORT_METHOD(reportConnectedOutgoingCallWithUUID:(NSString *)uuidString)
 
 RCT_EXPORT_METHOD(reportEndCallWithUUID:(NSString *)uuidString :(int)reason)
 {
-#ifdef DEBUG
-    NSLog(@"[RNCallKeep][reportEndCallWithUUID] uuidString = %@ reason = %d", uuidString, reason);
-#endif
-    NSUUID *uuid = [[NSUUID alloc] initWithUUIDString:uuidString];
-    switch (reason) {
-        case 1:
-            [self.callKeepProvider reportCallWithUUID:uuid endedAtDate:[NSDate date] reason:CXCallEndedReasonFailed];
-            break;
-        case 2:
-        case 6:
-            [self.callKeepProvider reportCallWithUUID:uuid endedAtDate:[NSDate date] reason:CXCallEndedReasonRemoteEnded];
-            break;
-        case 3:
-            [self.callKeepProvider reportCallWithUUID:uuid endedAtDate:[NSDate date] reason:CXCallEndedReasonUnanswered];
-            break;
-        case 4:
-            [self.callKeepProvider reportCallWithUUID:uuid endedAtDate:[NSDate date] reason:CXCallEndedReasonAnsweredElsewhere];
-            break;
-        case 5:
-            [self.callKeepProvider reportCallWithUUID:uuid endedAtDate:[NSDate date] reason:CXCallEndedReasonDeclinedElsewhere];
-            break;
-        default:
-            break;
-    }
+    [RNCallKeep endCallWithUUID: uuidString reason:reason];
 }
 
 RCT_EXPORT_METHOD(updateDisplay:(NSString *)uuidString :(NSString *)displayName :(NSString *)uri)
@@ -358,12 +335,42 @@ RCT_EXPORT_METHOD(sendDTMF:(NSString *)uuidString dtmf:(NSString *)key)
     }];
 }
 
++ (void)endCallWithUUID:(NSString *)uuidString
+                 reason:(int)reason
+{
+#ifdef DEBUG
+    NSLog(@"[RNCallKeep][reportEndCallWithUUID] uuidString = %@ reason = %d", uuidString, reason);
+#endif
+    NSUUID *uuid = [[NSUUID alloc] initWithUUIDString:uuidString];
+    switch (reason) {
+        case 1:
+            [sharedProvider reportCallWithUUID:uuid endedAtDate:[NSDate date] reason:CXCallEndedReasonFailed];
+            break;
+        case 2:
+        case 6:
+            [sharedProvider reportCallWithUUID:uuid endedAtDate:[NSDate date] reason:CXCallEndedReasonRemoteEnded];
+            break;
+        case 3:
+            [sharedProvider reportCallWithUUID:uuid endedAtDate:[NSDate date] reason:CXCallEndedReasonUnanswered];
+            break;
+        case 4:
+            [sharedProvider reportCallWithUUID:uuid endedAtDate:[NSDate date] reason:CXCallEndedReasonAnsweredElsewhere];
+            break;
+        case 5:
+            [sharedProvider reportCallWithUUID:uuid endedAtDate:[NSDate date] reason:CXCallEndedReasonDeclinedElsewhere];
+            break;
+        default:
+            break;
+    }
+}
+
 + (void)reportNewIncomingCall:(NSString *)uuidString
                        handle:(NSString *)handle
                    handleType:(NSString *)handleType
                      hasVideo:(BOOL)hasVideo
           localizedCallerName:(NSString * _Nullable)localizedCallerName
                   fromPushKit:(BOOL)fromPushKit
+                      payload:(NSDictionary * _Nullable)payload
 {
 #ifdef DEBUG
     NSLog(@"[RNCallKeep][reportNewIncomingCall] uuidString = %@", uuidString);
@@ -382,7 +389,7 @@ RCT_EXPORT_METHOD(sendDTMF:(NSString *)uuidString dtmf:(NSString *)key)
     [RNCallKeep initCallKitProvider];
     [sharedProvider reportNewIncomingCallWithUUID:uuid update:callUpdate completion:^(NSError * _Nullable error) {
         RNCallKeep *callKeep = [RNCallKeep allocWithZone: nil];
-        [callKeep sendEventWithNameWrapper:RNCallKeepDidDisplayIncomingCall body:@{ @"error": error ? error.localizedDescription : @"", @"callUUID": uuidString, @"handle": handle, @"localizedCallerName": localizedCallerName, @"hasVideo": hasVideo ? @"1" : @"0", @"fromPushKit": fromPushKit ? @"1" : @"0" }];
+        [callKeep sendEventWithNameWrapper:RNCallKeepDidDisplayIncomingCall body:@{ @"error": error ? error.localizedDescription : @"", @"callUUID": uuidString, @"handle": handle, @"localizedCallerName": localizedCallerName, @"hasVideo": hasVideo ? @"1" : @"0", @"fromPushKit": fromPushKit ? @"1" : @"0", @"payload": payload }];
         if (error == nil) {
             // Workaround per https://forums.developer.apple.com/message/169511
             if ([callKeep lessThanIos10_2]) {
@@ -390,6 +397,16 @@ RCT_EXPORT_METHOD(sendDTMF:(NSString *)uuidString dtmf:(NSString *)key)
             }
         }
     }];
+}
+
++ (void)reportNewIncomingCall:(NSString *)uuidString
+                       handle:(NSString *)handle
+                   handleType:(NSString *)handleType
+                     hasVideo:(BOOL)hasVideo
+          localizedCallerName:(NSString * _Nullable)localizedCallerName
+                  fromPushKit:(BOOL)fromPushKit
+{
+    [RNCallKeep reportNewIncomingCall: uuidString handle:handle handleType:handleType hasVideo:hasVideo localizedCallerName:localizedCallerName fromPushKit: NO payload:nil];
 }
 
 - (BOOL)lessThanIos10_2
@@ -442,6 +459,11 @@ RCT_EXPORT_METHOD(sendDTMF:(NSString *)uuidString dtmf:(NSString *)key)
     }
     if (settings[@"ringtoneSound"]) {
         providerConfiguration.ringtoneSound = settings[@"ringtoneSound"];
+    }
+    if (@available(iOS 11.0, *)) {
+        if (settings[@"includesCallsInRecents"]) {
+            providerConfiguration.includesCallsInRecents = [settings[@"includesCallsInRecents"] boolValue];
+        }
     }
     return providerConfiguration;
 }
