@@ -9,7 +9,8 @@ export type Events =
   'didPerformDTMFAction' |
   'didResetProvider' |
   'checkReachability' |
-  'didPerformSetMutedCallAction';
+  'didPerformSetMutedCallAction' |
+  'didLoadWithEvents';
 
 type HandleType = 'generic' | 'number' | 'email';
 
