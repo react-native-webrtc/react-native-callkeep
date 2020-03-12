@@ -619,7 +619,7 @@ continueUserActivity:(NSUserActivity *)userActivity
         };
 
         RNCallKeep *callKeep = [RNCallKeep allocWithZone: nil];
-        [callKeep handleStartCallNotification: userInfo];
+        [callKeep sendEventWithNameWrapper:RNCallKeepDidReceiveStartCallAction body:userInfo];
         return YES;
     }
     return NO;
