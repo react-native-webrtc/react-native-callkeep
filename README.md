@@ -519,6 +519,26 @@ RNCallKeep.addEventListener('didPerformDTMFAction', ({ digits, callUUID }) => {
 - `callUUID` (string)
   - The UUID of the call.
 
+### - didLoadWithEvents
+
+iOS only.
+
+Called as soon as JS context initializes if there were some actions performed by user before JS context has been created.
+
+Since iOS 13, you must display incoming call on receiving PushKit push notification. But if app was killed, it takes some time to create JS context. If user answers the call (or ends it) before JS context has been initialized, user actions will be passed as events array of this event. Similar situation can happen if user would like to start a call from Recents or similar iOS app, assuming that your app was in killed state.
+
+```js
+RNCallKeep.addEventListener('didLoadWithEvents', (events) => {
+  // see example usage in https://github.com/react-native-webrtc/react-native-callkeep/pull/169
+});
+```
+
+- `events` Array
+  - `name`: string
+    Native event name like: `RNCallKeepPerformAnswerCallAction`
+  - `data`: object
+    Object with data passed together with specific event so it can be handled in the same way like original event, for example `({ callUUID })` for `answerCall` event if `name` is `RNCallKeepPerformAnswerCallAction`
+
 ### - checkReachability
 
 On Android when the application is in background, after a certain delay the OS will close every connection with informing about it.
