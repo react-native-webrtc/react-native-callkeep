@@ -15,6 +15,7 @@
 #import <React/RCTEventEmitter.h>
 
 @interface RNCallKeep : RCTEventEmitter <CXProviderDelegate>
+
 @property (nonatomic, strong) CXCallController *callKeepCallController;
 @property (nonatomic, strong) CXProvider *callKeepProvider;
 
