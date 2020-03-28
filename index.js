@@ -212,7 +212,17 @@ class RNCallKeep {
     RNCallKeepModule.setCurrentCallActive(callUUID);
   };
 
-  updateDisplay = (uuid, displayName, handle) => RNCallKeepModule.updateDisplay(uuid, displayName, handle);
+  updateDisplay = (uuid, displayName, handle, options = null) => {
+    if (!isIOS) {
+      RNCallKeepModule.updateDisplay(uuid, displayName, handle);
+      return;
+    }
+
+    if (!options) {
+      options = {};
+    }
+    RNCallKeepModule.updateDisplay(uuid, displayName, handle, options);
+  };
 
   setOnHold = (uuid, shouldHold) => RNCallKeepModule.setOnHold(uuid, shouldHold);
 
