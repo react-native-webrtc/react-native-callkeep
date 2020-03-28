@@ -56,13 +56,25 @@ class RNCallKeep {
     return;
   };
 
-  displayIncomingCall = (uuid, handle, localizedCallerName = '', handleType = 'number', hasVideo = false) => {
+  displayIncomingCall = (uuid, handle, localizedCallerName = '', handleType = 'number', hasVideo = false, options = null) => {
     if (!isIOS) {
       RNCallKeepModule.displayIncomingCall(uuid, handle, localizedCallerName);
       return;
     }
 
-    RNCallKeepModule.displayIncomingCall(uuid, handle, handleType, hasVideo, localizedCallerName);
+    let supportsHolding = true,
+      supportsDTMF = true,
+      supportsGrouping = true,
+      supportsUngrouping = true;
+
+    if (options) {
+      if (typeof options.supportsHolding === 'boolean') supportsHolding = options.supportsHolding;
+      if (typeof options.supportsDTMF === 'boolean') supportsDTMF = options.supportsDTMF;
+      if (typeof options.supportsGrouping === 'boolean') supportsGrouping = options.supportsGrouping;
+      if (typeof options.supportsUngrouping === 'boolean') supportsUngrouping = options.supportsUngrouping;
+    }
+
+    RNCallKeepModule.displayIncomingCall(uuid, handle, handleType, hasVideo, localizedCallerName, supportsHolding, supportsDTMF, supportsGrouping, supportsUngrouping);
   };
 
   answerIncomingCall = (uuid) => {
