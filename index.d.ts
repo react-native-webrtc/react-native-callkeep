@@ -83,6 +83,7 @@ export default class RNCallKeep {
     uuid: string,
     displayName: string,
     handle: string,
+    options?: object,
   ) {
 
   }
