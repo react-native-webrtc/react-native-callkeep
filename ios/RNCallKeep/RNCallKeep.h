@@ -32,6 +32,10 @@ continueUserActivity:(NSUserActivity *)userActivity
                    handleType:(NSString *)handleType
                      hasVideo:(BOOL)hasVideo
           localizedCallerName:(NSString * _Nullable)localizedCallerName
+              supportsHolding:(BOOL)supportsHolding
+                 supportsDTMF:(BOOL)supportsDTMF
+             supportsGrouping:(BOOL)supportsGrouping
+           supportsUngrouping:(BOOL)supportsUngrouping
                   fromPushKit:(BOOL)fromPushKit
                       payload:(NSDictionary * _Nullable)payload;
 
