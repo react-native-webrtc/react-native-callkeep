@@ -372,7 +372,15 @@ RCT_EXPORT_METHOD(sendDTMF:(NSString *)uuidString dtmf:(NSString *)key)
     [RNCallKeep initCallKitProvider];
     [sharedProvider reportNewIncomingCallWithUUID:uuid update:callUpdate completion:^(NSError * _Nullable error) {
         RNCallKeep *callKeep = [RNCallKeep allocWithZone: nil];
-        [callKeep sendEventWithName:RNCallKeepDidDisplayIncomingCall body:@{ @"error": error ? error.localizedDescription : @"", @"callUUID": uuidString, @"handle": handle, @"localizedCallerName": localizedCallerName, @"hasVideo": hasVideo ? @"1" : @"0", @"fromPushKit": fromPushKit ? @"1" : @"0", @"payload": payload }];
+        [callKeep sendEventWithName:RNCallKeepDidDisplayIncomingCall body:@{
+            @"error": error && error.localizedDescription ? error.localizedDescription : @"",
+            @"callUUID": uuidString,
+            @"handle": handle,
+            @"localizedCallerName": localizedCallerName ? localizedCallerName : @"",
+            @"hasVideo": hasVideo ? @"1" : @"0",
+            @"fromPushKit": fromPushKit ? @"1" : @"0",
+            @"payload": payload ? payload : @"",
+        }];
         if (error == nil) {
             // Workaround per https://forums.developer.apple.com/message/169511
             if ([callKeep lessThanIos10_2]) {
