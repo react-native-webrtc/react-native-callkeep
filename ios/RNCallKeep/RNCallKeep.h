@@ -38,6 +38,6 @@ continueUserActivity:(NSUserActivity *)userActivity
 + (void)endCallWithUUID:(NSString *)uuidString
                  reason:(int)reason;
 
-+ (BOOL)checkIfActiveCall:(NSString *)uuidString;
++ (BOOL)isCallActive:(NSString *)uuidString;
 
 @end
