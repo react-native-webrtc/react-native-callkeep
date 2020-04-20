@@ -55,6 +55,10 @@ export default class RNCallKeep {
 
   }
 
+  static answerIncomingCall(uuid: string) {
+
+  }
+
   static displayIncomingCall(
     uuid: string,
     handle: string,
