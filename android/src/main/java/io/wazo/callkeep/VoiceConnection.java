@@ -94,14 +94,17 @@ public class VoiceConnection extends Connection {
     @Override
     public void onAnswer() {
         super.onAnswer();
-        Log.d(TAG, "onAnswer called");
+       
         try {
+                Log.d(TAG, "onAnswer called");
               String packageName = this.context.getApplicationInfo().processName;
               Intent intent =  this.context.getPackageManager().getLaunchIntentForPackage(packageName);
               intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
               this.context.startActivity(intent);
+              onDisconnect();
               Log.d(TAG, "onAnswer executed");
         } catch (Throwable exception) {
+            onDisconnect();
             Log.e(TAG, "Error navigating to app in onanswer", exception);
         }
     }
