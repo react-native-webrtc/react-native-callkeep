@@ -513,6 +513,14 @@ So we have to check if the application is reachable before making a call from th
 RNCallKeep.addEventListener('checkReachability', () => {
   RNCallKeep.setReachable();
 });
+
+```
+### removeEventListener
+
+Allows to remove the listener on an event.
+
+```js
+RNCallKeep.removeEventListener('checkReachability');
 ```
 
 ## Example
