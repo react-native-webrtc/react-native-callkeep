@@ -83,17 +83,11 @@ class RNCallKeep {
       return;
     }
 
-    let supportsHolding = true,
-      supportsDTMF = true,
-      supportsGrouping = true,
-      supportsUngrouping = true;
-
-    if (options) {
-      if (typeof options.supportsHolding === 'boolean') supportsHolding = options.supportsHolding;
-      if (typeof options.supportsDTMF === 'boolean') supportsDTMF = options.supportsDTMF;
-      if (typeof options.supportsGrouping === 'boolean') supportsGrouping = options.supportsGrouping;
-      if (typeof options.supportsUngrouping === 'boolean') supportsUngrouping = options.supportsUngrouping;
-    }
+    // should be boolean type value
+    let supportsHolding = !!(options?.ios?.supportsHolding ?? true);
+    let supportsDTMF = !!(options?.ios?.supportsDTMF ?? true);
+    let supportsGrouping = !!(options?.ios?.supportsGrouping ?? true);
+    let supportsUngrouping = !!(options?.ios?.supportsUngrouping ?? true);
 
     RNCallKeepModule.displayIncomingCall(uuid, handle, handleType, hasVideo, localizedCallerName, supportsHolding, supportsDTMF, supportsGrouping, supportsUngrouping);
   };
@@ -218,10 +212,13 @@ class RNCallKeep {
       return;
     }
 
-    if (!options) {
-      options = {};
+    let iosOptions = {};
+    if (options && options.ios) {
+      iosOptions = {
+        ...options.ios,
+      }
     }
-    RNCallKeepModule.updateDisplay(uuid, displayName, handle, options);
+    RNCallKeepModule.updateDisplay(uuid, displayName, handle, iosOptions);
   };
 
   setOnHold = (uuid, shouldHold) => RNCallKeepModule.setOnHold(uuid, shouldHold);
