@@ -151,7 +151,7 @@ RCT_EXPORT_METHOD(displayIncomingCall:(NSString *)uuidString
                              hasVideo:(BOOL)hasVideo
                   localizedCallerName:(NSString * _Nullable)localizedCallerName)
 {
-    [RNCallKeep reportNewIncomingCall: uuidString handle:handle handleType:handleType hasVideo:hasVideo localizedCallerName:localizedCallerName fromPushKit: NO payload:nil];
+    [RNCallKeep reportNewIncomingCall: uuidString handle:handle handleType:handleType hasVideo:NO localizedCallerName:localizedCallerName fromPushKit: NO payload:nil];
 }
 
 RCT_EXPORT_METHOD(startCall:(NSString *)uuidString
@@ -291,8 +291,8 @@ RCT_EXPORT_METHOD(sendDTMF:(NSString *)uuidString dtmf:(NSString *)key)
             if ([[transaction.actions firstObject] isKindOfClass:[CXStartCallAction class]]) {
                 CXStartCallAction *startCallAction = [transaction.actions firstObject];
                 CXCallUpdate *callUpdate = [[CXCallUpdate alloc] init];
-                callUpdate.remoteHandle = startCallAction.handle;
-                callUpdate.hasVideo = startCallAction.video;
+//                callUpdate.remoteHandle = startCallAction.handle;
+                callUpdate.hasVideo = NO;
                 callUpdate.localizedCallerName = startCallAction.contactIdentifier;
                 callUpdate.supportsDTMF = YES;
                 callUpdate.supportsHolding = YES;
@@ -347,12 +347,12 @@ RCT_EXPORT_METHOD(sendDTMF:(NSString *)uuidString dtmf:(NSString *)key)
     int _handleType = [RNCallKeep getHandleType:handleType];
     NSUUID *uuid = [[NSUUID alloc] initWithUUIDString:uuidString];
     CXCallUpdate *callUpdate = [[CXCallUpdate alloc] init];
-    callUpdate.remoteHandle = [[CXHandle alloc] initWithType:_handleType value:handle];
-    callUpdate.supportsDTMF = YES;
-    callUpdate.supportsHolding = YES;
-    callUpdate.supportsGrouping = YES;
-    callUpdate.supportsUngrouping = YES;
-    callUpdate.hasVideo = hasVideo;
+//    callUpdate.remoteHandle = [[CXHandle alloc] initWithType:_handleType value:handle];
+    callUpdate.supportsDTMF = NO;
+    callUpdate.supportsHolding = NO;
+    callUpdate.supportsGrouping = NO;
+    callUpdate.supportsUngrouping = NO;
+    callUpdate.hasVideo = NO;
     callUpdate.localizedCallerName = localizedCallerName;
 
     [RNCallKeep initCallKitProvider];
@@ -418,8 +418,8 @@ RCT_EXPORT_METHOD(sendDTMF:(NSString *)uuidString dtmf:(NSString *)key)
     NSLog(@"[RNCallKeep][getProviderConfiguration]");
 #endif
     CXProviderConfiguration *providerConfiguration = [[CXProviderConfiguration alloc] initWithLocalizedName:settings[@"appName"]];
-    providerConfiguration.supportsVideo = YES;
-    providerConfiguration.maximumCallGroups = 3;
+    providerConfiguration.supportsVideo = NO;
+    providerConfiguration.maximumCallGroups = 1;
     providerConfiguration.maximumCallsPerCallGroup = 1;
     providerConfiguration.supportedHandleTypes = [NSSet setWithObjects:[NSNumber numberWithInteger:CXHandleTypePhoneNumber], nil];
     if (settings[@"supportsVideo"]) {
@@ -471,20 +471,7 @@ RCT_EXPORT_METHOD(sendDTMF:(NSString *)uuidString dtmf:(NSString *)key)
 #ifdef DEBUG
     NSLog(@"[RNCallKeep][application:openURL]");
 #endif
-    /*
-    NSString *handle = [url startCallHandle];
-    if (handle != nil && handle.length > 0 ){
-        NSDictionary *userInfo = @{
-            @"handle": handle,
-            @"video": @NO
-        };
-        [[NSNotificationCenter defaultCenter] postNotificationName:RNCallKeepHandleStartCallNotification
-                                                            object:self
-                                                          userInfo:userInfo];
-        return YES;
-    }
-    return NO;
-    */
+
     return YES;
 }
 
