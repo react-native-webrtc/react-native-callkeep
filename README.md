@@ -186,6 +186,13 @@ RNCallKeep.displayIncomingCall(uuid, handle, localizedCallerName);
 - `hasVideo`: boolean (optional, iOS only)
   - `false` (default)
   - `true` (you know... when not false)
+- `options`: object (optional)
+  - `ios`: object
+    - `supportsHolding`: boolean (optional, default true)
+    - `supportsDTMF`: boolean (optional, default true)
+    - `supportsGrouping`: boolean (optional, default true)
+    - `supportsUngrouping`: boolean (optional, default true)
+  - `android`: object (currently no-op)
 
 ### answerIncomingCall
 _This feature is available only on Android._
@@ -241,6 +248,14 @@ RNCallKeep.updateDisplay(uuid, displayName, handle)
   - Name of the caller to be displayed on the native UI
 - `handle`: string
   - Phone number of the caller
+- `options`: object (optional)
+  - `ios`: object
+    - `hasVideo`: boolean (optional)
+    - `supportsHolding`: boolean (optional)
+    - `supportsDTMF`: boolean (optional)
+    - `supportsGrouping`: boolean (optional)
+    - `supportsUngrouping`: boolean (optional)
+  - `android`: object (currently no-op)
 
 ### endCall
 
