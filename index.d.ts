@@ -81,11 +81,6 @@ export default class RNCallKeep {
   ) {
 
   }
-  static isCallActive(
-      uuid: string,
-  ){
-
-  }
 
   /**
      * @description reportConnectedOutgoingCallWithUUID method is available only on iOS.
@@ -119,7 +114,9 @@ export default class RNCallKeep {
   static setReachable() {
 
   }
+  static isCallActive(uuid: string): void{
 
+  }
   /**
      * @description supportConnectionService method is available only on Android.
   */
