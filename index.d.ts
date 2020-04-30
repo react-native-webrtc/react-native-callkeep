@@ -81,9 +81,7 @@ export default class RNCallKeep {
   ) {
 
   }
-
-  // @ts-ignore
-    static isCallActive(
+  static isCallActive(
       uuid: string,
   ){
 
