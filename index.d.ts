@@ -82,6 +82,13 @@ export default class RNCallKeep {
 
   }
 
+  // @ts-ignore
+    static isCallActive(
+      uuid: string,
+  ){
+
+  }
+
   /**
      * @description reportConnectedOutgoingCallWithUUID method is available only on iOS.
   */
