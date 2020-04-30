@@ -273,6 +273,15 @@ RCT_EXPORT_METHOD(sendDTMF:(NSString *)uuidString dtmf:(NSString *)key)
     [self requestTransaction:transaction];
 }
 
+RCT_EXPORT_METHOD(isCallActive:(NSString *)uuidString)
+{
+#ifdef DEBUG
+    NSLog(@"[RNCallKeep][sendDTMF] key = %@", key);
+#endif
+    NSUUID *uuid = [[NSUUID alloc] initWithUUIDString:uuidString];
+    [RNCallKeep isCallActive: uuidString]
+}
+
 - (void)requestTransaction:(CXTransaction *)transaction
 {
 #ifdef DEBUG
