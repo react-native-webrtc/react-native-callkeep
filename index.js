@@ -56,10 +56,6 @@ class RNCallKeep {
     return;
   };
 
-  isCallActive = (uuid) => {
-      return RNCallKeepModule.isCallActive(uuid);
-  }
-
   displayIncomingCall = (uuid, handle, localizedCallerName, handleType = 'number', hasVideo = false) => {
     if (!isIOS) {
       RNCallKeepModule.displayIncomingCall(uuid, handle, localizedCallerName);
@@ -111,6 +107,8 @@ class RNCallKeep {
       RNCallKeepModule.endCall(uuid);
     }
   };
+
+  isCallActive = (uuid) => RNCallKeepModule.isCallActive(uuid);
 
   endCall = (uuid) => RNCallKeepModule.endCall(uuid);
 
