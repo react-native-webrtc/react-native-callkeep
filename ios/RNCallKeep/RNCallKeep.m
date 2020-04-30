@@ -278,7 +278,6 @@ RCT_EXPORT_METHOD(isCallActive:(NSString *)uuidString)
 #ifdef DEBUG
     NSLog(@"[RNCallKeep][isCallActive] uuid = %@", uuidString);
 #endif
-    NSUUID *uuid = [[NSUUID alloc] initWithUUIDString:uuidString];
     [RNCallKeep isCallActive: uuidString];
 }
 
