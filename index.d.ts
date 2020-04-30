@@ -114,7 +114,7 @@ export default class RNCallKeep {
   static setReachable() {
 
   }
-  static isCallActive(uuid: string): void{
+  static isCallActive(uuid: string): Promise<boolean> {
 
   }
   /**
