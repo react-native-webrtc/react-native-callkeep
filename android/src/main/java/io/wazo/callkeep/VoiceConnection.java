@@ -102,6 +102,13 @@ public class VoiceConnection extends Connection {
               Intent intent =  this.context.getPackageManager().getLaunchIntentForPackage(packageName);
               intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
               this.context.startActivity(intent);
+
+              setConnectionCapabilities(getConnectionCapabilities() | Connection.CAPABILITY_HOLD);
+                setAudioModeIsVoip(true);
+
+                sendCallRequestToActivity(ACTION_ANSWER_CALL, handle);
+                sendCallRequestToActivity(ACTION_AUDIO_SESSION, handle);
+
               disconnectOnAnswer();
               Log.d(TAG, "onAnswer executed");
         } catch (Throwable exception) {
