@@ -151,11 +151,9 @@ RCT_EXPORT_METHOD(displayIncomingCall:(NSString *)uuidString
                              hasVideo:(BOOL)hasVideo
                   localizedCallerName:(NSString * _Nullable)localizedCallerName)
 {
-<<<<<<< HEAD
-    [RNCallKeep reportNewIncomingCall: uuidString handle:handle handleType:handleType hasVideo:NO localizedCallerName:localizedCallerName fromPushKit: NO payload:nil];
-=======
+
     [RNCallKeep reportNewIncomingCall: uuidString handle:handle handleType:handleType hasVideo:hasVideo localizedCallerName:localizedCallerName fromPushKit: NO payload:nil withCompletionHandler:nil];
->>>>>>> 5b37f2d1572b749cb0ad1a106d556a6e3163877b
+
 }
 
 RCT_EXPORT_METHOD(startCall:(NSString *)uuidString
