@@ -114,7 +114,9 @@ export default class RNCallKeep {
   static setReachable() {
 
   }
+  static isCallActive(uuid: string): Promise<boolean> {
 
+  }
   /**
      * @description supportConnectionService method is available only on Android.
   */

@@ -139,6 +139,21 @@ RNCallKeep.setCurrentCallActive(uuid);
 - `uuid`: string
   - The `uuid` used for `startCall` or `displayIncomingCall`
 
+### isCallActive
+_This feature is available only on IOS._
+
+Returns true if the UUID passed matches an existing and answered call. 
+This will return true ONLY if the call exists and the user has already answered the call. It will return false 
+if the call does not exist or has not been answered. This is exposed to both React Native and Native sides.
+This was exposed so a call can be canceled if ringing and the user answered on a different device.
+
+```js
+RNCallKeep.isCallActive(uuid);
+```
+
+- `uuid`: string
+  - The `uuid` used for `startCall` or `displayIncomingCall`
+
 ### displayIncomingCall
 
 Display system UI for incoming calls
