@@ -41,7 +41,6 @@ static NSString *const RNCallKeepDidLoadWithEvents = @"RNCallKeepDidLoadWithEven
     BOOL _isStartCallActionEventListenerAdded;
     bool _hasListeners;
     NSMutableArray *_delayedEvents;
-
 }
 
 static CXProvider* sharedProvider;

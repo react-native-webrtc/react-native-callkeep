@@ -59,6 +59,8 @@ const checkReachability = handler =>
 const didLoadWithEvents = handler =>
   eventEmitter.addListener(RNCallKeepDidLoadWithEvents, handler);
 
+export const emit = (eventName, payload) => eventEmitter.emit(eventName, payload);
+
 export const listeners = {
   didReceiveStartCallAction,
   answerCall,
@@ -71,5 +73,5 @@ export const listeners = {
   didPerformDTMFAction,
   didResetProvider,
   checkReachability,
-  didLoadWithEvents
+  didLoadWithEvents,
 };
