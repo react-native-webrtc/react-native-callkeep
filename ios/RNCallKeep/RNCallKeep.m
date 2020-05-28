@@ -629,24 +629,6 @@ continueUserActivity:(NSUserActivity *)userActivity
     return YES;
 }
 
-- (void)handleStartCallNotification:(NSDictionary *)userInfo
-{
-#ifdef DEBUG
-    NSLog(@"[RNCallKeep][handleStartCallNotification] userInfo = %@", userInfo);
-#endif
-    int delayInSeconds;
-    if (!_isStartCallActionEventListenerAdded) {
-        // Workaround for when app is just launched and JS side hasn't registered to the event properly
-        delayInSeconds = OUTGOING_CALL_WAKEUP_DELAY;
-    } else {
-        delayInSeconds = 0;
-    }
-    dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, (int64_t)(delayInSeconds * NSEC_PER_SEC));
-    dispatch_after(popTime, dispatch_get_main_queue(), ^{
-        [self sendEventWithNameWrapper:RNCallKeepDidReceiveStartCallAction body:userInfo];
-    });
-}
-
 #pragma mark - CXProviderDelegate
 
 - (void)providerDidReset:(CXProvider *)provider{
