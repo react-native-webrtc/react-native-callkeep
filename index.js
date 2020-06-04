@@ -25,7 +25,7 @@ class RNCallKeep {
 
     this.addEventListener('didLoadWithEvents', (events) => {
       events.forEach(event => {
-        emit(evemt.name, event.data);
+        emit(event.name, event.data);
       });
     });
   }
