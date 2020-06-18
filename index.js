@@ -56,7 +56,13 @@ class RNCallKeep {
     return RNCallKeepModule.checkPhoneAccountEnabled();
   }
 
-  registerPhoneAccount = () => RNCallKeepModule.registerPhoneAccount()
+  registerPhoneAccount = () => {
+    if (isIOS) {
+      return;
+    }
+
+    RNCallKeepModule.registerPhoneAccount();
+  }
 
   hasDefaultPhoneAccount = async (options) => {
     if (!isIOS) {
