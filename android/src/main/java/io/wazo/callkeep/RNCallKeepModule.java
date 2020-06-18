@@ -269,7 +269,7 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
 
     @ReactMethod
     public void checkPhoneAccountEnabled(Promise promise) {
-        return promise.resolve(telecomManager != null && telecomManager.getPhoneAccount(handle).isEnabled()))
+        promise.resolve(hasPhoneAccount());
     }
 
     @ReactMethod
