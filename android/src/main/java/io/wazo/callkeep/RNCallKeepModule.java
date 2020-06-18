@@ -438,7 +438,7 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
     }
 
     private void registerPhoneAccount(Context appContext) {
-        if (!isConnectionServiceAvailable() || checkPhoneAccountEnabled()) {
+        if (!isConnectionServiceAvailable() || hasPhoneAccount()) {
             return;
         }
 
