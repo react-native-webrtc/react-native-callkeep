@@ -48,6 +48,16 @@ class RNCallKeep {
     return this._setupIOS(options.ios);
   };
 
+  checkPhoneAccountEnabled = async () => {
+    if (isIOS) {
+      return;
+    }
+
+    return RNCallKeep.checkPhoneAccountEnabled();
+  }
+
+  registerPhoneAccount = () => RNCallKeep.registerPhoneAccount()
+
   hasDefaultPhoneAccount = async (options) => {
     if (!isIOS) {
       return this._hasDefaultPhoneAccount(options);

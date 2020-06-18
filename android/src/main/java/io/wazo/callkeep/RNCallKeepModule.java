@@ -129,6 +129,11 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
     }
 
     @ReactMethod
+    public void registerPhoneAccount() {
+        this.registerPhoneAccount(this.getAppContext());
+    }
+
+    @ReactMethod
     public void displayIncomingCall(String uuid, String number, String callerName) {
         if (!isConnectionServiceAvailable() || !hasPhoneAccount()) {
             return;
@@ -260,6 +265,11 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
         boolean hasDefaultAccount = telecomManager.getDefaultOutgoingPhoneAccount("tel") != null;
 
         promise.resolve(!hasSim || hasDefaultAccount);
+    }
+
+    @ReactMethod
+    public void checkPhoneAccountEnabled(Promise promise) {
+        return promise.resolve(telecomManager != null && telecomManager.getPhoneAccount(handle).isEnabled()))
     }
 
     @ReactMethod
@@ -428,7 +438,7 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
     }
 
     private void registerPhoneAccount(Context appContext) {
-        if (!isConnectionServiceAvailable()) {
+        if (!isConnectionServiceAvailable() || checkPhoneAccountEnabled()) {
             return;
         }
 

@@ -55,6 +55,9 @@ export default class RNCallKeep {
 
   }
 
+  static checkPhoneAccountEnabled(): Promise<boolean>
+  static registerPhoneAccount(): void
+
   static displayIncomingCall(
     uuid: string,
     handle: string,

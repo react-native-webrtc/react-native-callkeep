@@ -386,6 +386,29 @@ const options = {
 RNCallKeep.hasDefaultPhoneAccount(options);
 ```
 
+### checkPhoneAccountEnabled
+
+Checks if the user has set a default [phone account](https://developer.android.com/reference/android/telecom/PhoneAccount) and it's enabled.
+
+It's useful for custom permission prompts. It should be used in pair with `registerPhoneAccount`
+
+_This feature is available only on Android._
+
+```js
+RNCallKeep.checkPhoneAccountEnabled();
+```
+
+### registerPhoneAccount
+
+Registers phone account manualy. It should be called before `checkPhoneAccountEnabled`.
+
+It's useful for custom permission prompts.
+
+_This feature is available only on Android._
+
+```js
+RNCallKeep.registerPhoneAccount();
+```
 
 ## Events
 
