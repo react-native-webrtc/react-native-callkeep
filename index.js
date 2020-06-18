@@ -194,7 +194,7 @@ class RNCallKeep {
   _setupAndroid = async (options) => {
     RNCallKeepModule.setup(options);
 
-    const hasDefaultAccount = await RNCallKeepModule.checkDefaultPhoneAccount()
+    const hasDefaultAccount = await RNCallKeepModule.checkPhoneAccountEnabled()
 
     if (hasDefaultAccount) {
       return true
