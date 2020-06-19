@@ -32,6 +32,7 @@ import android.graphics.drawable.Icon;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.view.WindowManager;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
@@ -420,11 +421,22 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
         Context context = getAppContext();
         String packageName = context.getApplicationContext().getPackageName();
         Intent focusIntent = context.getPackageManager().getLaunchIntentForPackage(packageName).cloneFilter();
-
-        focusIntent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
-
         Activity activity = getCurrentActivity();
-        activity.startActivity(focusIntent);
+        boolean isOpened = activity != null;
+        Log.d(TAG, "backToForeground, app isOpened ?" + (isOpened ? "true" : "false"));
+
+        if (isOpened) {
+            focusIntent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
+            activity.startActivity(focusIntent);
+        } else {
+
+            focusIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK +
+                    WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED +
+                    WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD +
+                    WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON);
+
+            getReactApplicationContext().startActivity(focusIntent);
+        }
     }
 
     private void registerPhoneAccount(Context appContext) {
