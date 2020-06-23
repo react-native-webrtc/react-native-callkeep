@@ -178,4 +178,7 @@ export default class RNCallKeep {
   static backToForeground() {
 
   }
+
+  openAppFromHeadlessMode(callUUID: string): void
+  getExtrasFromHeadlessMode(): Promise<string | null>
 }

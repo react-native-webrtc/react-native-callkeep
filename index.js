@@ -256,6 +256,22 @@ class RNCallKeep {
     NativeModules.RNCallKeep.backToForeground();
   }
 
+  openAppFromHeadlessMode(callUUID) {
+    if (isIOS) {
+      return;
+    }
+
+    NativeModules.RNCallKeep.openAppFromHeadlessMode(callUUID);
+  }
+
+  async getExtrasFromHeadlessMode() {
+    if (isIOS) {
+      return;
+    }
+
+    return NativeModules.RNCallKeep.getExtrasFromHeadlessMode();
+  }
+
 }
 
 export default new RNCallKeep();
