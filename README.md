@@ -386,6 +386,15 @@ const options = {
 RNCallKeep.hasDefaultPhoneAccount(options);
 ```
 
+### backToForeground
+_This feature is available only on Android._
+
+Use this to display the application in foreground if the application was in background state. 
+This method will open the application if it was closed.
+
+```js
+RNCallKeep.backToForeground();
+```
 
 ## Events
 
