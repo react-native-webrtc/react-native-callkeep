@@ -46,6 +46,7 @@ import android.telecom.TelecomManager;
 import android.telephony.TelephonyManager;
 import android.util.Log;
 
+import android.view.WindowManager;
 import com.facebook.react.bridge.Arguments;
 import com.facebook.react.bridge.Dynamic;
 import com.facebook.react.bridge.Promise;
@@ -102,6 +103,7 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
     private boolean isReceiverRegistered = false;
     private VoiceBroadcastReceiver voiceBroadcastReceiver;
     private ReadableMap _settings;
+    private WritableMap headlessExtras;
 
     public RNCallKeepModule(ReactApplicationContext reactContext) {
         super(reactContext);
@@ -430,11 +432,43 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
         Context context = getAppContext();
         String packageName = context.getApplicationContext().getPackageName();
         Intent focusIntent = context.getPackageManager().getLaunchIntentForPackage(packageName).cloneFilter();
-
-        focusIntent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
-
         Activity activity = getCurrentActivity();
-        activity.startActivity(focusIntent);
+        boolean isOpened = activity != null;
+        Log.d(TAG, "backToForeground, app isOpened ?" + (isOpened ? "true" : "false"));
+
+        if (isOpened) {
+            focusIntent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
+            activity.startActivity(focusIntent);
+        }
+    }
+
+    @ReactMethod
+    public void openAppFromHeadlessMode(String callUUID) {
+        Context context = getAppContext();
+        String packageName = context.getApplicationContext().getPackageName();
+        Intent focusIntent = context.getPackageManager().getLaunchIntentForPackage(packageName).cloneFilter();
+        Activity activity = getCurrentActivity();
+        boolean isOpened = activity != null;
+
+        if (!isOpened) {
+            focusIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK +
+                    WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED +
+                    WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD +
+                    WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON);
+
+            final WritableMap response = new WritableNativeMap();
+            response.putBoolean("openedByHeadlessTask", true);
+            response.putString("callUUID", callUUID);
+
+            this.headlessExtras = response;
+
+            getReactApplicationContext().startActivity(focusIntent);
+        }
+    }
+
+    @ReactMethod
+    public void getExtrasFromHeadlessMode(Promise promise) {
+        promise.resolve(this.headlessExtras);
     }
 
     private void registerPhoneAccount(Context appContext) {
