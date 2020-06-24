@@ -179,6 +179,6 @@ export default class RNCallKeep {
 
   }
 
-  openAppFromHeadlessMode(callUUID: string): void
-  getExtrasFromHeadlessMode(): Promise<string | null>
+  static openAppFromHeadlessMode(callUUID: string): void
+  static getExtrasFromHeadlessMode(): Promise<string | null>
 }
