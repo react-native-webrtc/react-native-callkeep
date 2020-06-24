@@ -37,6 +37,9 @@ export type AnswerCallPayload = { callUUID: string };
 export type EndCallPayload = AnswerCallPayload;
 export type DidDisplayIncomingCallPayload = string | undefined;
 export type DidPerformSetMutedCallActionPayload = boolean;
+export type HeadlessExtras = {
+  callUUID: string
+}
 
 export default class RNCallKeep {
   static addEventListener(type: Events, handler: (args: any) => void) {
@@ -180,5 +183,5 @@ export default class RNCallKeep {
   }
 
   static openAppFromHeadlessMode(callUUID: string): void
-  static getExtrasFromHeadlessMode(): Promise<string | null>
+  static getExtrasFromHeadlessMode(): Promise<HeadlessExtras>
 }
