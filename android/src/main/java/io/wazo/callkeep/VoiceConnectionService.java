@@ -40,6 +40,8 @@ import android.util.Log;
 import android.app.ActivityManager;
 import android.app.ActivityManager.RunningTaskInfo;
 
+import com.facebook.react.HeadlessJsTaskService;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -190,11 +192,19 @@ public class VoiceConnectionService extends ConnectionService {
     }
 
     private void wakeUpApplication(String uuid, String number, String displayName) {
-        HashMap<String, String> extrasMap = new HashMap();
-        extrasMap.put(EXTRA_CALL_UUID, uuid);
-        extrasMap.put(EXTRA_CALLER_NAME, displayName);
-        extrasMap.put(EXTRA_CALL_NUMBER, number);
-        sendCallRequestToActivity(ACTION_WAKE_APP, extrasMap);
+        Intent headlessIntent = new Intent(
+            this.getApplicationContext(),
+            RNCallKeepBackgroundMessagingService.class
+        );
+        headlessIntent.putExtra("callUUID", uuid);
+        headlessIntent.putExtra("name", displayName);
+        headlessIntent.putExtra("handle", number);
+        Log.d(TAG, "wakeUpApplication: " + uuid + ", number : " + number + ", displayName:" + displayName);
+
+        ComponentName name = this.getApplicationContext().startService(headlessIntent);
+        if (name != null) {
+          HeadlessJsTaskService.acquireWakeLockNow(this.getApplicationContext());
+        }
     }
 
     private void wakeUpAfterReachabilityTimeout(ConnectionRequest request) {
