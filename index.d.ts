@@ -54,6 +54,10 @@ export default class RNCallKeep {
   static hasDefaultPhoneAccount(): boolean {
 
   }
+  
+  static answerIncomingCall(uuid: string) {
+
+  }
 
   static displayIncomingCall(
     uuid: string,
