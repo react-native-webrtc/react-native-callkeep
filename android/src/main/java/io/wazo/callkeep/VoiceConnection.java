@@ -37,17 +37,17 @@ import org.json.JSONObject;
 
 import java.util.HashMap;
 
-import static io.wazo.callkeep.RNCallKeepModule.ACTION_ANSWER_CALL;
-import static io.wazo.callkeep.RNCallKeepModule.ACTION_AUDIO_SESSION;
-import static io.wazo.callkeep.RNCallKeepModule.ACTION_DTMF_TONE;
-import static io.wazo.callkeep.RNCallKeepModule.ACTION_END_CALL;
-import static io.wazo.callkeep.RNCallKeepModule.ACTION_HOLD_CALL;
-import static io.wazo.callkeep.RNCallKeepModule.ACTION_MUTE_CALL;
-import static io.wazo.callkeep.RNCallKeepModule.ACTION_UNHOLD_CALL;
-import static io.wazo.callkeep.RNCallKeepModule.ACTION_UNMUTE_CALL;
-import static io.wazo.callkeep.RNCallKeepModule.EXTRA_CALLER_NAME;
-import static io.wazo.callkeep.RNCallKeepModule.EXTRA_CALL_IDENTIFIER;
-import static io.wazo.callkeep.RNCallKeepModule.EXTRA_CALL_UUID;
+import static io.wazo.callkeep.Constants.ACTION_ANSWER_CALL;
+import static io.wazo.callkeep.Constants.ACTION_AUDIO_SESSION;
+import static io.wazo.callkeep.Constants.ACTION_DTMF_TONE;
+import static io.wazo.callkeep.Constants.ACTION_END_CALL;
+import static io.wazo.callkeep.Constants.ACTION_HOLD_CALL;
+import static io.wazo.callkeep.Constants.ACTION_MUTE_CALL;
+import static io.wazo.callkeep.Constants.ACTION_UNHOLD_CALL;
+import static io.wazo.callkeep.Constants.ACTION_UNMUTE_CALL;
+import static io.wazo.callkeep.Constants.EXTRA_CALLER_NAME;
+import static io.wazo.callkeep.Constants.EXTRA_CALL_IDENTIFIER;
+import static io.wazo.callkeep.Constants.EXTRA_CALL_UUID;
 
 @TargetApi(Build.VERSION_CODES.M)
 public class VoiceConnection extends Connection {

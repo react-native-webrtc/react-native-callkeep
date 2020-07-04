@@ -32,6 +32,7 @@ import android.graphics.drawable.Icon;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.view.WindowManager;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
@@ -56,6 +57,7 @@ import com.facebook.react.bridge.ReactMethod;
 import com.facebook.react.bridge.ReadableArray;
 import com.facebook.react.bridge.ReadableMap;
 import com.facebook.react.bridge.WritableMap;
+import com.facebook.react.HeadlessJsTaskService;
 import com.facebook.react.modules.core.DeviceEventManagerModule.RCTDeviceEventEmitter;
 
 import java.lang.reflect.Array;
@@ -68,25 +70,25 @@ import java.util.ResourceBundle;
 
 import static android.support.v4.app.ActivityCompat.requestPermissions;
 
+import static io.wazo.callkeep.Constants.EXTRA_CALLER_NAME;
+import static io.wazo.callkeep.Constants.EXTRA_CALL_UUID;
+import static io.wazo.callkeep.Constants.EXTRA_CALL_IDENTIFIER;
+import static io.wazo.callkeep.Constants.ACTION_END_CALL;
+import static io.wazo.callkeep.Constants.ACTION_ANSWER_CALL;
+import static io.wazo.callkeep.Constants.ACTION_MUTE_CALL;
+import static io.wazo.callkeep.Constants.ACTION_UNMUTE_CALL;
+import static io.wazo.callkeep.Constants.ACTION_DTMF_TONE;
+import static io.wazo.callkeep.Constants.ACTION_HOLD_CALL;
+import static io.wazo.callkeep.Constants.ACTION_UNHOLD_CALL;
+import static io.wazo.callkeep.Constants.ACTION_ONGOING_CALL;
+import static io.wazo.callkeep.Constants.ACTION_AUDIO_SESSION;
+import static io.wazo.callkeep.Constants.ACTION_CHECK_REACHABILITY;
+import static io.wazo.callkeep.Constants.ACTION_WAKE_APP;
+
 // @see https://github.com/kbagchiGWC/voice-quickstart-android/blob/9a2aff7fbe0d0a5ae9457b48e9ad408740dfb968/exampleConnectionService/src/main/java/com/twilio/voice/examples/connectionservice/VoiceConnectionServiceActivity.java
 public class RNCallKeepModule extends ReactContextBaseJavaModule {
     public static final int REQUEST_READ_PHONE_STATE = 1337;
     public static final int REQUEST_REGISTER_CALL_PROVIDER = 394859;
-
-    public static final String CHECKING_PERMS = "CHECKING_PERMS";
-    public static final String EXTRA_CALLER_NAME = "EXTRA_CALLER_NAME";
-    public static final String EXTRA_CALL_UUID = "EXTRA_CALL_UUID";
-    public static final String EXTRA_CALL_IDENTIFIER = "EXTRA_CALL_IDENTIFIER";
-    public static final String ACTION_END_CALL = "ACTION_END_CALL";
-    public static final String ACTION_ANSWER_CALL = "ACTION_ANSWER_CALL";
-    public static final String ACTION_MUTE_CALL = "ACTION_MUTE_CALL";
-    public static final String ACTION_UNMUTE_CALL = "ACTION_UNMUTE_CALL";
-    public static final String ACTION_DTMF_TONE = "ACTION_DTMF_TONE";
-    public static final String ACTION_HOLD_CALL = "ACTION_HOLD_CALL";
-    public static final String ACTION_UNHOLD_CALL = "ACTION_UNHOLD_CALL";
-    public static final String ACTION_ONGOING_CALL = "ACTION_ONGOING_CALL";
-    public static final String ACTION_AUDIO_SESSION = "ACTION_AUDIO_SESSION";
-    public static final String ACTION_CHECK_REACHABILITY = "ACTION_CHECK_REACHABILITY";
 
     private static final String E_ACTIVITY_DOES_NOT_EXIST = "E_ACTIVITY_DOES_NOT_EXIST";
     private static final String REACT_NATIVE_MODULE_NAME = "RNCallKeep";
@@ -123,6 +125,7 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
             this.registerPhoneAccount(this.getAppContext());
             voiceBroadcastReceiver = new VoiceBroadcastReceiver();
             registerReceiver();
+            VoiceConnectionService.setPhoneAccountHandle(handle);
             VoiceConnectionService.setAvailable(true);
         }
     }
@@ -427,11 +430,22 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
         Context context = getAppContext();
         String packageName = context.getApplicationContext().getPackageName();
         Intent focusIntent = context.getPackageManager().getLaunchIntentForPackage(packageName).cloneFilter();
-
-        focusIntent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
-
         Activity activity = getCurrentActivity();
-        activity.startActivity(focusIntent);
+        boolean isOpened = activity != null;
+        Log.d(TAG, "backToForeground, app isOpened ?" + (isOpened ? "true" : "false"));
+
+        if (isOpened) {
+            focusIntent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
+            activity.startActivity(focusIntent);
+        } else {
+
+            focusIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK +
+                    WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED +
+                    WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD +
+                    WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON);
+
+            getReactApplicationContext().startActivity(focusIntent);
+        }
     }
 
     private void registerPhoneAccount(Context appContext) {
@@ -577,6 +591,18 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
                     break;
                 case ACTION_CHECK_REACHABILITY:
                     sendEventToJS("RNCallKeepCheckReachability", null);
+                    break;
+                case ACTION_WAKE_APP:
+                    Intent headlessIntent = new Intent(reactContext, RNCallKeepBackgroundMessagingService.class);
+                    headlessIntent.putExtra("callUUID", attributeMap.get(EXTRA_CALL_UUID));
+                    headlessIntent.putExtra("name", attributeMap.get(EXTRA_CALLER_NAME));
+                    headlessIntent.putExtra("handle", attributeMap.get(EXTRA_CALL_IDENTIFIER));
+                    Log.d(TAG, "wakeUpApplication: " + attributeMap.get(EXTRA_CALL_UUID) + ", identifier : " + attributeMap.get(EXTRA_CALL_IDENTIFIER) + ", displayName:" + attributeMap.get(EXTRA_CALLER_NAME));
+
+                    ComponentName name = reactContext.startService(headlessIntent);
+                    if (name != null) {
+                        HeadlessJsTaskService.acquireWakeLockNow(reactContext);
+                    }
                     break;
             }
         }
