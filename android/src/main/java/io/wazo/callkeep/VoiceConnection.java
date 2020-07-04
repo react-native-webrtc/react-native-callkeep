@@ -39,6 +39,7 @@ import java.util.HashMap;
 
 import static io.wazo.callkeep.Constants.ACTION_ANSWER_CALL;
 import static io.wazo.callkeep.Constants.ACTION_AUDIO_SESSION;
+import static io.wazo.callkeep.Constants.ACTION_SHOW_INCOMING_CALL;
 import static io.wazo.callkeep.Constants.ACTION_DTMF_TONE;
 import static io.wazo.callkeep.Constants.ACTION_END_CALL;
 import static io.wazo.callkeep.Constants.ACTION_HOLD_CALL;
@@ -70,6 +71,14 @@ public class VoiceConnection extends Connection {
         if (name != null && !name.equals("")) {
             setCallerDisplayName(name, TelecomManager.PRESENTATION_ALLOWED);
         }
+    }
+
+    @Override
+    public void onShowIncomingCallUi() {
+        super.onShowIncomingCallUi();
+        Log.d(TAG, "onShowIncomingCallUi called");
+
+        sendCallRequestToActivity(ACTION_SHOW_INCOMING_CALL, handle);
     }
 
     @Override

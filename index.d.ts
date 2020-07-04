@@ -28,6 +28,7 @@ interface IOptions {
     cancelButton: string,
     okButton: string,
     imageName?: string,
+    selfManaged?: boolean,
     additionalPermissions: string[],
   },
 }

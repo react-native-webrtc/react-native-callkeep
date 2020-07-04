@@ -77,6 +77,7 @@ import static io.wazo.callkeep.Constants.ACTION_END_CALL;
 import static io.wazo.callkeep.Constants.ACTION_ANSWER_CALL;
 import static io.wazo.callkeep.Constants.ACTION_MUTE_CALL;
 import static io.wazo.callkeep.Constants.ACTION_UNMUTE_CALL;
+import static io.wazo.callkeep.Constants.ACTION_SHOW_INCOMING_CALL;
 import static io.wazo.callkeep.Constants.ACTION_DTMF_TONE;
 import static io.wazo.callkeep.Constants.ACTION_HOLD_CALL;
 import static io.wazo.callkeep.Constants.ACTION_UNHOLD_CALL;
@@ -121,7 +122,7 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
         VoiceConnectionService.setAvailable(false);
         this._settings = options;
 
-        if (isConnectionServiceAvailable()) {
+        if (isConnectionServiceAvailable(_settings)) {
             this.registerPhoneAccount(this.getAppContext());
             voiceBroadcastReceiver = new VoiceBroadcastReceiver();
             registerReceiver();
@@ -426,6 +427,16 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
     }
 
     @ReactMethod
+    public static Boolean isConnectionServiceAvailable(ReadableMap options) {
+        if (options != null && options.hasKey("selfManaged") && options.getBoolean("selfManaged")) {
+            // Self managed connection is available since api level 26
+            return Build.VERSION.SDK_INT >= 26;
+        } else {
+            return isConnectionServiceAvailable();
+        }
+    }
+
+    @ReactMethod
     public void backToForeground() {
         Context context = getAppContext();
         String packageName = context.getApplicationContext().getPackageName();
@@ -459,8 +470,13 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
         handle = new PhoneAccountHandle(cName, appName);
 
         PhoneAccount.Builder builder = new PhoneAccount.Builder(handle, appName)
-                .addSupportedUriScheme(PhoneAccount.SCHEME_SIP)
-                .setCapabilities(PhoneAccount.CAPABILITY_CALL_PROVIDER | PhoneAccount.CAPABILITY_VIDEO_CALLING);
+                .addSupportedUriScheme(PhoneAccount.SCHEME_SIP);
+
+        if (_settings != null && _settings.hasKey("selfManaged") && _settings.getBoolean("selfManaged")) {
+            builder.setCapabilities(PhoneAccount.CAPABILITY_SELF_MANAGED | PhoneAccount.CAPABILITY_VIDEO_CALLING);
+        } else {
+            builder.setCapabilities(PhoneAccount.CAPABILITY_CALL_PROVIDER | PhoneAccount.CAPABILITY_VIDEO_CALLING);
+        }
 
         if (_settings != null && _settings.hasKey("imageName")) {
             int identifier = appContext.getResources().getIdentifier(_settings.getString("imageName"), "drawable", appContext.getPackageName());
@@ -512,6 +528,7 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
             intentFilter.addAction(ACTION_ANSWER_CALL);
             intentFilter.addAction(ACTION_MUTE_CALL);
             intentFilter.addAction(ACTION_UNMUTE_CALL);
+            intentFilter.addAction(ACTION_SHOW_INCOMING_CALL);
             intentFilter.addAction(ACTION_DTMF_TONE);
             intentFilter.addAction(ACTION_UNHOLD_CALL);
             intentFilter.addAction(ACTION_HOLD_CALL);
@@ -579,6 +596,12 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
                     args.putString("digits", attributeMap.get("DTMF"));
                     args.putString("callUUID", attributeMap.get(EXTRA_CALL_UUID));
                     sendEventToJS("RNCallKeepDidPerformDTMFAction", args);
+                    break;
+                case ACTION_SHOW_INCOMING_CALL:
+                    args.putString("handle", attributeMap.get(EXTRA_CALL_IDENTIFIER));
+                    args.putString("callUUID", attributeMap.get(EXTRA_CALL_UUID));
+                    args.putString("name", attributeMap.get(EXTRA_CALLER_NAME));
+                    sendEventToJS("RNCallKeepPerformShowIncomingCallAction", args);
                     break;
                 case ACTION_ONGOING_CALL:
                     args.putString("handle", attributeMap.get(EXTRA_CALL_IDENTIFIER));

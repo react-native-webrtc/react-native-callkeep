@@ -45,6 +45,7 @@ RNCallKeep.setup({
     alertDescription: 'This application needs to access your phone accounts',
     cancelButton: 'Cancel',
     okButton: 'ok',
+    selfManaged: true,
   },
 });
 
@@ -163,6 +164,10 @@ export default function App() {
     removeCall(callUUID);
   };
 
+  const showIncomingCall = ({ handle }) => {
+    log('show your incoming call ui')
+  }
+
   const hangup = (callUUID) => {
     RNCallKeep.endCall(callUUID);
     removeCall(callUUID);
@@ -203,6 +208,7 @@ export default function App() {
     RNCallKeep.addEventListener('didPerformSetMutedCallAction', didPerformSetMutedCallAction);
     RNCallKeep.addEventListener('didToggleHoldCallAction', didToggleHoldCallAction);
     RNCallKeep.addEventListener('endCall', endCall);
+    RNCallKeep.addEventListener('showIncomingCall', showIncomingCall);
 
     return () => {
       RNCallKeep.removeEventListener('answerCall', answerCall);
@@ -211,6 +217,7 @@ export default function App() {
       RNCallKeep.removeEventListener('didPerformSetMutedCallAction', didPerformSetMutedCallAction);
       RNCallKeep.removeEventListener('didToggleHoldCallAction', didToggleHoldCallAction);
       RNCallKeep.removeEventListener('endCall', endCall);
+      RNCallKeep.removeEventListener('showIncomingCall', showIncomingCall);
     }
   }, []);
 
