@@ -790,7 +790,18 @@ Since iOS 13, you'll have to report the incoming calls that wakes up your applic
   // NSString *handle = @"caller number here";
   // NSDictionary *extra = [payload.dictionaryPayload valueForKeyPath:@"custom.path.to.data"]; /* use this to pass any special data (ie. from your notification) down to RN. Can also be `nil` */
 
-  [RNCallKeep reportNewIncomingCall:uuid handle:handle handleType:@"generic" hasVideo:false localizedCallerName:callerName fromPushKit: YES payload:extra withCompletionHandler:completion];
+  [RNCallKeep reportNewIncomingCall: uuid
+                             handle: handle
+                         handleType: @"generic"
+                           hasVideo: NO
+                localizedCallerName: callerName
+                    supportsHolding: YES
+                       supportsDTMF: YES
+                   supportsGrouping: YES
+                 supportsUngrouping: YES
+                        fromPushKit: YES
+                            payload: extra
+              withCompletionHandler: completion];
 }
 ```
 
