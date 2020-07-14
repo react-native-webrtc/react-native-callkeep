@@ -428,17 +428,6 @@ RCT_EXPORT_METHOD(isCallActive:(NSString *)uuidString)
            supportsUngrouping:(BOOL)supportsUngrouping
                   fromPushKit:(BOOL)fromPushKit
                       payload:(NSDictionary * _Nullable)payload
-{
-    [RNCallKeep reportNewIncomingCall:uuidString handle:handle handleType:handleType hasVideo:hasVideo localizedCallerName:localizedCallerName fromPushKit:fromPushKit payload:payload withCompletionHandler:nil];
-}
-
-+ (void)reportNewIncomingCall:(NSString *)uuidString
-                       handle:(NSString *)handle
-                   handleType:(NSString *)handleType
-                     hasVideo:(BOOL)hasVideo
-          localizedCallerName:(NSString * _Nullable)localizedCallerName
-                  fromPushKit:(BOOL)fromPushKit
-                      payload:(NSDictionary * _Nullable)payload
         withCompletionHandler:(void (^_Nullable)(void))completion
 {
 #ifdef DEBUG
@@ -481,28 +470,6 @@ RCT_EXPORT_METHOD(isCallActive:(NSString *)uuidString)
             completion();
         }
     }];
-}
-
-// --- overloading functions for backward compatibility and simple api
-+ (void)reportNewIncomingCall:(NSString *)uuidString
-                       handle:(NSString *)handle
-                   handleType:(NSString *)handleType
-                     hasVideo:(BOOL)hasVideo
-          localizedCallerName:(NSString * _Nullable)localizedCallerName
-                  fromPushKit:(BOOL)fromPushKit
-{
-    [RNCallKeep reportNewIncomingCall: uuidString
-                               handle: handle
-                           handleType: handleType
-                             hasVideo: hasVideo
-                  localizedCallerName: localizedCallerName
-                      supportsHolding: YES
-                         supportsDTMF: YES
-                     supportsGrouping: YES
-                   supportsUngrouping: YES
-                          fromPushKit: fromPushKit
-                              payload: nil
-                withCompletionHandler: nil];
 }
 
 - (BOOL)lessThanIos10_2
