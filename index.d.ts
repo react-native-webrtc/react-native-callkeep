@@ -54,8 +54,16 @@ export default class RNCallKeep {
   static hasDefaultPhoneAccount(): boolean {
 
   }
-  
+
   static answerIncomingCall(uuid: string) {
+
+  }
+
+  static registerPhoneAccount(): void {
+
+  }
+
+  static registerAndroidEvents(): void {
 
   }
 
