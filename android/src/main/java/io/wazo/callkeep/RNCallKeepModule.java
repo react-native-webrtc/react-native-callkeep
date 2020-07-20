@@ -469,7 +469,15 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
 
     @ReactMethod
     public void getExtrasFromHeadlessMode(Promise promise) {
-        promise.resolve(this.headlessExtras);
+        if (this.headlessExtras != null) {
+            promise.resolve(this.headlessExtras);
+
+            this.headlessExtras = null;
+
+            return
+        }
+
+        promise.resolve(null);
     }
 
     private void registerPhoneAccount(Context appContext) {
