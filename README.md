@@ -555,6 +555,7 @@ Registers Android phone account manually, useful for custom permission prompts w
 This method is called by `setup`, if you already use setup you don't need it.
 
 _This feature is available only on Android._
+_On iOS you still have to call `setup()`._
 
 ```js
 RNCallKeep.registerPhoneAccount();
@@ -566,6 +567,7 @@ Registers Android UI events, useful when you don't want to call `setup()`.
 This method is called by `setup`, if you already use setup you don't need it.
 
 _This feature is available only on Android._
+_On iOS you still have to call `setup()`._
 
 ```js
 RNCallKeep.registerAndroidEvents();
