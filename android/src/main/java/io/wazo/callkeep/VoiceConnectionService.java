@@ -33,6 +33,7 @@ import android.telecom.Connection;
 import android.telecom.ConnectionRequest;
 import android.telecom.ConnectionService;
 import android.telecom.DisconnectCause;
+import android.telecom.PhoneAccount;
 import android.telecom.PhoneAccountHandle;
 import android.telecom.TelecomManager;
 import android.util.Log;
@@ -90,7 +91,6 @@ public class VoiceConnectionService extends ConnectionService {
 
     public VoiceConnectionService() {
         super();
-        Log.e(TAG, "Constructor");
         isReachable = false;
         isInitialized = false;
         isAvailable = false;
@@ -248,6 +248,22 @@ public class VoiceConnectionService extends ConnectionService {
         extrasMap.put(EXTRA_CALL_NUMBER, request.getAddress().toString());
         VoiceConnection connection = new VoiceConnection(this, extrasMap);
         connection.setConnectionCapabilities(Connection.CAPABILITY_MUTE | Connection.CAPABILITY_SUPPORT_HOLD);
+
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            Context context = getApplicationContext();
+            TelecomManager telecomManager = (TelecomManager) context.getSystemService(context.TELECOM_SERVICE);
+            PhoneAccount phoneAccount = telecomManager.getPhoneAccount(request.getAccountHandle());
+
+            //If the phone account is self managed, then this connection must also be self managed.
+            if((phoneAccount.getCapabilities() & PhoneAccount.CAPABILITY_SELF_MANAGED) == PhoneAccount.CAPABILITY_SELF_MANAGED) {
+                Log.d(TAG, "PhoneAccount is SELF_MANAGED, so connection will be too");
+                connection.setConnectionProperties(Connection.PROPERTY_SELF_MANAGED);
+            }
+            else {
+                Log.d(TAG, "PhoneAccount is not SELF_MANAGED, so connection won't be either");
+            }
+        }
+
         connection.setInitializing();
         connection.setExtras(extras);
         currentConnections.put(extras.getString(EXTRA_CALL_UUID), connection);
