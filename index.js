@@ -1,6 +1,6 @@
 import { NativeModules, Platform, Alert } from 'react-native';
 
-import { listeners } from './actions'
+import { listeners, emit } from './actions'
 
 const RNCallKeepModule = NativeModules.RNCallKeep;
 const isIOS = Platform.OS === 'ios';
@@ -22,6 +22,12 @@ class RNCallKeep {
 
   constructor() {
     this._callkeepEventHandlers = new Map();
+
+    this.addEventListener('didLoadWithEvents', (events) => {
+      events.forEach(event => {
+        emit(event.name, event.data);
+      });
+    });
   }
 
   addEventListener = (type, handler) => {
