@@ -121,12 +121,30 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
         this._settings = options;
 
         if (isConnectionServiceAvailable()) {
-            this.registerPhoneAccount(this.getAppContext());
-            voiceBroadcastReceiver = new VoiceBroadcastReceiver();
-            registerReceiver();
-            VoiceConnectionService.setPhoneAccountHandle(handle);
+            this.registerPhoneAccount();
+            this.registerEvents();
             VoiceConnectionService.setAvailable(true);
         }
+    }
+
+    @ReactMethod
+    public void registerPhoneAccount() {
+        if (!isConnectionServiceAvailable()) {
+            return;
+        }
+
+        this.registerPhoneAccount(this.getAppContext());
+    }
+
+    @ReactMethod
+    public void registerEvents() {
+        if (!isConnectionServiceAvailable()) {
+            return;
+        }
+
+        voiceBroadcastReceiver = new VoiceBroadcastReceiver();
+        registerReceiver();
+        VoiceConnectionService.setPhoneAccountHandle(handle);
     }
 
     @ReactMethod
@@ -346,6 +364,10 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
 
     @ReactMethod
     public void hasPhoneAccount(Promise promise) {
+        if (telecomManager == null) {
+            this.initializeTelecomManager();
+        }
+
         promise.resolve(hasPhoneAccount());
     }
 
@@ -439,15 +461,22 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
         }
     }
 
+    private void initializeTelecomManager() {
+        Context context = this.getAppContext();
+        ComponentName cName = new ComponentName(context, VoiceConnectionService.class);
+        String appName = this.getApplicationName(context);
+
+        handle = new PhoneAccountHandle(cName, appName);
+        telecomManager = (TelecomManager) context.getSystemService(Context.TELECOM_SERVICE);
+    }
+
     private void registerPhoneAccount(Context appContext) {
         if (!isConnectionServiceAvailable()) {
             return;
         }
 
-        ComponentName cName = new ComponentName(this.getAppContext(), VoiceConnectionService.class);
-        String appName = this.getApplicationName(appContext);
-
-        handle = new PhoneAccountHandle(cName, appName);
+        this.initializeTelecomManager();
+        String appName = this.getApplicationName(this.getAppContext());
 
         PhoneAccount.Builder builder = new PhoneAccount.Builder(handle, appName)
                 .setCapabilities(PhoneAccount.CAPABILITY_CALL_PROVIDER);
@@ -461,7 +490,6 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
         PhoneAccount account = builder.build();
 
         telephonyManager = (TelephonyManager) this.getAppContext().getSystemService(Context.TELEPHONY_SERVICE);
-        telecomManager = (TelecomManager) this.getAppContext().getSystemService(Context.TELECOM_SERVICE);
 
         telecomManager.registerPhoneAccount(account);
     }
@@ -492,7 +520,8 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
     }
 
     private static boolean hasPhoneAccount() {
-        return isConnectionServiceAvailable() && telecomManager != null && telecomManager.getPhoneAccount(handle).isEnabled();
+        return isConnectionServiceAvailable() && telecomManager != null
+            && telecomManager.getPhoneAccount(handle) != null && telecomManager.getPhoneAccount(handle).isEnabled();
     }
 
     private void registerReceiver() {

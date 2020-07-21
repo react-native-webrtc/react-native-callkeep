@@ -86,6 +86,8 @@ RNCallKeep.setup(options).then(accepted => {});
     - `additionalPermissions`: [PermissionsAndroid] (optional)
       Any additional permissions you'd like your app to have at first launch. Can be used to simplify permission flows and avoid
       multiple popups to the user at different times.
+      
+`setup` calls internally `registerPhoneAccount` and `registerEvents`.
 
 ## Constants
 
@@ -565,6 +567,30 @@ Allows to remove the listener on an event.
 
 ```js
 RNCallKeep.removeEventListener('checkReachability');
+```
+
+### registerPhoneAccount
+
+Registers Android phone account manually, useful for custom permission prompts when you don't want to call `setup()`.
+This method is called by `setup`, if you already use setup you don't need it.
+
+_This feature is available only on Android._
+_On iOS you still have to call `setup()`._
+
+```js
+RNCallKeep.registerPhoneAccount();
+```
+
+### registerAndroidEvents
+
+Registers Android UI events, useful when you don't want to call `setup()`.
+This method is called by `setup`, if you already use setup you don't need it.
+
+_This feature is available only on Android._
+_On iOS you still have to call `setup()`._
+
+```js
+RNCallKeep.registerAndroidEvents();
 ```
 
 ## Example
