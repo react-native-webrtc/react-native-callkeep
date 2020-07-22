@@ -660,7 +660,7 @@ class RNCallKeepExample extends React.Component {
 
   // Event Listener Callbacks
 
-  didReceiveStartCallAction(data) => {
+  didReceiveStartCallAction = (data) => {
     let { handle, callUUID, name } = data;
     // Get this event after the system decides you can start a call
     // You can now start a call from within your app
