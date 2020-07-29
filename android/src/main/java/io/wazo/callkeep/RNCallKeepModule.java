@@ -45,6 +45,7 @@ import android.telecom.PhoneAccountHandle;
 import android.telecom.TelecomManager;
 import android.telephony.TelephonyManager;
 import android.util.Log;
+import android.view.WindowManager;
 
 import com.facebook.react.bridge.Arguments;
 import com.facebook.react.bridge.Dynamic;
@@ -429,11 +430,22 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
         Context context = getAppContext();
         String packageName = context.getApplicationContext().getPackageName();
         Intent focusIntent = context.getPackageManager().getLaunchIntentForPackage(packageName).cloneFilter();
-
-        focusIntent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
-
         Activity activity = getCurrentActivity();
-        activity.startActivity(focusIntent);
+        boolean isOpened = activity != null;
+        Log.d(TAG, "backToForeground, app isOpened ?" + (isOpened ? "true" : "false"));
+
+        if (isOpened) {
+            focusIntent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
+            activity.startActivity(focusIntent);
+        } else {
+
+            focusIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK +
+                    WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED +
+                    WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD +
+                    WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON);
+
+            getReactApplicationContext().startActivity(focusIntent);
+        }
     }
 
     private void registerPhoneAccount(Context appContext) {
