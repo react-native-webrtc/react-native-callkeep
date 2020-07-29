@@ -22,4 +22,6 @@ public class Constants {
     public static final String EXTRA_DISABLE_ADD_CALL = "android.telecom.extra.DISABLE_ADD_CALL";
 
     public static final int FOREGROUND_SERVICE_TYPE_MICROPHONE = 128;
+
+    public static final String EXTRA_HAS_VIDEO = "EXTRA_HAS_VIDEO";
 }
