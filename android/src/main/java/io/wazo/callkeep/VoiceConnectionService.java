@@ -354,7 +354,6 @@ public class VoiceConnectionService extends ConnectionService {
         }
 
         VoiceConnection connection = new VoiceConnection(this, extrasMap);
-        connection.setConnectionCapabilities(Connection.CAPABILITY_MUTE | Connection.CAPABILITY_SUPPORT_HOLD);
 
         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             Context context = getApplicationContext();
@@ -370,6 +369,15 @@ public class VoiceConnectionService extends ConnectionService {
                 Log.d(TAG, "PhoneAccount is not SELF_MANAGED, so connection won't be either");
             }
         }
+
+        int capabilities = connection.getConnectionCapabilities();
+        capabilities |= Connection.CAPABILITY_SUPPORTS_VT_LOCAL_BIDIRECTIONAL;
+        capabilities |= Connection.CAPABILITY_SUPPORTS_VT_REMOTE_BIDIRECTIONAL;
+        capabilities |= Connection.CAPABILITY_CAN_UPGRADE_TO_VIDEO;
+        capabilities |= Connection.CAPABILITY_MUTE;
+        capabilities |= Connection.CAPABILITY_SUPPORT_HOLD;
+        capabilities |= Connection.CAPABILITY_HOLD;
+        connection.setConnectionCapabilities(capabilities);
 
         connection.setInitializing();
         connection.setExtras(extras);
