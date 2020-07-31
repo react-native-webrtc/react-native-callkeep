@@ -99,7 +99,6 @@ public class VideoConnectionProvider extends Connection.VideoProvider {
      * Sets the zoom value, creating a new CallCameraCapabalities object. If the zoom value is
      * non-positive, assume that zoom is not supported.
      */
-
     @Override
     public void onSetZoom(float value) {
         log("Set zoom to " + value);
@@ -122,7 +121,6 @@ public class VideoConnectionProvider extends Connection.VideoProvider {
     /**
      * Returns a CallCameraCapabilities object without supporting zoom.
      */
-
     @Override
     public void onRequestCameraCapabilities() {
         log("Requested camera capabilities");
