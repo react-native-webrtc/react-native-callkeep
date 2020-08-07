@@ -452,9 +452,10 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
         boolean isOpened = activity != null;
 
         if (!isOpened) {
-            focusIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK +
-                    WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED +
-                    WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD +
+            focusIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK |
+                    WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON |
+                    WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED |
+                    WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD |
                     WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON);
 
             final WritableMap response = new WritableNativeMap();
