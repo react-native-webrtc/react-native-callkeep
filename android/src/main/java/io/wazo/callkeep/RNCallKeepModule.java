@@ -475,7 +475,7 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
 
             this.headlessExtras = null;
 
-            return
+            return;
         }
 
         promise.resolve(null);
