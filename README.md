@@ -747,7 +747,7 @@ Since iOS 13, you'll have to report the incoming calls that wakes up your applic
 }
 ```
 
-since IOS 13, you will have to add VoIP push notifications to show incoming calls. [React Native VoIP Push Notification](https://www.npmjs.com/package/react-native-voip-push-notification)
+since IOS 13, you will have to add VoIP push notifications and enable voice over IP to show incoming calls. [React Native VoIP Push Notification](https://www.npmjs.com/package/react-native-voip-push-notification)
 
 ## Debug
 
