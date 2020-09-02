@@ -18,17 +18,22 @@
 package io.wazo.callkeep;
 
 import android.annotation.TargetApi;
-import android.content.Intent;
-import android.content.Context;
+import android.app.ActivityManager;
+import android.app.ActivityManager.RunningTaskInfo;
+import android.app.Notification;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
 import android.content.ComponentName;
+import android.content.Context;
+import android.content.Intent;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
-import android.speech.tts.Voice;
 import androidx.annotation.Nullable;
+import androidx.annotation.RequiresApi;
+import androidx.core.app.NotificationCompat;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
-import android.telecom.CallAudioState;
 import android.telecom.Connection;
 import android.telecom.ConnectionRequest;
 import android.telecom.ConnectionService;
@@ -36,9 +41,6 @@ import android.telecom.DisconnectCause;
 import android.telecom.PhoneAccountHandle;
 import android.telecom.TelecomManager;
 import android.util.Log;
-
-import android.app.ActivityManager;
-import android.app.ActivityManager.RunningTaskInfo;
 
 import com.facebook.react.HeadlessJsTaskService;
 
@@ -49,12 +51,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 import static io.wazo.callkeep.Constants.ACTION_AUDIO_SESSION;
-import static io.wazo.callkeep.Constants.ACTION_ONGOING_CALL;
 import static io.wazo.callkeep.Constants.ACTION_CHECK_REACHABILITY;
-import static io.wazo.callkeep.Constants.ACTION_WAKE_APP;
+import static io.wazo.callkeep.Constants.ACTION_ONGOING_CALL;
 import static io.wazo.callkeep.Constants.EXTRA_CALLER_NAME;
 import static io.wazo.callkeep.Constants.EXTRA_CALL_NUMBER;
 import static io.wazo.callkeep.Constants.EXTRA_CALL_UUID;
@@ -118,6 +118,24 @@ public class VoiceConnectionService extends ConnectionService {
         }
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.O)
+    private void startForegroundService() {
+        String NOTIFICATION_CHANNEL_ID = "io.wazo.callkeep";
+        String channelName = "CallKeep Background Service";
+        NotificationChannel chan = new NotificationChannel(NOTIFICATION_CHANNEL_ID, channelName, NotificationManager.IMPORTANCE_NONE);
+        NotificationManager manager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+        manager.createNotificationChannel(chan);
+
+        NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID);
+        Notification notification = notificationBuilder.setOngoing(true)
+                .setContentTitle("App is running in background")
+                .setPriority(NotificationManager.IMPORTANCE_MIN)
+                .setCategory(Notification.CATEGORY_SERVICE)
+                .build();
+
+        startForeground(1, notification);
+    }
+
     @Override
     public Connection onCreateIncomingConnection(PhoneAccountHandle connectionManagerPhoneAccount, ConnectionRequest request) {
         Bundle extra = request.getExtras();
@@ -126,6 +144,10 @@ public class VoiceConnectionService extends ConnectionService {
         Connection incomingCallConnection = createConnection(request);
         incomingCallConnection.setRinging();
         incomingCallConnection.setInitialized();
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            startForegroundService();
+        }
 
         return incomingCallConnection;
     }
@@ -174,6 +196,10 @@ public class VoiceConnectionService extends ConnectionService {
         outgoingCallConnection.setDialing();
         outgoingCallConnection.setAudioModeIsVoip(true);
         outgoingCallConnection.setCallerDisplayName(displayName, TelecomManager.PRESENTATION_ALLOWED);
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            startForegroundService();
+        }
 
         // ‍️Weirdly on some Samsung phones (A50, S9...) using `setInitialized` will not display the native UI ...
         // when making a call from the native Phone application. The call will still be displayed correctly without it.
