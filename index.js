@@ -149,6 +149,8 @@ class RNCallKeep {
 
   sendDTMF = (uuid, key) => RNCallKeepModule.sendDTMF(uuid, key);
 
+  toggleAudioRouteSpeaker = (uuid, useSpeaker) => RNCallKeepModule.toggleAudioRouteSpeaker(uuid, useSpeaker);
+
   checkIfBusy = () =>
     isIOS
       ? RNCallKeepModule.checkIfBusy()
