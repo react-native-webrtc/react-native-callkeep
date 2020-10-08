@@ -136,6 +136,8 @@ declare module 'react-native-callkeep' {
      */
     static setAvailable(active: boolean): void
 
+    static canMakeMultipleCalls(allow: boolean): void
+
     static setCurrentCallActive(callUUID: string): void
 
     static backToForeground(): void

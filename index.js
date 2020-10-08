@@ -184,6 +184,14 @@ class RNCallKeep {
     RNCallKeepModule.setAvailable(state);
   };
 
+  canMakeMultipleCalls = (state) => {
+    if (isIOS) {
+      return;
+    }
+
+    RNCallKeepModule.canMakeMultipleCalls(state);
+  };
+
   setCurrentCallActive = (callUUID) => {
     if (isIOS) {
       return;

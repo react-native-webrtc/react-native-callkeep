@@ -124,6 +124,15 @@ Eg: When your used log out (or the connection to your server is broken, etc..), 
 RNCallKeep.setAvailable(true);
 ```
 
+### canMakeMultipleCalls
+_This feature is available only on Android._
+
+Disable the "Add call" button in ConnectionService UI.
+
+```js
+RNCallKeep.canMakeMultipleCalls(false); // Enabled by default
+```
+
 - `active`: boolean
   - Tell whether the app is ready or not
 

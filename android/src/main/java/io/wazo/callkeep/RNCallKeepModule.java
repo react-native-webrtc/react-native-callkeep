@@ -387,6 +387,11 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
     }
 
     @ReactMethod
+    public void canMakeMultipleCalls(Boolean allow) {
+        VoiceConnectionService.setCanMakeMultipleCalls(allow);
+    }
+
+    @ReactMethod
     public void setReachable() {
         VoiceConnectionService.setReachable();
     }
