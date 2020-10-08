@@ -101,6 +101,22 @@ class RNCallKeep {
     RNCallKeepModule.startCall(uuid, handle, contactIdentifier, handleType, hasVideo);
   };
 
+  checkPhoneAccountEnabled = async () => {
+    if (isIOS) {
+      return;
+    }
+
+    return RNCallKeepModule.checkPhoneAccountEnabled();
+  }
+
+  isConnectionServiceAvailable = async () => {
+    if (isIOS) {
+      return true;
+    }
+
+    return RNCallKeepModule.isConnectionServiceAvailable();
+  }
+
   reportConnectingOutgoingCallWithUUID = (uuid) => {
     //only available on iOS
     if (isIOS) {
