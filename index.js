@@ -87,9 +87,7 @@ class RNCallKeep {
   };
 
   answerIncomingCall = (uuid) => {
-    if (!isIOS) {
-      RNCallKeepModule.answerIncomingCall(uuid);
-    }
+    RNCallKeepModule.answerIncomingCall(uuid);
   };
 
   startCall = (uuid, handle, contactIdentifier, handleType = 'number', hasVideo = false ) => {
