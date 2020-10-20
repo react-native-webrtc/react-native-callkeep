@@ -121,20 +121,11 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
         this._settings = options;
 
         if (isConnectionServiceAvailable()) {
-            this.registerPhoneAccount();
             this.registerEvents();
             VoiceConnectionService.setAvailable(true);
         }
     }
 
-    @ReactMethod
-    public void registerPhoneAccount() {
-        if (!isConnectionServiceAvailable()) {
-            return;
-        }
-
-        this.registerPhoneAccount(this.getAppContext());
-    }
 
     @ReactMethod
     public void registerEvents() {
@@ -144,12 +135,11 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
 
         voiceBroadcastReceiver = new VoiceBroadcastReceiver();
         registerReceiver();
-        VoiceConnectionService.setPhoneAccountHandle(handle);
     }
 
     @ReactMethod
     public void displayIncomingCall(String uuid, String number, String callerName) {
-        if (!isConnectionServiceAvailable() || !hasPhoneAccount()) {
+        if (!isConnectionServiceAvailable()) {
             return;
         }
 
@@ -161,13 +151,11 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
         extras.putParcelable(TelecomManager.EXTRA_INCOMING_CALL_ADDRESS, uri);
         extras.putString(EXTRA_CALLER_NAME, callerName);
         extras.putString(EXTRA_CALL_UUID, uuid);
-
-        telecomManager.addNewIncomingCall(handle, extras);
     }
 
     @ReactMethod
     public void answerIncomingCall(String uuid) {
-        if (!isConnectionServiceAvailable() || !hasPhoneAccount()) {
+        if (!isConnectionServiceAvailable()) {
             return;
         }
 
@@ -181,7 +169,7 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
 
     @ReactMethod
     public void startCall(String uuid, String number, String callerName) {
-        if (!isConnectionServiceAvailable() || !hasPhoneAccount() || !hasPermissions() || number == null) {
+        if (!isConnectionServiceAvailable() || !hasPermissions() || number == null) {
             return;
         }
 
@@ -204,7 +192,7 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
     @ReactMethod
     public void endCall(String uuid) {
         Log.d(TAG, "endCall called");
-        if (!isConnectionServiceAvailable() || !hasPhoneAccount()) {
+        if (!isConnectionServiceAvailable()) {
             return;
         }
 
@@ -220,7 +208,7 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
     @ReactMethod
     public void endAllCalls() {
         Log.d(TAG, "endAllCalls called");
-        if (!isConnectionServiceAvailable() || !hasPhoneAccount()) {
+        if (!isConnectionServiceAvailable()) {
             return;
         }
 
@@ -260,12 +248,12 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
              return;
         }
 
-        promise.resolve(!hasPhoneAccount());
+        promise.resolve(true);
     }
 
     @ReactMethod
     public void checkDefaultPhoneAccount(Promise promise) {
-        if (!isConnectionServiceAvailable() || !hasPhoneAccount()) {
+        if (!isConnectionServiceAvailable()) {
             promise.resolve(true);
             return;
         }
@@ -297,7 +285,7 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
 
     @ReactMethod
     public void reportEndCallWithUUID(String uuid, int reason) {
-        if (!isConnectionServiceAvailable() || !hasPhoneAccount()) {
+        if (!isConnectionServiceAvailable()) {
             return;
         }
 
@@ -310,7 +298,7 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
 
     @ReactMethod
     public void rejectCall(String uuid) {
-        if (!isConnectionServiceAvailable() || !hasPhoneAccount()) {
+        if (!isConnectionServiceAvailable()) {
             return;
         }
 
@@ -368,7 +356,7 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
             this.initializeTelecomManager();
         }
 
-        promise.resolve(hasPhoneAccount());
+        promise.resolve(false);
     }
 
     @ReactMethod
@@ -470,30 +458,6 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
         telecomManager = (TelecomManager) context.getSystemService(Context.TELECOM_SERVICE);
     }
 
-    private void registerPhoneAccount(Context appContext) {
-        if (!isConnectionServiceAvailable()) {
-            return;
-        }
-
-        this.initializeTelecomManager();
-        String appName = this.getApplicationName(this.getAppContext());
-
-        PhoneAccount.Builder builder = new PhoneAccount.Builder(handle, appName)
-                .setCapabilities(PhoneAccount.CAPABILITY_CALL_PROVIDER);
-
-        if (_settings != null && _settings.hasKey("imageName")) {
-            int identifier = appContext.getResources().getIdentifier(_settings.getString("imageName"), "drawable", appContext.getPackageName());
-            Icon icon = Icon.createWithResource(appContext, identifier);
-            builder.setIcon(icon);
-        }
-
-        PhoneAccount account = builder.build();
-
-        telephonyManager = (TelephonyManager) this.getAppContext().getSystemService(Context.TELEPHONY_SERVICE);
-
-        telecomManager.registerPhoneAccount(account);
-    }
-
     private void sendEventToJS(String eventName, @Nullable WritableMap params) {
         this.reactContext.getJSModule(RCTDeviceEventEmitter.class).emit(eventName, params);
     }
@@ -517,11 +481,6 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
         }
 
         return hasPermissions;
-    }
-
-    private static boolean hasPhoneAccount() {
-        return isConnectionServiceAvailable() && telecomManager != null
-            && telecomManager.getPhoneAccount(handle) != null && telecomManager.getPhoneAccount(handle).isEnabled();
     }
 
     private void registerReceiver() {
