@@ -507,6 +507,10 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
 
     private Boolean hasPermissions() {
         Activity currentActivity = this.getCurrentActivity();
+        
+        if (currentActivity == null) {
+            return false;
+        }
 
         boolean hasPermissions = true;
         for (String permission : permissions) {
