@@ -59,6 +59,9 @@ const checkReachability = handler =>
 const didLoadWithEvents = handler =>
   eventEmitter.addListener(RNCallKeepDidLoadWithEvents, handler);
 
+const removeSubscription = sub =>
+  eventEmitter.removeSubscription(sub);
+
 export const emit = (eventName, payload) => eventEmitter.emit(eventName, payload);
 
 export const listeners = {
@@ -74,4 +77,5 @@ export const listeners = {
   didResetProvider,
   checkReachability,
   didLoadWithEvents,
+  removeSubscription,
 };

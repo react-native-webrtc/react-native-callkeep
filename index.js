@@ -129,7 +129,19 @@ class RNCallKeep {
     }
   };
 
-  isCallActive = async(uuid) => await RNCallKeepModule.isCallActive(uuid);
+  isCallActive = uuid => {
+    return new Promise((resolve, reject) => {
+      try {
+        const sub = listeners.isCallActive(({ active }) => {
+          resolve(active)
+          listeners.removeSubscription(sub)
+        })
+        RNCallKeepModule.isCallActive(uuid)
+      } catch (e) {
+        reject(e)
+      }
+    })
+  }
 
   endCall = (uuid) => RNCallKeepModule.endCall(uuid);
 

@@ -34,6 +34,7 @@ static NSString *const RNCallKeepDidToggleHoldAction = @"RNCallKeepDidToggleHold
 static NSString *const RNCallKeepProviderReset = @"RNCallKeepProviderReset";
 static NSString *const RNCallKeepCheckReachability = @"RNCallKeepCheckReachability";
 static NSString *const RNCallKeepDidLoadWithEvents = @"RNCallKeepDidLoadWithEvents";
+static NSString *const RNCallKeepIsCallActive = @"RNCallKeepIsCallActive";
 
 @implementation RNCallKeep
 {
@@ -97,7 +98,8 @@ RCT_EXPORT_MODULE()
         RNCallKeepDidToggleHoldAction,
         RNCallKeepProviderReset,
         RNCallKeepCheckReachability,
-        RNCallKeepDidLoadWithEvents
+        RNCallKeepDidLoadWithEvents,
+        RNCallKeepIsCallActive
     ];
 }
 
@@ -308,7 +310,18 @@ RCT_EXPORT_METHOD(isCallActive:(NSString *)uuidString)
 #ifdef DEBUG
     NSLog(@"[RNCallKeep][isCallActive] uuid = %@", uuidString);
 #endif
-    [RNCallKeep isCallActive: uuidString];
+    CXCallObserver *callObserver = [[CXCallObserver alloc] init];
+    NSUUID *uuid = [[NSUUID alloc] initWithUUIDString:uuidString];
+
+    for(CXCall *call in callObserver.calls){
+        NSLog(@"[RNCallKeep] isCallActive %@ %d ?", call.UUID, [call.UUID isEqual:uuid]);
+        if([call.UUID isEqual:[[NSUUID alloc] initWithUUIDString:uuidString]] && !call.hasConnected){
+            [self sendEventWithNameWrapper:RNCallKeepIsCallActive body:@{ @"active": @true }];
+            return;
+        }
+    }
+
+    [self sendEventWithNameWrapper:RNCallKeepIsCallActive body:@{ @"active": @false }];
 }
 
 - (void)requestTransaction:(CXTransaction *)transaction
