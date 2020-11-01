@@ -1,6 +1,7 @@
 declare module 'react-native-callkeep' {
   export type Events =
     'didReceiveStartCallAction' |
+    'showIncomingCall' |
     'answerCall' |
     'endCall' |
     'didActivateAudioSession' |
@@ -30,6 +31,7 @@ declare module 'react-native-callkeep' {
       cancelButton: string,
       okButton: string,
       imageName?: string,
+      selfManaged?: boolean,
       additionalPermissions: string[],
     },
   }

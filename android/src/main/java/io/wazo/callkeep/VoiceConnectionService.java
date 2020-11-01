@@ -33,6 +33,7 @@ import android.telecom.Connection;
 import android.telecom.ConnectionRequest;
 import android.telecom.ConnectionService;
 import android.telecom.DisconnectCause;
+import android.telecom.PhoneAccount;
 import android.telecom.PhoneAccountHandle;
 import android.telecom.TelecomManager;
 import android.util.Log;
@@ -247,6 +248,12 @@ public class VoiceConnectionService extends ConnectionService {
         connection.setInitializing();
         connection.setExtras(extras);
         currentConnections.put(extras.getString(EXTRA_CALL_UUID), connection);
+
+        TelecomManager telecomManager = (TelecomManager) this.getApplicationContext().getSystemService(Context.TELECOM_SERVICE);
+        PhoneAccount phoneAccount = telecomManager.getPhoneAccount(request.getAccountHandle());
+        if ((phoneAccount.getCapabilities() & PhoneAccount.CAPABILITY_SELF_MANAGED) != 0) {
+            connection.setConnectionProperties(Connection.PROPERTY_SELF_MANAGED);
+        }
 
         // Get other connections for conferencing
         Map<String, VoiceConnection> otherConnections = new HashMap<>();

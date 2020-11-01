@@ -73,6 +73,7 @@ import static io.wazo.callkeep.Constants.EXTRA_CALLER_NAME;
 import static io.wazo.callkeep.Constants.EXTRA_CALL_UUID;
 import static io.wazo.callkeep.Constants.EXTRA_CALL_NUMBER;
 import static io.wazo.callkeep.Constants.ACTION_END_CALL;
+import static io.wazo.callkeep.Constants.ACTION_SHOW_INCOMING_CALL;
 import static io.wazo.callkeep.Constants.ACTION_ANSWER_CALL;
 import static io.wazo.callkeep.Constants.ACTION_MUTE_CALL;
 import static io.wazo.callkeep.Constants.ACTION_UNMUTE_CALL;
@@ -487,6 +488,10 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
             builder.setIcon(icon);
         }
 
+        if (_settings != null && _settings.hasKey("selfManaged") && _settings.getBoolean("selfManaged")) {
+            builder.setCapabilities(PhoneAccount.CAPABILITY_SELF_MANAGED);
+        }
+
         PhoneAccount account = builder.build();
 
         telephonyManager = (TelephonyManager) this.getAppContext().getSystemService(Context.TELEPHONY_SERVICE);
@@ -532,6 +537,7 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
         if (!isReceiverRegistered) {
             IntentFilter intentFilter = new IntentFilter();
             intentFilter.addAction(ACTION_END_CALL);
+            intentFilter.addAction(ACTION_SHOW_INCOMING_CALL);
             intentFilter.addAction(ACTION_ANSWER_CALL);
             intentFilter.addAction(ACTION_MUTE_CALL);
             intentFilter.addAction(ACTION_UNMUTE_CALL);
@@ -573,6 +579,10 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
                 case ACTION_END_CALL:
                     args.putString("callUUID", attributeMap.get(EXTRA_CALL_UUID));
                     sendEventToJS("RNCallKeepPerformEndCallAction", args);
+                    break;
+                case ACTION_SHOW_INCOMING_CALL:
+                    args.putString("callUUID", attributeMap.get(EXTRA_CALL_UUID));
+                    sendEventToJS("RNCallKeepPerformShowIncomingCallAction", args);
                     break;
                 case ACTION_ANSWER_CALL:
                     args.putString("callUUID", attributeMap.get(EXTRA_CALL_UUID));

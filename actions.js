@@ -4,6 +4,7 @@ const RNCallKeepModule = NativeModules.RNCallKeep;
 const eventEmitter = new NativeEventEmitter(RNCallKeepModule);
 
 const RNCallKeepDidReceiveStartCallAction = 'RNCallKeepDidReceiveStartCallAction';
+const RNCallKeepPerformShowIncomingCallAction = 'RNCallKeepPerformShowIncomingCallAction';
 const RNCallKeepPerformAnswerCallAction = 'RNCallKeepPerformAnswerCallAction';
 const RNCallKeepPerformEndCallAction = 'RNCallKeepPerformEndCallAction';
 const RNCallKeepDidActivateAudioSession = 'RNCallKeepDidActivateAudioSession';
@@ -25,6 +26,9 @@ const didReceiveStartCallAction = handler => {
 
   return eventEmitter.addListener(RNCallKeepDidReceiveStartCallAction, (data) => handler(data));
 };
+
+const showIncomingCall = handler =>
+  eventEmitter.addListener(RNCallKeepPerformShowIncomingCallAction, (data) => handler(data));
 
 const answerCall = handler =>
   eventEmitter.addListener(RNCallKeepPerformAnswerCallAction, (data) => handler(data));
@@ -63,6 +67,7 @@ export const emit = (eventName, payload) => eventEmitter.emit(eventName, payload
 
 export const listeners = {
   didReceiveStartCallAction,
+  showIncomingCall,
   answerCall,
   endCall,
   didActivateAudioSession,

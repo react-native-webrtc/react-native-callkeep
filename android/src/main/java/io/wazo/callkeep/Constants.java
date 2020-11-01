@@ -1,6 +1,7 @@
 package io.wazo.callkeep;
 
 public class Constants {
+    public static final String ACTION_SHOW_INCOMING_CALL = "ACTION_SHOW_INCOMING_CALL";
     public static final String ACTION_ANSWER_CALL = "ACTION_ANSWER_CALL";
     public static final String ACTION_AUDIO_SESSION = "ACTION_AUDIO_SESSION";
     public static final String ACTION_CHECK_REACHABILITY = "ACTION_CHECK_REACHABILITY";

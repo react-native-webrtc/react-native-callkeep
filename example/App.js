@@ -45,6 +45,7 @@ RNCallKeep.setup({
     alertDescription: 'This application needs to access your phone accounts',
     cancelButton: 'Cancel',
     okButton: 'ok',
+    selfManaged: true,
   },
 });
 
@@ -106,6 +107,11 @@ export default function App() {
       displayIncomingCall(getRandomNumber());
     }, 3000);
   };
+
+  const showIncomingCall = ({ callUUID }) => {
+    const number = calls[callUUID];
+    log(`[showIncomingCall] ${format(callUUID)}, number: ${number}`);
+  }
 
   const answerCall = ({ callUUID }) => {
     const number = calls[callUUID];
@@ -197,6 +203,7 @@ export default function App() {
   };
 
   useEffect(() => {
+    RNCallKeep.addEventListener('showIncomingCall', showIncomingCall);
     RNCallKeep.addEventListener('answerCall', answerCall);
     RNCallKeep.addEventListener('didPerformDTMFAction', didPerformDTMFAction);
     RNCallKeep.addEventListener('didReceiveStartCallAction', didReceiveStartCallAction);
@@ -205,6 +212,7 @@ export default function App() {
     RNCallKeep.addEventListener('endCall', endCall);
 
     return () => {
+      RNCallKeep.removeEventListener('showIncomingCall', showIncomingCall);
       RNCallKeep.removeEventListener('answerCall', answerCall);
       RNCallKeep.removeEventListener('didPerformDTMFAction', didPerformDTMFAction);
       RNCallKeep.removeEventListener('didReceiveStartCallAction', didReceiveStartCallAction);

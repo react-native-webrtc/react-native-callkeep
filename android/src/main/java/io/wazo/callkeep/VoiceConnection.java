@@ -43,6 +43,7 @@ import static io.wazo.callkeep.Constants.ACTION_DTMF_TONE;
 import static io.wazo.callkeep.Constants.ACTION_END_CALL;
 import static io.wazo.callkeep.Constants.ACTION_HOLD_CALL;
 import static io.wazo.callkeep.Constants.ACTION_MUTE_CALL;
+import static io.wazo.callkeep.Constants.ACTION_SHOW_INCOMING_CALL;
 import static io.wazo.callkeep.Constants.ACTION_UNHOLD_CALL;
 import static io.wazo.callkeep.Constants.ACTION_UNMUTE_CALL;
 import static io.wazo.callkeep.Constants.EXTRA_CALLER_NAME;
@@ -89,6 +90,14 @@ public class VoiceConnection extends Connection {
 
         this.isMuted = state.isMuted();
         sendCallRequestToActivity(isMuted ? ACTION_MUTE_CALL : ACTION_UNMUTE_CALL, handle);
+    }
+
+    @Override
+    public void onShowIncomingCallUi() {
+        super.onShowIncomingCallUi();
+        Log.d(TAG, "onShowIncomingCallUi called");
+
+        sendCallRequestToActivity(ACTION_SHOW_INCOMING_CALL, handle);
     }
 
     @Override
