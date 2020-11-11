@@ -77,6 +77,10 @@ declare module 'react-native-callkeep' {
       handle: string,
     ): void
 
+    static checkPhoneAccountEnabled(): Promise<boolean>;
+
+    static isConnectionServiceAvailable(): Promise<boolean>;
+
     /**
      * @description reportConnectedOutgoingCallWithUUID method is available only on iOS.
      */
@@ -131,6 +135,8 @@ declare module 'react-native-callkeep' {
      * @description setAvailable method is available only on Android.
      */
     static setAvailable(active: boolean): void
+
+    static canMakeMultipleCalls(allow: boolean): void
 
     static setCurrentCallActive(callUUID: string): void
 

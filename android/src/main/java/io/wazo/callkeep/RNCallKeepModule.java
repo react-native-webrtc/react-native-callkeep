@@ -387,6 +387,11 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
     }
 
     @ReactMethod
+    public void canMakeMultipleCalls(Boolean allow) {
+        VoiceConnectionService.setCanMakeMultipleCalls(allow);
+    }
+
+    @ReactMethod
     public void setReachable() {
         VoiceConnectionService.setReachable();
     }
@@ -432,10 +437,19 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
         this.getAppContext().startActivity(intent);
     }
 
-    @ReactMethod
     public static Boolean isConnectionServiceAvailable() {
         // PhoneAccount is available since api level 23
         return Build.VERSION.SDK_INT >= 23;
+    }
+
+    @ReactMethod
+    public void isConnectionServiceAvailable(Promise promise) {
+        promise.resolve(isConnectionServiceAvailable());
+    }
+
+    @ReactMethod
+    public void checkPhoneAccountEnabled(Promise promise) {
+        promise.resolve(hasPhoneAccount());
     }
 
     @ReactMethod

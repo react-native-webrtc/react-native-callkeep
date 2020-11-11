@@ -124,6 +124,15 @@ Eg: When your used log out (or the connection to your server is broken, etc..), 
 RNCallKeep.setAvailable(true);
 ```
 
+### canMakeMultipleCalls
+_This feature is available only on Android._
+
+Disable the "Add call" button in ConnectionService UI.
+
+```js
+RNCallKeep.canMakeMultipleCalls(false); // Enabled by default
+```
+
 - `active`: boolean
   - Tell whether the app is ready or not
 
@@ -386,6 +395,29 @@ const options = {
 };
 
 RNCallKeep.hasDefaultPhoneAccount(options);
+```
+
+### checkPhoneAccountEnabled
+
+Checks if the user has set a default [phone account](https://developer.android.com/reference/android/telecom/PhoneAccount) and it's enabled.
+
+It's useful for custom permission prompts. It should be used in pair with `registerPhoneAccount`
+Similar to `hasDefaultPhoneAccount` but without trigering a prompt if the user doesn't have a phone account.
+
+_This feature is available only on Android._
+
+```js
+RNCallKeep.checkPhoneAccountEnabled();
+```
+
+### isConnectionServiceAvailable
+
+Check if the device support ConnectionService.
+
+_This feature is available only on Android._
+
+```js
+RNCallKeep.checkPhoneAccountEnabled();
 ```
 
 ### backToForeground
