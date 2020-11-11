@@ -43,6 +43,7 @@ import android.telecom.Connection;
 import android.telecom.DisconnectCause;
 import android.telecom.PhoneAccount;
 import android.telecom.PhoneAccountHandle;
+import android.telecom.VideoProfile;
 import android.telecom.TelecomManager;
 import android.telephony.TelephonyManager;
 import android.util.Log;
@@ -87,6 +88,7 @@ import static io.wazo.callkeep.Constants.ACTION_CHECK_REACHABILITY;
 import static io.wazo.callkeep.Constants.ACTION_WAKE_APP;
 import static io.wazo.callkeep.Constants.ACTION_SHOW_INCOMING_CALL_UI;
 import static io.wazo.callkeep.Constants.EXTRA_HAS_VIDEO;
+
 
 // @see https://github.com/kbagchiGWC/voice-quickstart-android/blob/9a2aff7fbe0d0a5ae9457b48e9ad408740dfb968/exampleConnectionService/src/main/java/com/twilio/voice/examples/connectionservice/VoiceConnectionServiceActivity.java
 public class RNCallKeepModule extends ReactContextBaseJavaModule {
@@ -193,6 +195,9 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
         extras.putString(EXTRA_CALLER_NAME, callerName);
         extras.putString(EXTRA_CALL_UUID, uuid);
         extras.putBoolean(EXTRA_HAS_VIDEO, hasVideo);
+        if (hasVideo) {
+            extras.putInt(TelecomManager.EXTRA_INCOMING_VIDEO_STATE, VideoProfile.STATE_BIDIRECTIONAL);
+        }
 
         telecomManager.addNewIncomingCall(handle, extras);
     }

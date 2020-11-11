@@ -96,6 +96,10 @@ public class VoiceConnectionService extends ConnectionService {
     public VoiceConnectionService() {
         super();
         Log.e(TAG, "Constructor");
+
+        isReachable = false;
+        isInitialized = false;
+        isAvailable = false;
         currentConnectionRequest = null;
         currentConnectionService = this;
     }
@@ -381,6 +385,12 @@ public class VoiceConnectionService extends ConnectionService {
 
         connection.setInitializing();
         connection.setExtras(extras);
+
+        if (Build.VERSION.SDK_INT >= 30) {
+            Log.d(TAG, "Set Caller Number Verification");
+            connection.setCallerNumberVerificationStatus(Connection.VERIFICATION_STATUS_PASSED);
+        }
+
         currentConnections.put(extras.getString(EXTRA_CALL_UUID), connection);
 
         // Get other connections for conferencing
