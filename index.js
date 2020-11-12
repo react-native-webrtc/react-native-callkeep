@@ -22,12 +22,6 @@ class RNCallKeep {
 
   constructor() {
     this._callkeepEventHandlers = new Map();
-
-    this.addEventListener('didLoadWithEvents', (events) => {
-      events.forEach(event => {
-        emit(event.name, event.data);
-      });
-    });
   }
 
   addEventListener = (type, handler) => {
