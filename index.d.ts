@@ -61,6 +61,7 @@ declare module 'react-native-callkeep' {
       localizedCallerName?: string,
       handleType?: HandleType,
       hasVideo?: boolean,
+      options?: object,
     ): void
 
     static startCall(
@@ -75,6 +76,7 @@ declare module 'react-native-callkeep' {
       uuid: string,
       displayName: string,
       handle: string,
+      options?: object,
     ): void
 
     static checkPhoneAccountEnabled(): Promise<boolean>;

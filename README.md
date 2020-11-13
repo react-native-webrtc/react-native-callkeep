@@ -186,6 +186,13 @@ RNCallKeep.displayIncomingCall(uuid, handle, localizedCallerName);
 - `hasVideo`: boolean (optional, iOS only)
   - `false` (default)
   - `true` (you know... when not false)
+- `options`: object (optional)
+  - `ios`: object
+    - `supportsHolding`: boolean (optional, default true)
+    - `supportsDTMF`: boolean (optional, default true)
+    - `supportsGrouping`: boolean (optional, default true)
+    - `supportsUngrouping`: boolean (optional, default true)
+  - `android`: object (currently no-op)
 
 ### answerIncomingCall
 _This feature is available only on Android._
@@ -241,6 +248,14 @@ RNCallKeep.updateDisplay(uuid, displayName, handle)
   - Name of the caller to be displayed on the native UI
 - `handle`: string
   - Phone number of the caller
+- `options`: object (optional)
+  - `ios`: object
+    - `hasVideo`: boolean (optional)
+    - `supportsHolding`: boolean (optional)
+    - `supportsDTMF`: boolean (optional)
+    - `supportsGrouping`: boolean (optional)
+    - `supportsUngrouping`: boolean (optional)
+  - `android`: object (currently no-op)
 
 ### endCall
 
@@ -775,7 +790,18 @@ Since iOS 13, you'll have to report the incoming calls that wakes up your applic
   // NSString *handle = @"caller number here";
   // NSDictionary *extra = [payload.dictionaryPayload valueForKeyPath:@"custom.path.to.data"]; /* use this to pass any special data (ie. from your notification) down to RN. Can also be `nil` */
 
-  [RNCallKeep reportNewIncomingCall:uuid handle:handle handleType:@"generic" hasVideo:false localizedCallerName:callerName fromPushKit: YES payload:extra withCompletionHandler:completion];
+  [RNCallKeep reportNewIncomingCall: uuid
+                             handle: handle
+                         handleType: @"generic"
+                           hasVideo: NO
+                localizedCallerName: callerName
+                    supportsHolding: YES
+                       supportsDTMF: YES
+                   supportsGrouping: YES
+                 supportsUngrouping: YES
+                        fromPushKit: YES
+                            payload: extra
+              withCompletionHandler: completion];
 }
 ```
 
