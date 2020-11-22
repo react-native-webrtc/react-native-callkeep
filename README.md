@@ -130,6 +130,20 @@ Eg: When your used log out (or the connection to your server is broken, etc..), 
 RNCallKeep.setAvailable(true);
 ```
 
+### setForegroundServiceSettings
+_This feature is available only on Android._
+
+Configures the [Foreground Service](https://developer.android.com/about/versions/11/privacy/foreground-services) used for Android 11 to get microphone access on background.
+Similar to set the `foregroundService` key in the `setup()` method.
+
+```js
+RNCallKeep.setForegroundServiceSettings({
+    channelId: 'com.company.my',
+    channelName: 'Foreground service for my app',
+    notificationTitle: 'My app is running on background',
+});
+```
+
 ### canMakeMultipleCalls
 _This feature is available only on Android._
 

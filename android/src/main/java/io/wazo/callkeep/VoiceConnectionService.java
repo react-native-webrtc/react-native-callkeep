@@ -217,6 +217,7 @@ public class VoiceConnectionService extends ConnectionService {
 
     private void startForegroundService() {
         if (_settings == null || !_settings.hasKey("foregroundService")) {
+            Log.d(TAG, "Not creating foregroundService because not configured");
             return;
         }
         ReadableMap foregroundSettings = _settings.getMap("foregroundService");

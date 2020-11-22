@@ -190,6 +190,16 @@ class RNCallKeep {
     RNCallKeepModule.setAvailable(state);
   };
 
+  setForegroundServiceSettings = (settings) => {
+    if (isIOS) {
+      return;
+    }
+
+    RNCallKeepModule.setForegroundServiceSettings({
+      foregroundService: settings,
+    });
+  };
+
   canMakeMultipleCalls = (state) => {
     if (isIOS) {
       return;
