@@ -18,6 +18,11 @@
 package io.wazo.callkeep;
 
 import android.annotation.TargetApi;
+import android.app.ActivityManager;
+import android.app.ActivityManager.RunningTaskInfo;
+import android.app.Notification;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
 import android.content.Intent;
 import android.content.Context;
 import android.content.ComponentName;
@@ -27,6 +32,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.speech.tts.Voice;
 import androidx.annotation.Nullable;
+import android.support.v4.app.NotificationCompat;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import android.telecom.CallAudioState;
 import android.telecom.Connection;
@@ -37,10 +43,8 @@ import android.telecom.PhoneAccountHandle;
 import android.telecom.TelecomManager;
 import android.util.Log;
 
-import android.app.ActivityManager;
-import android.app.ActivityManager.RunningTaskInfo;
-
 import com.facebook.react.HeadlessJsTaskService;
+import com.facebook.react.bridge.ReadableMap;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -51,6 +55,7 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import static android.content.pm.ServiceInfo.FOREGROUND_SERVICE_TYPE_MICROPHONE;
 import static io.wazo.callkeep.Constants.ACTION_AUDIO_SESSION;
 import static io.wazo.callkeep.Constants.ACTION_ONGOING_CALL;
 import static io.wazo.callkeep.Constants.ACTION_CHECK_REACHABILITY;
@@ -70,6 +75,7 @@ public class VoiceConnectionService extends ConnectionService {
     private static String notReachableCallUuid;
     private static ConnectionRequest currentConnectionRequest;
     private static PhoneAccountHandle phoneAccountHandle;
+    private static ReadableMap _settings;
     private static String TAG = "RNCK:VoiceConnectionService";
     public static Map<String, VoiceConnection> currentConnections = new HashMap<>();
     public static Boolean hasOutgoingCall = false;
@@ -105,6 +111,10 @@ public class VoiceConnectionService extends ConnectionService {
         isAvailable = value;
     }
 
+    public static void setSettings(ReadableMap settings) {
+        _settings = settings;
+    }
+
     public static void setCanMakeMultipleCalls(Boolean allow) {
         VoiceConnectionService.canMakeMultipleCalls = allow;
     }
@@ -132,6 +142,8 @@ public class VoiceConnectionService extends ConnectionService {
         Connection incomingCallConnection = createConnection(request);
         incomingCallConnection.setRinging();
         incomingCallConnection.setInitialized();
+
+        startForegroundService();
 
         return incomingCallConnection;
     }
@@ -185,6 +197,8 @@ public class VoiceConnectionService extends ConnectionService {
         outgoingCallConnection.setAudioModeIsVoip(true);
         outgoingCallConnection.setCallerDisplayName(displayName, TelecomManager.PRESENTATION_ALLOWED);
 
+        startForegroundService();
+
         // ‍️Weirdly on some Samsung phones (A50, S9...) using `setInitialized` will not display the native UI ...
         // when making a call from the native Phone application. The call will still be displayed correctly without it.
         if (!Build.MANUFACTURER.equalsIgnoreCase("Samsung")) {
@@ -199,6 +213,28 @@ public class VoiceConnectionService extends ConnectionService {
         Log.d(TAG, "onCreateOutgoingConnection: calling");
 
         return outgoingCallConnection;
+    }
+
+    private void startForegroundService() {
+        if (_settings == null || !_settings.hasKey("foregroundService")) {
+            return;
+        }
+        ReadableMap foregroundSettings = _settings.getMap("foregroundService");
+        String NOTIFICATION_CHANNEL_ID = foregroundSettings.getString("channelId");
+        String channelName = foregroundSettings.getString("channelName");
+        NotificationChannel chan = new NotificationChannel(NOTIFICATION_CHANNEL_ID, channelName, NotificationManager.IMPORTANCE_NONE);
+        chan.setLockscreenVisibility(Notification.VISIBILITY_PRIVATE);
+        NotificationManager manager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+        assert manager != null;
+        manager.createNotificationChannel(chan);
+
+        NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID);
+        Notification notification = notificationBuilder.setOngoing(true)
+                .setContentTitle(foregroundSettings.getString("notificationTitle"))
+                .setPriority(NotificationManager.IMPORTANCE_MIN)
+                .setCategory(Notification.CATEGORY_SERVICE)
+                .build();
+        startForeground(FOREGROUND_SERVICE_TYPE_MICROPHONE, notification);
     }
 
     private void wakeUpApplication(String uuid, String number, String displayName) {
