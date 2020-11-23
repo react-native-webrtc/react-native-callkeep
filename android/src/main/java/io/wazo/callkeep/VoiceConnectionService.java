@@ -23,6 +23,7 @@ import android.app.ActivityManager.RunningTaskInfo;
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
+import android.content.res.Resources;
 import android.content.Intent;
 import android.content.Context;
 import android.content.ComponentName;
@@ -216,6 +217,10 @@ public class VoiceConnectionService extends ConnectionService {
     }
 
     private void startForegroundService() {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
+            // Foreground services not required before SDK 28
+            return;
+        }
         if (_settings == null || !_settings.hasKey("foregroundService")) {
             Log.d(TAG, "Not creating foregroundService because not configured");
             return;
@@ -230,11 +235,19 @@ public class VoiceConnectionService extends ConnectionService {
         manager.createNotificationChannel(chan);
 
         NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID);
-        Notification notification = notificationBuilder.setOngoing(true)
-                .setContentTitle(foregroundSettings.getString("notificationTitle"))
-                .setPriority(NotificationManager.IMPORTANCE_MIN)
-                .setCategory(Notification.CATEGORY_SERVICE)
-                .build();
+        notificationBuilder.setOngoing(true)
+            .setContentTitle(foregroundSettings.getString("notificationTitle"))
+            .setPriority(NotificationManager.IMPORTANCE_MIN)
+            .setCategory(Notification.CATEGORY_SERVICE);
+
+        if (foregroundSettings.hasKey("icon")) {
+            Context context = this.getApplicationContext();
+            Resources res = context.getResources();
+            String smallIcon = foregroundSettings.getString("icon");
+            notificationBuilder.setSmallIcon(res.getIdentifier(smallIcon, "mipmap", context.getPackageName()));
+        }
+
+        Notification notification = notificationBuilder.build();
         startForeground(FOREGROUND_SERVICE_TYPE_MICROPHONE, notification);
     }
 
