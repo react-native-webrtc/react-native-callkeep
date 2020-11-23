@@ -240,10 +240,10 @@ public class VoiceConnectionService extends ConnectionService {
             .setPriority(NotificationManager.IMPORTANCE_MIN)
             .setCategory(Notification.CATEGORY_SERVICE);
 
-        if (foregroundSettings.hasKey("icon")) {
+        if (foregroundSettings.hasKey("notificationIcon")) {
             Context context = this.getApplicationContext();
             Resources res = context.getResources();
-            String smallIcon = foregroundSettings.getString("icon");
+            String smallIcon = foregroundSettings.getString("notificationIcon");
             notificationBuilder.setSmallIcon(res.getIdentifier(smallIcon, "mipmap", context.getPackageName()));
         }
 
