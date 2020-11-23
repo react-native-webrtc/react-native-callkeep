@@ -128,6 +128,8 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
             this.registerEvents();
             VoiceConnectionService.setAvailable(true);
         }
+
+        VoiceConnectionService.setSettings(options);
     }
 
     @ReactMethod
@@ -387,6 +389,11 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
     @ReactMethod
     public void setAvailable(Boolean active) {
         VoiceConnectionService.setAvailable(active);
+    }
+
+    @ReactMethod
+    public void setForegroundServiceSettings(ReadableMap settings) {
+        VoiceConnectionService.setSettings(settings);
     }
 
     @ReactMethod

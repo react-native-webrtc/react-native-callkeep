@@ -47,7 +47,14 @@ const options = {
     cancelButton: 'Cancel',
     okButton: 'ok',
     imageName: 'phone_account_icon',
-    additionalPermissions: [PermissionsAndroid.PERMISSIONS.example]
+    additionalPermissions: [PermissionsAndroid.PERMISSIONS.example],
+    // Required to get audio in background when using Android 11
+    foregroundService: {
+      channelId: 'com.company.my',
+      channelName: 'Foreground service for my app',
+      notificationTitle: 'My app is running on background',
+      notiticationIcon: 'Path to the resource icon of the notification',
+    }, 
   }
 };
 
@@ -122,6 +129,21 @@ Eg: When your used log out (or the connection to your server is broken, etc..), 
 
 ```js
 RNCallKeep.setAvailable(true);
+```
+
+### setForegroundServiceSettings
+_This feature is available only on Android._
+
+Configures the [Foreground Service](https://developer.android.com/about/versions/11/privacy/foreground-services) used for Android 11 to get microphone access on background.
+Similar to set the `foregroundService` key in the `setup()` method.
+
+```js
+RNCallKeep.setForegroundServiceSettings({
+    channelId: 'com.company.my',
+    channelName: 'Foreground service for my app',
+    notificationTitle: 'My app is running on background',
+    notiticationIcon: 'Path to the resource icon of the notification',
+});
 ```
 
 ### canMakeMultipleCalls
@@ -804,6 +826,12 @@ Since iOS 13, you'll have to report the incoming calls that wakes up your applic
               withCompletionHandler: completion];
 }
 ```
+
+## Android 11
+
+Since Android 11, your application [requires to start a foregroundService](https://developer.android.com/about/versions/11/privacy/foreground-services) in order to access the microphone in background.
+
+You have to set the `foregroundService` key in the [`setup()`](#setup) method and add a `foregroundServiceType` in the [`AndroidManifest` file](docs/android-installation.md#android-common-step-installation).
 
 ## Debug
 
