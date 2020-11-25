@@ -23,8 +23,8 @@ import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
-import android.support.annotation.Nullable;
-import android.support.v4.content.LocalBroadcastManager;
+import androidx.annotation.Nullable;
+import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import android.telecom.CallAudioState;
 import android.telecom.Connection;
 import android.telecom.DisconnectCause;
@@ -37,18 +37,18 @@ import org.json.JSONObject;
 
 import java.util.HashMap;
 
-import static io.wazo.callkeep.RNCallKeepModule.ACTION_ANSWER_CALL;
-import static io.wazo.callkeep.RNCallKeepModule.ACTION_AUDIO_SESSION;
-import static io.wazo.callkeep.RNCallKeepModule.ACTION_DTMF_TONE;
-import static io.wazo.callkeep.RNCallKeepModule.ACTION_END_CALL;
-import static io.wazo.callkeep.RNCallKeepModule.ACTION_HOLD_CALL;
-import static io.wazo.callkeep.RNCallKeepModule.ACTION_MUTE_CALL;
-import static io.wazo.callkeep.RNCallKeepModule.ACTION_UNHOLD_CALL;
-import static io.wazo.callkeep.RNCallKeepModule.ACTION_UNMUTE_CALL;
-import static io.wazo.callkeep.RNCallKeepModule.ACTION_SHOW_INCOMING_CALL_UI;
-import static io.wazo.callkeep.RNCallKeepModule.EXTRA_CALLER_NAME;
-import static io.wazo.callkeep.RNCallKeepModule.EXTRA_CALL_NUMBER;
-import static io.wazo.callkeep.RNCallKeepModule.EXTRA_CALL_UUID;
+import static io.wazo.callkeep.Constants.ACTION_ANSWER_CALL;
+import static io.wazo.callkeep.Constants.ACTION_AUDIO_SESSION;
+import static io.wazo.callkeep.Constants.ACTION_DTMF_TONE;
+import static io.wazo.callkeep.Constants.ACTION_END_CALL;
+import static io.wazo.callkeep.Constants.ACTION_HOLD_CALL;
+import static io.wazo.callkeep.Constants.ACTION_MUTE_CALL;
+import static io.wazo.callkeep.Constants.ACTION_UNHOLD_CALL;
+import static io.wazo.callkeep.Constants.ACTION_UNMUTE_CALL;
+import static io.wazo.callkeep.Constants.EXTRA_CALLER_NAME;
+import static io.wazo.callkeep.Constants.EXTRA_CALL_NUMBER;
+import static io.wazo.callkeep.Constants.EXTRA_CALL_UUID;
+import static io.wazo.callkeep.Constants.ACTION_SHOW_INCOMING_CALL_UI;
 
 @TargetApi(Build.VERSION_CODES.M)
 public class VoiceConnection extends Connection {
