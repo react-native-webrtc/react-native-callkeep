@@ -608,8 +608,11 @@ Called as soon as JS context initializes if there were some actions performed by
 Since iOS 13, you must display incoming call on receiving PushKit push notification. But if app was killed, it takes some time to create JS context. If user answers the call (or ends it) before JS context has been initialized, user actions will be passed as events array of this event. Similar situation can happen if user would like to start a call from Recents or similar iOS app, assuming that your app was in killed state.
 
 ```js
+// register `didLoadWithEvents` somewhere early in your app when it is ready to handle callkeep events.
+
 RNCallKeep.addEventListener('didLoadWithEvents', (events) => {
-  // see example usage in https://github.com/react-native-webrtc/react-native-callkeep/pull/169
+  // `events` is passed as an Array chronologically, handle or ignore events based on the app's logic
+  // see example usage in https://github.com/react-native-webrtc/react-native-callkeep/pull/169 or https://github.com/react-native-webrtc/react-native-callkeep/pull/205
 });
 ```
 
