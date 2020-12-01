@@ -833,6 +833,7 @@ Since iOS 13, you'll have to report the incoming calls that wakes up your applic
 ## Android 11
 
 Since Android 11, your application [requires to start a foregroundService](https://developer.android.com/about/versions/11/privacy/foreground-services) in order to access the microphone in background.
+You'll need to upgrade your `compileSdkVersion` to `30` to be able to use this feature.
 
 You have to set the `foregroundService` key in the [`setup()`](#setup) method and add a `foregroundServiceType` in the [`AndroidManifest` file](docs/android-installation.md#android-common-step-installation).
 
