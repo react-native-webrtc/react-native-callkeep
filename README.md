@@ -607,6 +607,8 @@ Called as soon as JS context initializes if there were some actions performed by
 
 Since iOS 13, you must display incoming call on receiving PushKit push notification. But if app was killed, it takes some time to create JS context. If user answers the call (or ends it) before JS context has been initialized, user actions will be passed as events array of this event. Similar situation can happen if user would like to start a call from Recents or similar iOS app, assuming that your app was in killed state.
 
+**NOTE: You still need to subscribe / handle the rest events as usuall. This is just a helper whcih cache and propagate early fired events if and only if for "the native events which DID fire BEFORE js bridge is initialed", it does NOT mean this will have events each time when the app reopened.**
+
 ```js
 // register `didLoadWithEvents` somewhere early in your app when it is ready to handle callkeep events.
 
