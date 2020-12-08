@@ -208,7 +208,7 @@ RCT_EXPORT_METHOD(startCall:(NSString *)uuidString
 RCT_EXPORT_METHOD(answerIncomingCall:(NSString *)uuidString)
 {
 #ifdef DEBUG
-    NSLog(@"[RNCallKeep][answerCall] uuidString = %@", uuidString);
+    NSLog(@"[RNCallKeep][answerIncomingCall] uuidString = %@", uuidString);
 #endif
     NSUUID *uuid = [[NSUUID alloc] initWithUUIDString:uuidString];
     CXAnswerCallAction *answerCallAction = [[CXAnswerCallAction alloc] initWithCallUUID:uuid];

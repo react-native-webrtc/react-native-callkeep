@@ -179,7 +179,6 @@ RNCallKeep.displayIncomingCall(uuid, handle, localizedCallerName);
   - `true` (you know... when not false)
 
 ### answerIncomingCall
-_This feature is available only on Android._
 
 Use this to tell the sdk a user answered a call from the app UI.
 
