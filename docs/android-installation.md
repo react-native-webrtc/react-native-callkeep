@@ -62,7 +62,7 @@ public class MainActivity extends ReactActivity {
 
 
 ```xml
-<uses-permission android:name="android.permission.BIND_TELECOM_CONNECTION_SERVICE"/>
+<uses-permission android:name="android.permission.BIND_TELECOM_CONNECTION_SERVICE" tools:ignore="ProtectedPermissions"/>
 <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
 <uses-permission android:name="android.permission.READ_PHONE_STATE" />
 <uses-permission android:name="android.permission.CALL_PHONE" />
@@ -72,7 +72,7 @@ public class MainActivity extends ReactActivity {
     <service android:name="io.wazo.callkeep.VoiceConnectionService"
         android:label="Wazo"
         android:permission="android.permission.BIND_TELECOM_CONNECTION_SERVICE"
-        android:foregroundServiceType="camera|microphone">>
+        android:foregroundServiceType="phoneCall">
         <intent-filter>
             <action android:name="android.telecom.ConnectionService" />
         </intent-filter>
