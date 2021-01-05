@@ -22,12 +22,6 @@ class RNCallKeep {
 
   constructor() {
     this._callkeepEventHandlers = new Map();
-
-    this.addEventListener('didLoadWithEvents', (events) => {
-      events.forEach(event => {
-        emit(event.name, event.data);
-      });
-    });
   }
 
   addEventListener = (type, handler) => {
@@ -77,13 +71,19 @@ class RNCallKeep {
     return;
   };
 
-  displayIncomingCall = (uuid, handle, localizedCallerName = '', handleType = 'number', hasVideo = false) => {
+  displayIncomingCall = (uuid, handle, localizedCallerName = '', handleType = 'number', hasVideo = false, options = null) => {
     if (!isIOS) {
       RNCallKeepModule.displayIncomingCall(uuid, handle, localizedCallerName);
       return;
     }
 
-    RNCallKeepModule.displayIncomingCall(uuid, handle, handleType, hasVideo, localizedCallerName);
+    // should be boolean type value
+    let supportsHolding = !!(options?.ios?.supportsHolding ?? true);
+    let supportsDTMF = !!(options?.ios?.supportsDTMF ?? true);
+    let supportsGrouping = !!(options?.ios?.supportsGrouping ?? true);
+    let supportsUngrouping = !!(options?.ios?.supportsUngrouping ?? true);
+
+    RNCallKeepModule.displayIncomingCall(uuid, handle, handleType, hasVideo, localizedCallerName, supportsHolding, supportsDTMF, supportsGrouping, supportsUngrouping);
   };
 
   answerIncomingCall = (uuid) => {
@@ -100,6 +100,22 @@ class RNCallKeep {
 
     RNCallKeepModule.startCall(uuid, handle, contactIdentifier, handleType, hasVideo);
   };
+
+  checkPhoneAccountEnabled = async () => {
+    if (isIOS) {
+      return;
+    }
+
+    return RNCallKeepModule.checkPhoneAccountEnabled();
+  }
+
+  isConnectionServiceAvailable = async () => {
+    if (isIOS) {
+      return true;
+    }
+
+    return RNCallKeepModule.isConnectionServiceAvailable();
+  }
 
   reportConnectingOutgoingCallWithUUID = (uuid) => {
     //only available on iOS
@@ -170,6 +186,24 @@ class RNCallKeep {
     RNCallKeepModule.setAvailable(state);
   };
 
+  setForegroundServiceSettings = (settings) => {
+    if (isIOS) {
+      return;
+    }
+
+    RNCallKeepModule.setForegroundServiceSettings({
+      foregroundService: settings,
+    });
+  };
+
+  canMakeMultipleCalls = (state) => {
+    if (isIOS) {
+      return;
+    }
+
+    RNCallKeepModule.canMakeMultipleCalls(state);
+  };
+
   setCurrentCallActive = (callUUID) => {
     if (isIOS) {
       return;
@@ -178,7 +212,20 @@ class RNCallKeep {
     RNCallKeepModule.setCurrentCallActive(callUUID);
   };
 
-  updateDisplay = (uuid, displayName, handle) => RNCallKeepModule.updateDisplay(uuid, displayName, handle);
+  updateDisplay = (uuid, displayName, handle, options = null) => {
+    if (!isIOS) {
+      RNCallKeepModule.updateDisplay(uuid, displayName, handle);
+      return;
+    }
+
+    let iosOptions = {};
+    if (options && options.ios) {
+      iosOptions = {
+        ...options.ios,
+      }
+    }
+    RNCallKeepModule.updateDisplay(uuid, displayName, handle, iosOptions);
+  };
 
   setOnHold = (uuid, shouldHold) => RNCallKeepModule.setOnHold(uuid, shouldHold);
 

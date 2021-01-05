@@ -47,7 +47,14 @@ const options = {
     cancelButton: 'Cancel',
     okButton: 'ok',
     imageName: 'phone_account_icon',
-    additionalPermissions: [PermissionsAndroid.PERMISSIONS.example]
+    additionalPermissions: [PermissionsAndroid.PERMISSIONS.example],
+    // Required to get audio in background when using Android 11
+    foregroundService: {
+      channelId: 'com.company.my',
+      channelName: 'Foreground service for my app',
+      notificationTitle: 'My app is running on background',
+      notificationIcon: 'Path to the resource icon of the notification',
+    }, 
   }
 };
 
@@ -124,6 +131,30 @@ Eg: When your used log out (or the connection to your server is broken, etc..), 
 RNCallKeep.setAvailable(true);
 ```
 
+### setForegroundServiceSettings
+_This feature is available only on Android._
+
+Configures the [Foreground Service](https://developer.android.com/about/versions/11/privacy/foreground-services) used for Android 11 to get microphone access on background.
+Similar to set the `foregroundService` key in the `setup()` method.
+
+```js
+RNCallKeep.setForegroundServiceSettings({
+    channelId: 'com.company.my',
+    channelName: 'Foreground service for my app',
+    notificationTitle: 'My app is running on background',
+    notificationIcon: 'Path to the resource icon of the notification',
+});
+```
+
+### canMakeMultipleCalls
+_This feature is available only on Android._
+
+Disable the "Add call" button in ConnectionService UI.
+
+```js
+RNCallKeep.canMakeMultipleCalls(false); // Enabled by default
+```
+
 - `active`: boolean
   - Tell whether the app is ready or not
 
@@ -177,6 +208,13 @@ RNCallKeep.displayIncomingCall(uuid, handle, localizedCallerName);
 - `hasVideo`: boolean (optional, iOS only)
   - `false` (default)
   - `true` (you know... when not false)
+- `options`: object (optional)
+  - `ios`: object
+    - `supportsHolding`: boolean (optional, default true)
+    - `supportsDTMF`: boolean (optional, default true)
+    - `supportsGrouping`: boolean (optional, default true)
+    - `supportsUngrouping`: boolean (optional, default true)
+  - `android`: object (currently no-op)
 
 ### answerIncomingCall
 _This feature is available only on Android._
@@ -232,6 +270,14 @@ RNCallKeep.updateDisplay(uuid, displayName, handle)
   - Name of the caller to be displayed on the native UI
 - `handle`: string
   - Phone number of the caller
+- `options`: object (optional)
+  - `ios`: object
+    - `hasVideo`: boolean (optional)
+    - `supportsHolding`: boolean (optional)
+    - `supportsDTMF`: boolean (optional)
+    - `supportsGrouping`: boolean (optional)
+    - `supportsUngrouping`: boolean (optional)
+  - `android`: object (currently no-op)
 
 ### endCall
 
@@ -388,6 +434,29 @@ const options = {
 RNCallKeep.hasDefaultPhoneAccount(options);
 ```
 
+### checkPhoneAccountEnabled
+
+Checks if the user has set a default [phone account](https://developer.android.com/reference/android/telecom/PhoneAccount) and it's enabled.
+
+It's useful for custom permission prompts. It should be used in pair with `registerPhoneAccount`
+Similar to `hasDefaultPhoneAccount` but without trigering a prompt if the user doesn't have a phone account.
+
+_This feature is available only on Android._
+
+```js
+RNCallKeep.checkPhoneAccountEnabled();
+```
+
+### isConnectionServiceAvailable
+
+Check if the device support ConnectionService.
+
+_This feature is available only on Android._
+
+```js
+RNCallKeep.checkPhoneAccountEnabled();
+```
+
 ### backToForeground
 _This feature is available only on Android._
 
@@ -538,9 +607,14 @@ Called as soon as JS context initializes if there were some actions performed by
 
 Since iOS 13, you must display incoming call on receiving PushKit push notification. But if app was killed, it takes some time to create JS context. If user answers the call (or ends it) before JS context has been initialized, user actions will be passed as events array of this event. Similar situation can happen if user would like to start a call from Recents or similar iOS app, assuming that your app was in killed state.
 
+**NOTE: You still need to subscribe / handle the rest events as usuall. This is just a helper whcih cache and propagate early fired events if and only if for "the native events which DID fire BEFORE js bridge is initialed", it does NOT mean this will have events each time when the app reopened.**
+
 ```js
+// register `didLoadWithEvents` somewhere early in your app when it is ready to handle callkeep events.
+
 RNCallKeep.addEventListener('didLoadWithEvents', (events) => {
-  // see example usage in https://github.com/react-native-webrtc/react-native-callkeep/pull/169
+  // `events` is passed as an Array chronologically, handle or ignore events based on the app's logic
+  // see example usage in https://github.com/react-native-webrtc/react-native-callkeep/pull/169 or https://github.com/react-native-webrtc/react-native-callkeep/pull/205
 });
 ```
 
@@ -724,7 +798,7 @@ In some case your application can be unreachable :
 - when the user kill the application
 - when it's in background since a long time (eg: after ~5mn the os will kill all connections).
 
-To be able to wake up your application to display the incoming call, you can use [https://github.com/ianlin/react-native-voip-push-notification](react-native-voip-push-notification) on iOS or BackgroundMessaging from [react-native-firebase](https://rnfirebase.io/docs/v5.x.x/messaging/receiving-messages#4)-(Optional)(Android-only)-Listen-for-FCM-messages-in-the-background).
+To be able to wake up your application to display the incoming call, you can use [https://github.com/ianlin/react-native-voip-push-notification](react-native-voip-push-notification) on iOS or BackgroundMessaging from [react-native-firebase](https://rnfirebase.io/messaging/usage#receiving-messages)-(Optional)(Android-only)-Listen-for-FCM-messages-in-the-background).
 
 You have to send a push to your application, like with Firebase for Android and with a library supporting PushKit pushes for iOS.
 
@@ -743,9 +817,27 @@ Since iOS 13, you'll have to report the incoming calls that wakes up your applic
   // NSString *handle = @"caller number here";
   // NSDictionary *extra = [payload.dictionaryPayload valueForKeyPath:@"custom.path.to.data"]; /* use this to pass any special data (ie. from your notification) down to RN. Can also be `nil` */
 
-  [RNCallKeep reportNewIncomingCall:uuid handle:handle handleType:@"generic" hasVideo:false localizedCallerName:callerName fromPushKit: YES payload:extra withCompletionHandler:completion];
+  [RNCallKeep reportNewIncomingCall: uuid
+                             handle: handle
+                         handleType: @"generic"
+                           hasVideo: NO
+                localizedCallerName: callerName
+                    supportsHolding: YES
+                       supportsDTMF: YES
+                   supportsGrouping: YES
+                 supportsUngrouping: YES
+                        fromPushKit: YES
+                            payload: extra
+              withCompletionHandler: completion];
 }
 ```
+
+## Android 11
+
+Since Android 11, your application [requires to start a foregroundService](https://developer.android.com/about/versions/11/privacy/foreground-services) in order to access the microphone in background.
+You'll need to upgrade your `compileSdkVersion` to `30` to be able to use this feature.
+
+You have to set the `foregroundService` key in the [`setup()`](#setup) method and add a `foregroundServiceType` in the [`AndroidManifest` file](docs/android-installation.md#android-common-step-installation).
 
 ## Debug
 

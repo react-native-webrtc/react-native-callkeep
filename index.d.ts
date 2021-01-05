@@ -61,6 +61,7 @@ declare module 'react-native-callkeep' {
       localizedCallerName?: string,
       handleType?: HandleType,
       hasVideo?: boolean,
+      options?: object,
     ): void
 
     static startCall(
@@ -75,7 +76,12 @@ declare module 'react-native-callkeep' {
       uuid: string,
       displayName: string,
       handle: string,
+      options?: object,
     ): void
+
+    static checkPhoneAccountEnabled(): Promise<boolean>;
+
+    static isConnectionServiceAvailable(): Promise<boolean>;
 
     /**
      * @description reportConnectedOutgoingCallWithUUID method is available only on iOS.
@@ -136,6 +142,10 @@ declare module 'react-native-callkeep' {
      * @description setAvailable method is available only on Android.
      */
     static setAvailable(active: boolean): void
+
+    static setForegroundServiceSettings(settings: Object): void
+
+    static canMakeMultipleCalls(allow: boolean): void
 
     static setCurrentCallActive(callUUID: string): void
 

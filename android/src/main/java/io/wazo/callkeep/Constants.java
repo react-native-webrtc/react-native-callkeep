@@ -16,4 +16,8 @@ public class Constants {
     public static final String EXTRA_CALL_NUMBER = "EXTRA_CALL_NUMBER";
     public static final String EXTRA_CALL_UUID = "EXTRA_CALL_UUID";
     public static final String EXTRA_CALLER_NAME = "EXTRA_CALLER_NAME";
+    // Can't use telecom.EXTRA_DISABLE_ADD_CALL ...
+    public static final String EXTRA_DISABLE_ADD_CALL = "android.telecom.extra.DISABLE_ADD_CALL";
+
+    public static final int FOREGROUND_SERVICE_TYPE_MICROPHONE = 128;
 }
