@@ -122,7 +122,7 @@ declare module 'react-native-callkeep' {
      */
     static setMutedCall(uuid: string, muted: boolean): void
     /**
-         * @description toggleAudioRouteSpeaker method is available only on Android.
+      * @description toggleAudioRouteSpeaker method is available only on Android.
       */
     static toggleAudioRouteSpeaker(uuid: string, useSpeaker: boolean) {
 
