@@ -11,7 +11,8 @@ declare module 'react-native-callkeep' {
     'didResetProvider' |
     'checkReachability' |
     'didPerformSetMutedCallAction' |
-    'didLoadWithEvents';
+    'didLoadWithEvents' |
+    'showIncomingCallUi';
 
   type HandleType = 'generic' | 'number' | 'email';
 
@@ -31,6 +32,7 @@ declare module 'react-native-callkeep' {
       okButton: string,
       imageName?: string,
       additionalPermissions: string[],
+      allowSelfManaged: boolean,
     },
   }
 
@@ -54,6 +56,8 @@ declare module 'react-native-callkeep' {
     static registerPhoneAccount(): void
 
     static registerAndroidEvents(): void
+
+    static promptAndroidPermissions(): void
 
     static displayIncomingCall(
       uuid: string,
