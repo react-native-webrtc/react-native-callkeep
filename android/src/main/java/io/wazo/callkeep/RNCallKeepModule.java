@@ -95,7 +95,7 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
 
     private static final String E_ACTIVITY_DOES_NOT_EXIST = "E_ACTIVITY_DOES_NOT_EXIST";
     private static final String REACT_NATIVE_MODULE_NAME = "RNCallKeep";
-    private static final String[] permissions = {
+    private static String[] permissions = {
         Build.VERSION.SDK_INT < 30 ? Manifest.permission.READ_PHONE_STATE : Manifest.permission.READ_PHONE_NUMBERS,
         Manifest.permission.CALL_PHONE,
         Manifest.permission.RECORD_AUDIO
@@ -741,7 +741,7 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
                     break;
                 case ACTION_CHECK_REACHABILITY:
                     sendEventToJS("RNCallKeepCheckReachability", null);
-					break;
+                    break;
                 case ACTION_SHOW_INCOMING_CALL_UI:
                     args.putString("handle", attributeMap.get(EXTRA_CALL_NUMBER));
                     args.putString("callUUID", attributeMap.get(EXTRA_CALL_UUID));
