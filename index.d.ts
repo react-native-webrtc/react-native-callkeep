@@ -57,7 +57,7 @@ declare module 'react-native-callkeep' {
 
     static registerAndroidEvents(): void
 
-    static promptAndroidPermissions(): void
+    static promptAndroidPermissions(options?: Partial<IOptions['android']>): Promise<void>
 
     static displayIncomingCall(
       uuid: string,
@@ -80,7 +80,9 @@ declare module 'react-native-callkeep' {
       uuid: string,
       displayName: string,
       handle: string,
-      options?: object,
+      options?: {
+        ios: object
+      },
     ): void
 
     static checkPhoneAccountEnabled(): Promise<boolean>;
