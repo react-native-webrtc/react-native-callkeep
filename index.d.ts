@@ -80,9 +80,7 @@ declare module 'react-native-callkeep' {
       uuid: string,
       displayName: string,
       handle: string,
-      options?: {
-        ios: object
-      },
+      iosOptions?: object,
     ): void
 
     static checkPhoneAccountEnabled(): Promise<boolean>;
