@@ -23,6 +23,7 @@ declare module 'react-native-callkeep' {
       maximumCallGroups?: string,
       maximumCallsPerCallGroup?: string,
       ringtoneSound?: string,
+      includesCallsInRecents?: boolean
     },
     android: {
       alertTitle: string,
