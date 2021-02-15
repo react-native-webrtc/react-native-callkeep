@@ -335,12 +335,19 @@ RCT_EXPORT_METHOD(sendDTMF:(NSString *)uuidString dtmf:(NSString *)key)
     [self requestTransaction:transaction];
 }
 
-RCT_EXPORT_METHOD(isCallActive:(NSString *)uuidString)
+RCT_EXPORT_METHOD(isCallActive:(NSString *)uuidString
+                  isCallActiveResolver:(RCTPromiseResolveBlock)resolve
+                  rejecter:(RCTPromiseRejectBlock)reject)
 {
 #ifdef DEBUG
     NSLog(@"[RNCallKeep][isCallActive] uuid = %@", uuidString);
 #endif
-    [RNCallKeep isCallActive: uuidString];
+    BOOL isActive = [RNCallKeep isCallActive: uuidString];
+    if (isActive) {
+        resolve(@YES);
+    } else {
+        resolve(@NO);
+    }
 }
 
 - (void)requestTransaction:(CXTransaction *)transaction
@@ -381,8 +388,8 @@ RCT_EXPORT_METHOD(isCallActive:(NSString *)uuidString)
 
     for(CXCall *call in callObserver.calls){
         NSLog(@"[RNCallKeep] isCallActive %@ %d ?", call.UUID, [call.UUID isEqual:uuid]);
-        if([call.UUID isEqual:[[NSUUID alloc] initWithUUIDString:uuidString]] && !call.hasConnected){
-            return true;
+        if([call.UUID isEqual:[[NSUUID alloc] initWithUUIDString:uuidString]]){
+            return call.hasConnected;
         }
     }
     return false;
