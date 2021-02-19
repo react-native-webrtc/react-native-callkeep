@@ -104,6 +104,9 @@ declare module 'react-native-callkeep' {
 
     static setReachable(): void
 
+    /**
+     * @description isCallActive method is available only on iOS.
+     */
     static isCallActive(uuid: string): Promise<boolean>
 
     /**
