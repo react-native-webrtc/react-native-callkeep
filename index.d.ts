@@ -109,6 +109,8 @@ declare module 'react-native-callkeep' {
      */
     static isCallActive(uuid: string): Promise<boolean>
 
+    static getCalls(): Promise<object>
+
     /**
      * @description supportConnectionService method is available only on Android.
      */

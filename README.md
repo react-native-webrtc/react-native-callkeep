@@ -187,13 +187,33 @@ RNCallKeep.isCallActive(uuid);
 - `uuid`: string
   - The `uuid` used for `startCall` or `displayIncomingCall`
 
+
+### getCalls
+
+_This feature is available only on IOS._
+
+Returns a Promise. The result will be an array with all current calls and their states.
+
+```js
+RNCallKeep.getCalls();
+
+response:
+[{
+  callUUID: "E26B14F7-2CDF-48D0-9925-532199AE7C48"
+  hasConnected: true
+  hasEnded: false
+  onHold: false
+  outgoing: false
+}]
+```
+
 ### displayIncomingCall
 
 Display system UI for incoming calls
 
-````js
+```js
 RNCallKeep.displayIncomingCall(uuid, handle, localizedCallerName);
-````
+```
 
 - `uuid`: string
   - An `uuid` that should be stored and re-used for `stopCall`.
