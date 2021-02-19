@@ -385,12 +385,6 @@ public class VoiceConnectionService extends ConnectionService {
 
         connection.setInitializing();
         connection.setExtras(extras);
-
-        if (Build.VERSION.SDK_INT >= 30) {
-            Log.d(TAG, "Set Caller Number Verification");
-            connection.setCallerNumberVerificationStatus(Connection.VERIFICATION_STATUS_PASSED);
-        }
-
         currentConnections.put(extras.getString(EXTRA_CALL_UUID), connection);
 
         // Get other connections for conferencing
