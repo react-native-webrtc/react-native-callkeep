@@ -46,7 +46,7 @@ declare module 'react-native-callkeep' {
 
     static removeEventListener(type: Events): void
 
-    static setup(options: IOptions): Promise<void>
+    static setup(options: IOptions): Promise<boolean>
 
     static hasDefaultPhoneAccount(): boolean
 
