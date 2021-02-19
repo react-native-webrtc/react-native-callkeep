@@ -220,6 +220,19 @@ RCT_EXPORT_METHOD(startCall:(NSString *)uuidString
     [self requestTransaction:transaction];
 }
 
+RCT_EXPORT_METHOD(answerIncomingCall:(NSString *)uuidString)
+{
+#ifdef DEBUG
+    NSLog(@"[RNCallKeep][answerIncomingCall] uuidString = %@", uuidString);
+#endif
+    NSUUID *uuid = [[NSUUID alloc] initWithUUIDString:uuidString];
+    CXAnswerCallAction *answerCallAction = [[CXAnswerCallAction alloc] initWithCallUUID:uuid];
+    CXTransaction *transaction = [[CXTransaction alloc] init];
+    [transaction addAction:answerCallAction];
+
+    [self requestTransaction:transaction];
+}
+
 RCT_EXPORT_METHOD(endCall:(NSString *)uuidString)
 {
 #ifdef DEBUG
