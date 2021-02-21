@@ -24,6 +24,7 @@ declare module 'react-native-callkeep' {
       maximumCallGroups?: string,
       maximumCallsPerCallGroup?: string,
       ringtoneSound?: string,
+      includesCallsInRecents?: boolean
     },
     android: {
       alertTitle: string,
@@ -47,7 +48,7 @@ declare module 'react-native-callkeep' {
 
     static removeEventListener(type: Events): void
 
-    static setup(options: IOptions): Promise<void>
+    static setup(options: IOptions): Promise<boolean>
 
     static hasDefaultPhoneAccount(): boolean
 
@@ -107,7 +108,12 @@ declare module 'react-native-callkeep' {
 
     static setReachable(): void
 
+    /**
+     * @description isCallActive method is available only on iOS.
+     */
     static isCallActive(uuid: string): Promise<boolean>
+
+    static getCalls(): Promise<object>
 
     /**
      * @description supportConnectionService method is available only on Android.
