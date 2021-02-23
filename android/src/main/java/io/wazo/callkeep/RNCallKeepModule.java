@@ -269,7 +269,7 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
             optionalPermsArr[i] = optionalPermissions.getString(i);
         }
 
-        String[] allPermissions = Arrays.copyOf(permissions, permissions.length + optionalPermsArr.length);
+        final String[] allPermissions = Arrays.copyOf(permissions, permissions.length + optionalPermsArr.length);
         System.arraycopy(optionalPermsArr, 0, allPermissions, permissions.length, optionalPermsArr.length);
 
         hasPhoneAccountPromise = promise;
