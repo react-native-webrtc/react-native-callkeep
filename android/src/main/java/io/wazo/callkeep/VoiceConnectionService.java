@@ -33,7 +33,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.speech.tts.Voice;
 import androidx.annotation.Nullable;
-import android.support.v4.app.NotificationCompat;
+import androidx.core.app.NotificationCompat;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import android.telecom.CallAudioState;
 import android.telecom.Connection;
