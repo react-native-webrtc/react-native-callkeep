@@ -70,7 +70,7 @@ RNCallKeep.setup(options).then(accepted => {});
     - `ringtoneSound`: string (optional)
       If provided, it will be played when incoming calls received; the system will use the default ringtone if this is not provided
     - `includesCallsInRecents`: boolean (optional)
-      If provided, calls will be shown in the recent calls when true and not when false (ios 11 and above)
+      If provided, calls will be shown in the recent calls when true and not when false (ios 11 and above) (Default: true)
     - `maximumCallGroups`: string (optional)
       If provided, the maximum number of call groups supported by this application (Default: 3)
     - `maximumCallsPerCallGroup`: string (optional)
@@ -187,13 +187,33 @@ RNCallKeep.isCallActive(uuid);
 - `uuid`: string
   - The `uuid` used for `startCall` or `displayIncomingCall`
 
+
+### getCalls
+
+_This feature is available only on IOS._
+
+Returns a Promise. The result will be an array with all current calls and their states.
+
+```js
+RNCallKeep.getCalls();
+
+response:
+[{
+  callUUID: "E26B14F7-2CDF-48D0-9925-532199AE7C48"
+  hasConnected: true
+  hasEnded: false
+  onHold: false
+  outgoing: false
+}]
+```
+
 ### displayIncomingCall
 
 Display system UI for incoming calls
 
-````js
+```js
 RNCallKeep.displayIncomingCall(uuid, handle, localizedCallerName);
-````
+```
 
 - `uuid`: string
   - An `uuid` that should be stored and re-used for `stopCall`.
@@ -217,7 +237,6 @@ RNCallKeep.displayIncomingCall(uuid, handle, localizedCallerName);
   - `android`: object (currently no-op)
 
 ### answerIncomingCall
-_This feature is available only on Android._
 
 Use this to tell the sdk a user answered a call from the app UI.
 
@@ -607,9 +626,14 @@ Called as soon as JS context initializes if there were some actions performed by
 
 Since iOS 13, you must display incoming call on receiving PushKit push notification. But if app was killed, it takes some time to create JS context. If user answers the call (or ends it) before JS context has been initialized, user actions will be passed as events array of this event. Similar situation can happen if user would like to start a call from Recents or similar iOS app, assuming that your app was in killed state.
 
+**NOTE: You still need to subscribe / handle the rest events as usuall. This is just a helper whcih cache and propagate early fired events if and only if for "the native events which DID fire BEFORE js bridge is initialed", it does NOT mean this will have events each time when the app reopened.**
+
 ```js
+// register `didLoadWithEvents` somewhere early in your app when it is ready to handle callkeep events.
+
 RNCallKeep.addEventListener('didLoadWithEvents', (events) => {
-  // see example usage in https://github.com/react-native-webrtc/react-native-callkeep/pull/169
+  // `events` is passed as an Array chronologically, handle or ignore events based on the app's logic
+  // see example usage in https://github.com/react-native-webrtc/react-native-callkeep/pull/169 or https://github.com/react-native-webrtc/react-native-callkeep/pull/205
 });
 ```
 
@@ -793,7 +817,7 @@ In some case your application can be unreachable :
 - when the user kill the application
 - when it's in background since a long time (eg: after ~5mn the os will kill all connections).
 
-To be able to wake up your application to display the incoming call, you can use [https://github.com/ianlin/react-native-voip-push-notification](react-native-voip-push-notification) on iOS or BackgroundMessaging from [react-native-firebase](https://rnfirebase.io/messaging/usage#receiving-messages)-(Optional)(Android-only)-Listen-for-FCM-messages-in-the-background).
+To be able to wake up your application to display the incoming call, you can use [https://github.com/react-native-webrtc/react-native-voip-push-notification](react-native-voip-push-notification) on iOS or BackgroundMessaging from [react-native-firebase](https://rnfirebase.io/messaging/usage#receiving-messages)-(Optional)(Android-only)-Listen-for-FCM-messages-in-the-background).
 
 You have to send a push to your application, like with Firebase for Android and with a library supporting PushKit pushes for iOS.
 
@@ -830,6 +854,7 @@ Since iOS 13, you'll have to report the incoming calls that wakes up your applic
 ## Android 11
 
 Since Android 11, your application [requires to start a foregroundService](https://developer.android.com/about/versions/11/privacy/foreground-services) in order to access the microphone in background.
+You'll need to upgrade your `compileSdkVersion` to `30` to be able to use this feature.
 
 You have to set the `foregroundService` key in the [`setup()`](#setup) method and add a `foregroundServiceType` in the [`AndroidManifest` file](docs/android-installation.md#android-common-step-installation).
 
