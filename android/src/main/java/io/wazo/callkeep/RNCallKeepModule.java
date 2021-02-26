@@ -18,6 +18,8 @@
 package io.wazo.callkeep;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
+import android.annotation.TargetApi;
 import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
@@ -32,6 +34,8 @@ import android.graphics.drawable.Icon;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
+import android.provider.Settings;
 import android.view.WindowManager;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -495,6 +499,7 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
             return;
         }
 
+        // TODO: Add support for main android devices in order to open select account directly
         if (Build.MANUFACTURER.equalsIgnoreCase("Samsung")) {
             Intent intent = new Intent();
             intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_MULTIPLE_TASK);
@@ -504,6 +509,29 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
             this.getAppContext().startActivity(intent);
             return;
         }
+
+        final Handler handler = new Handler();
+
+        new Thread(new Runnable() {
+            @SuppressLint("WrongConstant")
+            @Override
+            @TargetApi(23)
+            public void run() {
+                Log.d("CallKeep", "Waitinig for select account...");
+
+                if(hasPhoneAccount()) {
+                    Context context = getAppContext();
+                    String packageName = context.getApplicationContext().getPackageName();
+                    Intent focusIntent = context.getPackageManager().getLaunchIntentForPackage(packageName).cloneFilter();
+                    Activity activity = getCurrentActivity();
+
+                    focusIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK + Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                    getReactApplicationContext().startActivity(focusIntent);
+                    return;
+                }
+                handler.postDelayed(this, 1000);
+            }
+        }).start();
 
         openPhoneAccountSettings();
     }
