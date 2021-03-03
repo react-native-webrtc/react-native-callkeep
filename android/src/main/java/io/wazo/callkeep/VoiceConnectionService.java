@@ -252,6 +252,11 @@ public class VoiceConnectionService extends ConnectionService {
     }
 
     private void wakeUpApplication(String uuid, String number, String displayName) {
+         Log.d(TAG, "wakeUpApplication, uuid:" + uuid + ", number :" + number + ", displayName:" + displayName);
+
+        // Avoid to call wake up the app again in wakeUpAfterReachabilityTimeout.
+        this.currentConnectionRequest = null;
+
         Intent headlessIntent = new Intent(
             this.getApplicationContext(),
             RNCallKeepBackgroundMessagingService.class
