@@ -143,6 +143,9 @@ public class VoiceConnectionService extends ConnectionService {
         Bundle extra = request.getExtras();
         Uri number = request.getAddress();
         String name = extra.getString(EXTRA_CALLER_NAME);
+
+        Log.d(TAG, "onCreateIncomingConnection, name:" + name);
+
         Connection incomingCallConnection = createConnection(request);
         incomingCallConnection.setRinging();
         incomingCallConnection.setInitialized();
@@ -156,6 +159,8 @@ public class VoiceConnectionService extends ConnectionService {
     public Connection onCreateOutgoingConnection(PhoneAccountHandle connectionManagerPhoneAccount, ConnectionRequest request) {
         VoiceConnectionService.hasOutgoingCall = true;
         String uuid = UUID.randomUUID().toString();
+
+        Log.d(TAG, "onCreateOutgoingConnection, uuid:" + uuid);
 
         if (!isInitialized && !isReachable) {
             this.notReachableCallUuid = uuid;
@@ -174,7 +179,7 @@ public class VoiceConnectionService extends ConnectionService {
         String displayName = extras.getString(EXTRA_CALLER_NAME);
         Boolean isForeground = VoiceConnectionService.isRunning(this.getApplicationContext());
 
-        Log.d(TAG, "makeOutgoingCall:" + uuid + ", number: " + number + ", displayName:" + displayName);
+        Log.d(TAG, "makeOutgoingCall, uuid:" + uuid + ", number: " + number + ", displayName:" + displayName);
 
         // Wakeup application if needed
         if (!isForeground || forceWakeUp) {
@@ -224,6 +229,7 @@ public class VoiceConnectionService extends ConnectionService {
             // Foreground services not required before SDK 28
             return;
         }
+        Log.d(TAG, "startForegroundService");
         if (_settings == null || !_settings.hasKey("foregroundService")) {
             Log.d(TAG, "Not creating foregroundService because not configured");
             return;
@@ -307,6 +313,8 @@ public class VoiceConnectionService extends ConnectionService {
     }
 
     private Connection createConnection(ConnectionRequest request) {
+        Log.d(TAG, "createConnection");
+
         Bundle extras = request.getExtras();
         HashMap<String, String> extrasMap = this.bundleToMap(extras);
         extrasMap.put(EXTRA_CALL_NUMBER, request.getAddress().toString());
@@ -331,6 +339,7 @@ public class VoiceConnectionService extends ConnectionService {
 
     @Override
     public void onConference(Connection connection1, Connection connection2) {
+        Log.d(TAG, "onConference");
         super.onConference(connection1, connection2);
         VoiceConnection voiceConnection1 = (VoiceConnection) connection1;
         VoiceConnection voiceConnection2 = (VoiceConnection) connection2;
@@ -351,6 +360,8 @@ public class VoiceConnectionService extends ConnectionService {
     private void sendCallRequestToActivity(final String action, @Nullable final HashMap attributeMap) {
         final VoiceConnectionService instance = this;
         final Handler handler = new Handler();
+
+        Log.d(TAG, "sendCallRequestToActivity, action:" + action);
 
         handler.post(new Runnable() {
             @Override
@@ -391,9 +402,12 @@ public class VoiceConnectionService extends ConnectionService {
         List<RunningTaskInfo> tasks = activityManager.getRunningTasks(Integer.MAX_VALUE);
 
         for (RunningTaskInfo task : tasks) {
-            if (context.getPackageName().equalsIgnoreCase(task.baseActivity.getPackageName()))
+            if (context.getPackageName().equalsIgnoreCase(task.baseActivity.getPackageName())) {
                 return true;
+            }
         }
+
+        Log.d(TAG, "isRunning: no running package found.");
 
         return false;
     }
