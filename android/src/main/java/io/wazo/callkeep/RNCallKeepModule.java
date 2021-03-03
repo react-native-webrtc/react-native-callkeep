@@ -122,7 +122,9 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
 
     @ReactMethod
     public void setup(ReadableMap options) {
+        Log.d(TAG, "setup");
         VoiceConnectionService.setAvailable(false);
+        VoiceConnectionService.setInitialized(true);
         this._settings = options;
 
         if (isConnectionServiceAvailable()) {
