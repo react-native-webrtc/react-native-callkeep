@@ -133,6 +133,8 @@ public class VoiceConnectionService extends ConnectionService {
         Log.d(TAG, "deinitConnection:" + connectionId);
         VoiceConnectionService.hasOutgoingCall = false;
 
+        currentConnectionService.stopForegroundService();
+
         if (currentConnections.containsKey(connectionId)) {
             currentConnections.remove(connectionId);
         }
@@ -258,6 +260,15 @@ public class VoiceConnectionService extends ConnectionService {
 
         Notification notification = notificationBuilder.build();
         startForeground(FOREGROUND_SERVICE_TYPE_MICROPHONE, notification);
+    }
+
+    private void stopForegroundService() {
+        Log.d(TAG, "stopForegroundService");
+        if (_settings == null || !_settings.hasKey("foregroundService")) {
+            Log.d(TAG, "Discarding stop foreground service, no service configured");
+            return;
+        }
+        stopForeground(FOREGROUND_SERVICE_TYPE_MICROPHONE);
     }
 
     private void wakeUpApplication(String uuid, String number, String displayName) {
