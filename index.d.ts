@@ -11,7 +11,8 @@ declare module 'react-native-callkeep' {
     'didResetProvider' |
     'checkReachability' |
     'didPerformSetMutedCallAction' |
-    'didLoadWithEvents';
+    'didLoadWithEvents' |
+    'showIncomingCallUi';
 
   type HandleType = 'generic' | 'number' | 'email';
 
