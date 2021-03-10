@@ -14,35 +14,51 @@
 
 #import <React/RCTEventEmitter.h>
 
-@interface RNCallKeep : RCTEventEmitter <CXProviderDelegate>
+@interface RNCallKeep: RCTEventEmitter <CXProviderDelegate>
 
 @property (nonatomic, strong) CXCallController *callKeepCallController;
 @property (nonatomic, strong) CXProvider *callKeepProvider;
 
-+ (BOOL)application:(UIApplication *)application
-            openURL:(NSURL *)url
-            options:(NSDictionary<UIApplicationOpenURLOptionsKey, id> *)options NS_AVAILABLE_IOS(9_0);
+extern NSString * const RNCallKeepHandleStartCallNotification;
+extern NSString * const RNCallKeepDidReceiveStartCallAction;
+extern NSString * const RNCallKeepPerformAnswerCallAction;
+extern NSString * const RNCallKeepPerformEndCallAction;
+extern NSString * const RNCallKeepDidActivateAudioSession;
+extern NSString * const RNCallKeepDidDeactivateAudioSession;
+extern NSString * const RNCallKeepDidDisplayIncomingCall;
+extern NSString * const RNCallKeepDidPerformSetMutedCallAction;
+extern NSString * const RNCallKeepPerformPlayDTMFCallAction;
+extern NSString * const RNCallKeepDidToggleHoldAction;
+extern NSString * const RNCallKeepProviderReset;
+extern NSString * const RNCallKeepCheckReachability;
+extern NSString * const RNCallKeepDidLoadWithEvents;
 
-+ (BOOL)application:(UIApplication *)application
-continueUserActivity:(NSUserActivity *)userActivity
-  restorationHandler:(void(^)(NSArray * __nullable restorableObjects))restorationHandler;
++(BOOL) application: (UIApplication *) application
+            openURL: (NSURL *) url
+            options: (NSDictionary<UIApplicationOpenURLOptionsKey, id> *) options NS_AVAILABLE_IOS(9_0);
 
-+ (void)reportNewIncomingCall:(NSString *)uuidString
-                       handle:(NSString *)handle
-                   handleType:(NSString *)handleType
-                     hasVideo:(BOOL)hasVideo
-          localizedCallerName:(NSString * _Nullable)localizedCallerName
-              supportsHolding:(BOOL)supportsHolding
-                 supportsDTMF:(BOOL)supportsDTMF
-             supportsGrouping:(BOOL)supportsGrouping
-           supportsUngrouping:(BOOL)supportsUngrouping
-                  fromPushKit:(BOOL)fromPushKit
-                      payload:(NSDictionary * _Nullable)payload
-        withCompletionHandler:(void (^_Nullable)(void))completion;
++(BOOL) application: (UIApplication *) application
+continueUserActivity: (NSUserActivity *) userActivity
+ restorationHandler: (void(^) (NSArray * __nullable restorableObjects)) restorationHandler;
 
-+ (void)endCallWithUUID:(NSString *)uuidString
-                 reason:(int)reason;
++(void) reportNewIncomingCall: (NSString *) uuidString
+                       handle: (NSString *) handle
+                   handleType: (NSString *) handleType
+                     hasVideo: (BOOL) hasVideo
+          localizedCallerName: (NSString * _Nullable) localizedCallerName
+              supportsHolding: (BOOL) supportsHolding
+                 supportsDTMF: (BOOL) supportsDTMF
+             supportsGrouping: (BOOL) supportsGrouping
+           supportsUngrouping: (BOOL) supportsUngrouping
+                  fromPushKit: (BOOL) fromPushKit
+                      payload: (NSDictionary * _Nullable) payload
+        withCompletionHandler: (void (^_Nullable)(void)) completion;
 
-+ (BOOL)isCallActive:(NSString *)uuidString;
++(void) endCallWithUUID: (NSString *) uuidString
+                 reason: (int) reason;
+
++(BOOL) isCallActive: (NSString *) uuidString;
+
+-(void) initCallKitProvider: (NSDictionary *) settings withEventHandler: (void (^) (NSString * eventName, id data)) onEvent;
 
 @end
