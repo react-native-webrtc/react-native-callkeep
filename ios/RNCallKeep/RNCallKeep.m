@@ -55,7 +55,7 @@ RCT_EXPORT_MODULE()
 #endif
     if (self = [super init]) {
         _isStartCallActionEventListenerAdded = NO;
-        _delayedEvents = [NSMutableArray array];
+        if (_delayedEvents == nil) _delayedEvents = [NSMutableArray array];
     }
     return self;
 }
@@ -120,17 +120,25 @@ RCT_EXPORT_MODULE()
     } else {
         NSDictionary *dictionary = @{
             @"name": name,
-            @"data": body
+            @"data": body ? body : @{}
         };
+        if (_delayedEvents == nil) _delayedEvents = [NSMutableArray array];
         [_delayedEvents addObject:dictionary];
     }
 }
 
-+ (void)initCallKitProvider {
-    if (sharedProvider == nil) {
-        NSDictionary *settings = [[NSUserDefaults standardUserDefaults] dictionaryForKey:@"RNCallKeepSettings"];
-        sharedProvider = [[CXProvider alloc] initWithConfiguration:[RNCallKeep getProviderConfiguration:settings]];
+- (void) initCallKitProvider:(NSDictionary *)settings {
+    BOOL renewConfiguration = true;
+    if (settings == nil) {
+        // fallback, get the previous saved settings
+        settings = [[NSUserDefaults standardUserDefaults] dictionaryForKey:@"RNCallKeepSettings"];
+        renewConfiguration = false;
     }
+    if (renewConfiguration == true || sharedProvider == nil) {
+        sharedProvider = [[CXProvider alloc] initWithConfiguration:[RNCallKeep getProviderConfiguration:settings ]];
+    }
+    self.callKeepProvider = sharedProvider;
+    [self.callKeepProvider setDelegate:self queue:nil];
 }
 
 RCT_EXPORT_METHOD(setup:(NSDictionary *)options)
@@ -139,16 +147,15 @@ RCT_EXPORT_METHOD(setup:(NSDictionary *)options)
     NSLog(@"[RNCallKeep][setup] options = %@", options);
 #endif
     _version = [[[NSProcessInfo alloc] init] operatingSystemVersion];
-    self.callKeepCallController = [[CXCallController alloc] init];
+    if (self.callKeepCallController == nil) {
+        self.callKeepCallController = [[CXCallController alloc] init];
+    }
     NSDictionary *settings = [[NSMutableDictionary alloc] initWithDictionary:options];
     // Store settings in NSUserDefault
     [[NSUserDefaults standardUserDefaults] setObject:settings forKey:@"RNCallKeepSettings"];
     [[NSUserDefaults standardUserDefaults] synchronize];
 
-    [RNCallKeep initCallKitProvider];
-
-    self.callKeepProvider = sharedProvider;
-    [self.callKeepProvider setDelegate:self queue:nil];
+    [self initCallKitProvider:settings];
 }
 
 RCT_REMAP_METHOD(checkIfBusy,
@@ -494,9 +501,11 @@ RCT_EXPORT_METHOD(getCalls:(RCTPromiseResolveBlock)resolve
     callUpdate.hasVideo = hasVideo;
     callUpdate.localizedCallerName = localizedCallerName;
 
-    [RNCallKeep initCallKitProvider];
-    [sharedProvider reportNewIncomingCallWithUUID:uuid update:callUpdate completion:^(NSError * _Nullable error) {
-        RNCallKeep *callKeep = [RNCallKeep allocWithZone: nil];
+    RNCallKeep *callKeep = [RNCallKeep allocWithZone: nil];
+    if (callKeep.callKeepProvider == nil) {
+        [callKeep initCallKitProvider:nil];
+    }
+    [callKeep.callKeepProvider reportNewIncomingCallWithUUID:uuid update:callUpdate completion:^(NSError * _Nullable error) {
         [callKeep sendEventWithNameWrapper:RNCallKeepDidDisplayIncomingCall body:@{
             @"error": error && error.localizedDescription ? error.localizedDescription : @"",
             @"callUUID": uuidString,
@@ -553,7 +562,12 @@ RCT_EXPORT_METHOD(getCalls:(RCTPromiseResolveBlock)resolve
 #ifdef DEBUG
     NSLog(@"[RNCallKeep][getProviderConfiguration]");
 #endif
-    CXProviderConfiguration *providerConfiguration = [[CXProviderConfiguration alloc] initWithLocalizedName:settings[@"appName"]];
+    NSString *localizedName = @"unknown";
+    if (settings && settings[@"appName"]) {
+        localizedName =settings[@"appName"];
+    }
+
+    CXProviderConfiguration *providerConfiguration = [[CXProviderConfiguration alloc] initWithLocalizedName:localizedName];
     providerConfiguration.supportsVideo = YES;
     providerConfiguration.maximumCallGroups = 3;
     providerConfiguration.maximumCallsPerCallGroup = 1;
