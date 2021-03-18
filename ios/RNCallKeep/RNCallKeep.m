@@ -367,6 +367,14 @@ RCT_EXPORT_METHOD(isCallActive:(NSString *)uuidString) {
   [RNCallKeep isCallActive: uuidString];
 }
 
+RCT_EXPORT_METHOD(getCalls: (RCTPromiseResolveBlock)resolve
+                  rejecter: (RCTPromiseRejectBlock)reject) {
+#ifdef DEBUG
+    NSLog(@"[RNCallKeep][getCalls]");
+#endif
+    resolve([RNCallKeep getCalls]);
+}
+
 -(void) requestTransaction: (CXTransaction *) transaction {
 #ifdef DEBUG
   NSLog (@"[RNCallKeep][requestTransaction] transaction = %@", transaction);
@@ -398,8 +406,7 @@ RCT_EXPORT_METHOD(isCallActive:(NSString *)uuidString) {
   }];
 }
 
-+(BOOL) isCallActive: (NSString *) uuidString
-{
++(BOOL) isCallActive: (NSString *) uuidString {
   CXCallObserver *callObserver = [[CXCallObserver alloc] init];
   NSUUID *uuid = [[NSUUID alloc] initWithUUIDString: uuidString];
 
@@ -411,6 +418,26 @@ RCT_EXPORT_METHOD(isCallActive:(NSString *)uuidString) {
     }
   }
   return false;
+}
+
++(NSMutableArray *) getCalls {
+#ifdef DEBUG
+  NSLog(@"[RNCallKeep][getCalls]");
+#endif
+  CXCallObserver *callObserver = [[CXCallObserver alloc] init];
+  NSMutableArray *currentCalls = [NSMutableArray array];
+  for (CXCall *call in callObserver.calls) {
+    NSString *uuidString = [call.UUID UUIDString];
+    NSDictionary *requestedCall= @{
+      @"callUUID": uuidString,
+      @"outgoing": call.outgoing? @YES : @NO,
+      @"onHold": call.onHold? @YES : @NO,
+      @"hasConnected": call.hasConnected ? @YES : @NO,
+      @"hasEnded": call.hasEnded ? @YES : @NO
+    };
+    [currentCalls addObject: requestedCall];
+  }
+  return currentCalls;
 }
 
 +(void) endCallWithUUID: (NSString *) uuidString
@@ -514,8 +541,7 @@ RCT_EXPORT_METHOD(isCallActive:(NSString *)uuidString) {
   return _version.minorVersion < 2;
 }
 
-+(int) getHandleType: (NSString *) handleType
-{
++(int) getHandleType: (NSString *) handleType {
   if ([handleType isEqualToString:@"generic"]) {
     return CXHandleTypeGeneric;
   }
