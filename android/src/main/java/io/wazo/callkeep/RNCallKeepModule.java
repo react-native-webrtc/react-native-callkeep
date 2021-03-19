@@ -420,10 +420,10 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
     /**
      * toggle audio route for speaker via connection service function
      * @param uuid
-     * @param useSpeaker
+     * @param routeSpeaker
      */
     @ReactMethod
-    public void toggleAudioRouteSpeaker(String uuid, boolean useSpeaker) {
+    public void toggleAudioRouteSpeaker(String uuid, boolean routeSpeaker) {
         VoiceConnection conn = (VoiceConnection) VoiceConnectionService.getConnection(uuid);
         if (conn == null) {
             return;
