@@ -144,9 +144,7 @@ declare module 'react-native-callkeep' {
      * @param uuid 
      * @param routeSpeaker 
      */
-    static toggleAudioRouteSpeaker(uuid: string, routeSpeaker: boolean) {
-
-    }
+    static toggleAudioRouteSpeaker(uuid: string, routeSpeaker: boolean): void
     static setOnHold(uuid: string, held: boolean): void
 
     /**
