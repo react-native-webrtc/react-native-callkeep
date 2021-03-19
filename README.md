@@ -406,8 +406,12 @@ When Phone call is active, Android control the audio via connection service. so 
 _This feature is available only on Android._
 
 ```js
-RNCallKeep.toggleAudioRouteSpeaker(uuid: string, routeSpeaker: boolean);
+RNCallKeep.toggleAudioRouteSpeaker(uuid, true);
 ```
+
+- `uuid`: string
+  - uuid of the current call.
+- `routeSpeaker`: boolean
 
 ### supportConnectionService (async)
 
