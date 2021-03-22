@@ -428,9 +428,9 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
         if (conn == null) {
             return;
         }
-        if(useSpeaker){
+        if (routeSpeaker) {
             conn.setAudioRoute(CallAudioState.ROUTE_SPEAKER);
-        }else{
+        } else {
             conn.setAudioRoute(CallAudioState.ROUTE_EARPIECE);
         }
     }
