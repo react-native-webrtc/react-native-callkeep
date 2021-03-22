@@ -402,11 +402,16 @@ RNCallKeep.checkSpeaker();
 
 Update the audio route of Audio Service on Android with a `routeSpeaker` boolean value (`true` if speaker need on, `false` otherwise).
 When Phone call is active, Android control the audio via connection service. so this function help to toggle the audio to Speaker or wired/ear-piece or vice-versa 
+
 _This feature is available only on Android._
 
 ```js
-RNCallKeep.toggleAudioRouteSpeaker(uuid: string, routeSpeaker: boolean);
+RNCallKeep.toggleAudioRouteSpeaker(uuid, true);
 ```
+
+- `uuid`: string
+  - uuid of the current call.
+- `routeSpeaker`: boolean
 
 ### supportConnectionService (async)
 
