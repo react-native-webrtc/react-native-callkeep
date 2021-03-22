@@ -429,6 +429,23 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
         }
         conn.onCallAudioStateChanged(newAudioState);
     }
+    /**
+     * toggle audio route for speaker via connection service function
+     * @param uuid
+     * @param routeSpeaker
+     */
+    @ReactMethod
+    public void toggleAudioRouteSpeaker(String uuid, boolean routeSpeaker) {
+        VoiceConnection conn = (VoiceConnection) VoiceConnectionService.getConnection(uuid);
+        if (conn == null) {
+            return;
+        }
+        if (routeSpeaker) {
+            conn.setAudioRoute(CallAudioState.ROUTE_SPEAKER);
+        } else {
+            conn.setAudioRoute(CallAudioState.ROUTE_EARPIECE);
+        }
+    }
 
     @ReactMethod
     public void sendDTMF(String uuid, String key) {
