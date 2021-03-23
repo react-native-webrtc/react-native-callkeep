@@ -128,6 +128,9 @@ RCT_EXPORT_MODULE()
 }
 
 - (void) initCallKitProvider:(NSDictionary *)settings {
+#ifdef DEBUG
+    NSLog(@"[RNCallKeep][initCallKitProvider]");
+#endif
     BOOL renewConfiguration = true;
     if (settings == nil) {
         // fallback, get the previous saved settings
@@ -150,11 +153,15 @@ RCT_EXPORT_METHOD(setup:(NSDictionary *)options)
     if (self.callKeepCallController == nil) {
         self.callKeepCallController = [[CXCallController alloc] init];
     }
+    NSDictionary *previousSettingsStored = [[NSUserDefaults standardUserDefaults] dictionaryForKey:@"RNCallKeepSettings"];
     NSDictionary *settings = [[NSMutableDictionary alloc] initWithDictionary:options];
     // Store settings in NSUserDefault
     [[NSUserDefaults standardUserDefaults] setObject:settings forKey:@"RNCallKeepSettings"];
     [[NSUserDefaults standardUserDefaults] synchronize];
-    [self initCallKitProvider:settings];
+    // compare config and re init callkit provider if there is delta
+    if (![previousSettingsStored isEqualToDictionary:settings]) {
+        [self initCallKitProvider];
+    }
 }
 
 RCT_REMAP_METHOD(checkIfBusy,
