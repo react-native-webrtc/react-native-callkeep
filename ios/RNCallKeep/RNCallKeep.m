@@ -128,11 +128,13 @@ RCT_EXPORT_MODULE()
 }
 
 - (void) initCallKitProvider {
+    
 #ifdef DEBUG
     NSLog(@"[RNCallKeep][initCallKitProvider]");
 #endif
-    settings = [[NSUserDefaults standardUserDefaults] dictionaryForKey:@"RNCallKeepSettings"];
-    sharedProvider = [[CXProvider alloc] initWithConfiguration:[RNCallKeep getProviderConfiguration:settings ]];
+    NSDictionary *settings = [[NSUserDefaults standardUserDefaults] dictionaryForKey:@"RNCallKeepSettings"];
+    sharedProvider = [[CXProvider alloc] initWithConfiguration:[RNCallKeep getProviderConfiguration:settings]];
+    
     self.callKeepProvider = sharedProvider;
     [self.callKeepProvider setDelegate:self queue:nil];
 }
