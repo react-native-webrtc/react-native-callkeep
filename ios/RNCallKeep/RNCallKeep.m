@@ -127,19 +127,12 @@ RCT_EXPORT_MODULE()
     }
 }
 
-- (void) initCallKitProvider:(NSDictionary *)settings {
+- (void) initCallKitProvider {
 #ifdef DEBUG
     NSLog(@"[RNCallKeep][initCallKitProvider]");
 #endif
-    BOOL renewConfiguration = true;
-    if (settings == nil) {
-        // fallback, get the previous saved settings
-        settings = [[NSUserDefaults standardUserDefaults] dictionaryForKey:@"RNCallKeepSettings"];
-        renewConfiguration = false;
-    }
-    if (renewConfiguration == true || sharedProvider == nil) {
-        sharedProvider = [[CXProvider alloc] initWithConfiguration:[RNCallKeep getProviderConfiguration:settings ]];
-    }
+    settings = [[NSUserDefaults standardUserDefaults] dictionaryForKey:@"RNCallKeepSettings"];
+    sharedProvider = [[CXProvider alloc] initWithConfiguration:[RNCallKeep getProviderConfiguration:settings ]];
     self.callKeepProvider = sharedProvider;
     [self.callKeepProvider setDelegate:self queue:nil];
 }
@@ -459,7 +452,7 @@ RCT_EXPORT_METHOD(isCallActive:(NSString *)uuidString)
     
     RNCallKeep *callKeep = [RNCallKeep allocWithZone: nil];
     if (callKeep.callKeepProvider == nil) {
-        [callKeep initCallKitProvider:nil];
+        [callKeep initCallKitProvider];
     }
     [callKeep.callKeepProvider reportNewIncomingCallWithUUID:uuid update:callUpdate completion:^(NSError * _Nullable error) {
         [callKeep sendEventWithNameWrapper:RNCallKeepDidDisplayIncomingCall body:@{
