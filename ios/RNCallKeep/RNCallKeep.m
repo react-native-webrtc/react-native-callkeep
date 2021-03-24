@@ -153,7 +153,7 @@ RCT_EXPORT_METHOD(setup:(NSDictionary *)options)
     [[NSUserDefaults standardUserDefaults] synchronize];
     // compare config and re init callkit provider if there is delta
     if (![previousSettingsStored isEqualToDictionary:settings]) {
-        [self initCallKitProvider:settings];
+        [self initCallKitProvider];
     }
 }
 
