@@ -160,7 +160,7 @@ RCT_EXPORT_METHOD(setup:(NSDictionary *)options)
     [[NSUserDefaults standardUserDefaults] synchronize];
     // compare config and re init callkit provider if there is delta
     if (![previousSettingsStored isEqualToDictionary:settings]) {
-        [self initCallKitProvider];
+        [self initCallKitProvider:settings];
     }
 }
 
@@ -196,7 +196,7 @@ RCT_EXPORT_METHOD(displayIncomingCall:(NSString *)uuidString
                       supportsHolding:(BOOL)supportsHolding
                          supportsDTMF:(BOOL)supportsDTMF
                      supportsGrouping:(BOOL)supportsGrouping
-                   supportsUngrouping:(BOOL)supportsUngrouping)            
+                   supportsUngrouping:(BOOL)supportsUngrouping)
 {
     [RNCallKeep reportNewIncomingCall: uuidString
                                handle: handle
@@ -506,7 +506,7 @@ RCT_EXPORT_METHOD(getCalls:(RCTPromiseResolveBlock)resolve
     callUpdate.supportsUngrouping = supportsUngrouping;
     callUpdate.hasVideo = hasVideo;
     callUpdate.localizedCallerName = localizedCallerName;
-    
+
     RNCallKeep *callKeep = [RNCallKeep allocWithZone: nil];
     if (callKeep.callKeepProvider == nil) {
         [callKeep initCallKitProvider:nil];
@@ -572,7 +572,7 @@ RCT_EXPORT_METHOD(getCalls:(RCTPromiseResolveBlock)resolve
     if (settings && settings[@"appName"]) {
         localizedName =settings[@"appName"];
     }
-    
+
     CXProviderConfiguration *providerConfiguration = [[CXProviderConfiguration alloc] initWithLocalizedName:localizedName];
     providerConfiguration.supportsVideo = YES;
     providerConfiguration.maximumCallGroups = 3;
