@@ -32,7 +32,13 @@ declare module 'react-native-callkeep' {
       okButton: string,
       imageName?: string,
       additionalPermissions: string[],
-    },
+      foregroundService?: {
+        channelId: string,
+        channelName: string,
+        notificationTitle: string,
+        notificationIcon?: string
+      }
+    }
   }
 
   export type DidReceiveStartCallActionPayload = { handle: string };
