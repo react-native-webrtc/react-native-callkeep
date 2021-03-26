@@ -23,6 +23,7 @@ import android.app.ActivityManager.RunningTaskInfo;
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.content.res.Resources;
 import android.content.Intent;
 import android.content.Context;
@@ -247,15 +248,22 @@ public class VoiceConnectionService extends ConnectionService {
 
         NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID);
         notificationBuilder.setOngoing(true)
-            .setContentTitle(foregroundSettings.getString("notificationTitle"))
-            .setPriority(NotificationManager.IMPORTANCE_MIN)
-            .setCategory(Notification.CATEGORY_SERVICE);
+                .setContentTitle(foregroundSettings.getString("notificationTitle"))
+                .setPriority(NotificationManager.IMPORTANCE_MIN)
+                .setCategory(Notification.CATEGORY_SERVICE);
+
+        Context context = this.getApplicationContext();
+        Class mainActivityClass = getMainActivityClass(context);
+        if (mainActivityClass != null) {
+            Intent notificationIntent = new Intent(context, mainActivityClass);
+            PendingIntent pendingIntent = PendingIntent.getActivity(context, 0, notificationIntent, 0);
+            notificationBuilder.setContentIntent(pendingIntent);
+        }
 
         if (foregroundSettings.hasKey("notificationIcon")) {
-            Context context = this.getApplicationContext();
             Resources res = context.getResources();
             String smallIcon = foregroundSettings.getString("notificationIcon");
-            notificationBuilder.setSmallIcon(res.getIdentifier(smallIcon, "mipmap", context.getPackageName()));
+            notificationBuilder.setSmallIcon(getResourceIdForResourceName(context, smallIcon));
         }
 
         Notification notification = notificationBuilder.build();
@@ -421,5 +429,28 @@ public class VoiceConnectionService extends ConnectionService {
         Log.d(TAG, "isRunning: no running package found.");
 
         return false;
+    }
+
+    private Class getMainActivityClass(Context context) {
+        String packageName = context.getPackageName();
+        Intent launchIntent = context.getPackageManager().getLaunchIntentForPackage(packageName);
+        if (launchIntent == null || launchIntent.getComponent() == null) {
+            Log.e(TAG, "Failed to get launch intent or component");
+            return null;
+        }
+        try {
+            return Class.forName(launchIntent.getComponent().getClassName());
+        } catch (ClassNotFoundException e) {
+            Log.e(TAG, "Failed to get main activity class");
+            return null;
+        }
+    }
+
+    private int getResourceIdForResourceName(Context context, String resourceName) {
+        int resourceId = context.getResources().getIdentifier(resourceName, "drawable", context.getPackageName());
+        if (resourceId == 0) {
+            resourceId = context.getResources().getIdentifier(resourceName, "mipmap", context.getPackageName());
+        }
+        return resourceId;
     }
 }
