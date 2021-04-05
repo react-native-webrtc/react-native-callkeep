@@ -33,7 +33,13 @@ declare module 'react-native-callkeep' {
       okButton: string,
       imageName?: string,
       additionalPermissions: string[],
-    },
+      foregroundService?: {
+        channelId: string,
+        channelName: string,
+        notificationTitle: string,
+        notificationIcon?: string
+      }
+    }
   }
 
   export type DidReceiveStartCallActionPayload = { handle: string };
@@ -139,7 +145,13 @@ declare module 'react-native-callkeep' {
      * @description setMutedCall method is available only on iOS.
      */
     static setMutedCall(uuid: string, muted: boolean): void
-
+  
+    /**
+     * @description toggleAudioRouteSpeaker method is available only on Android.
+     * @param uuid 
+     * @param routeSpeaker 
+     */
+    static toggleAudioRouteSpeaker(uuid: string, routeSpeaker: boolean): void
     static setOnHold(uuid: string, held: boolean): void
 
     /**
