@@ -55,10 +55,8 @@ RCT_EXPORT_MODULE()
     NSLog(@"[RNCallKeep][init]");
 #endif
     if (self = [super init]) {
-        if (_delayedEvents == nil) {
-            _isStartCallActionEventListenerAdded = NO;
-            _delayedEvents = [NSMutableArray array];
-        }
+        _isStartCallActionEventListenerAdded = NO;
+        if (_delayedEvents == nil) _delayedEvents = [NSMutableArray array];
     }
     return self;
 }
@@ -122,9 +120,10 @@ RCT_EXPORT_MODULE()
         [self sendEventWithName:name body:body];
     } else {
         NSDictionary *dictionary = [NSDictionary dictionaryWithObjectsAndKeys:
-                              name, @"name",
-                              body, @"data",
-                              nil];
+            name, @"name",
+            body, @"data",
+            nil
+        ];
         [_delayedEvents addObject:dictionary];
     }
 }
