@@ -85,6 +85,7 @@ import static io.wazo.callkeep.Constants.ACTION_ONGOING_CALL;
 import static io.wazo.callkeep.Constants.ACTION_AUDIO_SESSION;
 import static io.wazo.callkeep.Constants.ACTION_CHECK_REACHABILITY;
 import static io.wazo.callkeep.Constants.ACTION_WAKE_APP;
+import static io.wazo.callkeep.Constants.ACTION_SHOW_INCOMING_CALL_UI;
 
 // @see https://github.com/kbagchiGWC/voice-quickstart-android/blob/9a2aff7fbe0d0a5ae9457b48e9ad408740dfb968/exampleConnectionService/src/main/java/com/twilio/voice/examples/connectionservice/VoiceConnectionServiceActivity.java
 public class RNCallKeepModule extends ReactContextBaseJavaModule {
@@ -93,7 +94,7 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
 
     private static final String E_ACTIVITY_DOES_NOT_EXIST = "E_ACTIVITY_DOES_NOT_EXIST";
     private static final String REACT_NATIVE_MODULE_NAME = "RNCallKeep";
-    private static final String[] permissions = {
+    private static String[] permissions = {
         Build.VERSION.SDK_INT < 30 ? Manifest.permission.READ_PHONE_STATE : Manifest.permission.READ_PHONE_NUMBERS,
         Manifest.permission.CALL_PHONE,
         Manifest.permission.RECORD_AUDIO
@@ -115,6 +116,10 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
         this.reactContext = reactContext;
     }
 
+    private boolean isSelfManaged() {
+        return Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && _settings.hasKey("selfManaged") && _settings.getBoolean("selfManaged");
+    }
+
     @Override
     public String getName() {
         return REACT_NATIVE_MODULE_NAME;
@@ -126,6 +131,20 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
         VoiceConnectionService.setAvailable(false);
         VoiceConnectionService.setInitialized(true);
         this._settings = options;
+
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            if(isSelfManaged()) {
+                Log.d(TAG, "API Version supports self managed, and is enabled in setup");
+            }
+            else {
+                Log.d(TAG, "API Version supports self managed, but it is not enabled in setup");
+            }
+        }
+
+        //If we're running in self managed mode we need fewer permissions.
+        if(isSelfManaged()) {
+            permissions = new String[]{ Manifest.permission.RECORD_AUDIO };
+        }
 
         if (isConnectionServiceAvailable()) {
             this.registerPhoneAccount();
@@ -196,6 +215,7 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
         Log.d(TAG, "startCall called, uuid: " + uuid + ", number: " + number + ", callerName: " + callerName);
 
         if (!isConnectionServiceAvailable() || !hasPhoneAccount() || !hasPermissions() || number == null) {
+            Log.d(TAG, "startCall ignored: " + isConnectionServiceAvailable() + ", " + hasPhoneAccount() + ", " + hasPermissions() + ", " + number);
             return;
         }
 
@@ -341,7 +361,7 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
                         hasPhoneAccountPromise.resolve(false);
                     }
             });
-             return;
+            return;
         }
 
         promise.resolve(!hasPhoneAccount());
@@ -606,8 +626,13 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
         this.initializeTelecomManager();
         String appName = this.getApplicationName(this.getAppContext());
 
-        PhoneAccount.Builder builder = new PhoneAccount.Builder(handle, appName)
-                .setCapabilities(PhoneAccount.CAPABILITY_CALL_PROVIDER);
+        PhoneAccount.Builder builder = new PhoneAccount.Builder(handle, appName);
+        if(isSelfManaged()) {
+            builder.setCapabilities(PhoneAccount.CAPABILITY_SELF_MANAGED);
+        }
+        else {
+            builder.setCapabilities(PhoneAccount.CAPABILITY_CALL_PROVIDER);
+        }
 
         if (_settings != null && _settings.hasKey("imageName")) {
             int identifier = appContext.getResources().getIdentifier(_settings.getString("imageName"), "drawable", appContext.getPackageName());
@@ -669,6 +694,7 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
             intentFilter.addAction(ACTION_ONGOING_CALL);
             intentFilter.addAction(ACTION_AUDIO_SESSION);
             intentFilter.addAction(ACTION_CHECK_REACHABILITY);
+            intentFilter.addAction(ACTION_SHOW_INCOMING_CALL_UI);
             LocalBroadcastManager.getInstance(this.reactContext).registerReceiver(voiceBroadcastReceiver, intentFilter);
             isReceiverRegistered = true;
         }
@@ -742,6 +768,12 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
                     break;
                 case ACTION_CHECK_REACHABILITY:
                     sendEventToJS("RNCallKeepCheckReachability", null);
+                    break;
+                case ACTION_SHOW_INCOMING_CALL_UI:
+                    args.putString("handle", attributeMap.get(EXTRA_CALL_NUMBER));
+                    args.putString("callUUID", attributeMap.get(EXTRA_CALL_UUID));
+                    args.putString("name", attributeMap.get(EXTRA_CALLER_NAME));
+                    sendEventToJS("RNCallKeepShowIncomingCallUi", args);
                     break;
                 case ACTION_WAKE_APP:
                     Intent headlessIntent = new Intent(reactContext, RNCallKeepBackgroundMessagingService.class);
