@@ -129,7 +129,7 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
         this._settings = options;
 
         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            if(_settings.hasKey("allowSelfManaged") && _settings.getBoolean("allowSelfManaged")) {
+            if(_settings.hasKey("selfManaged") && _settings.getBoolean("selfManaged")) {
                 permissions = new String[]{ Manifest.permission.RECORD_AUDIO };
             }
             else {
@@ -619,7 +619,7 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
 
         Boolean selfManaged = Build.VERSION.SDK_INT >= Build.VERSION_CODES.O;
         if(selfManaged) {
-            if(_settings.hasKey("allowSelfManaged") && _settings.getBoolean("allowSelfManaged")) {
+            if(_settings.hasKey("selfManaged") && _settings.getBoolean("selfManaged")) {
                 Log.d(TAG, "API Version supports self managed, and is enabled in setup");
                 selfManaged = true;
             }

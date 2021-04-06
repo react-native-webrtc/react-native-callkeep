@@ -65,7 +65,6 @@ const showIncomingCallUi = handler =>
 
 export const emit = (eventName, payload) => eventEmitter.emit(eventName, payload);
 
-
 export const listeners = {
   didReceiveStartCallAction,
   answerCall,

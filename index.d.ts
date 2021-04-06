@@ -33,6 +33,7 @@ declare module 'react-native-callkeep' {
       okButton: string,
       imageName?: string,
       additionalPermissions: string[],
+      selfManaged?: boolean,
       foregroundService?: {
         channelId: string,
         channelName: string,
