@@ -12,6 +12,7 @@
 #import <React/RCTConvert.h>
 #import <React/RCTEventDispatcher.h>
 #import <React/RCTUtils.h>
+#import <React/RCTLog.h>
 
 #import <AVFoundation/AVAudioSession.h>
 
@@ -41,9 +42,9 @@ static NSString *const RNCallKeepDidLoadWithEvents = @"RNCallKeepDidLoadWithEven
     BOOL _isStartCallActionEventListenerAdded;
     bool _hasListeners;
     NSMutableArray *_delayedEvents;
-    bool _isSetup;
 }
 
+static bool isSetupNatively;
 static CXProvider* sharedProvider;
 
 // should initialise in AppDelegate.m
@@ -138,13 +139,15 @@ RCT_EXPORT_MODULE()
 + (void)setup:(NSDictionary *)options {
     RNCallKeep *callKeep = [RNCallKeep allocWithZone: nil];
     [callKeep setup:options];
+    isSetupNatively = YES;
 }
 
 RCT_EXPORT_METHOD(setup:(NSDictionary *)options)
 {
-    if (_isSetup) {
+    if (isSetupNatively) {
 #ifdef DEBUG
         NSLog(@"[RNCallKeep][setup] already setup");
+        RCTLog(@"[RNCallKeep][setup] already setup in native code");
 #endif
         return;
     }
@@ -163,8 +166,6 @@ RCT_EXPORT_METHOD(setup:(NSDictionary *)options)
 
     self.callKeepProvider = sharedProvider;
     [self.callKeepProvider setDelegate:self queue:nil];
-    
-    _isSetup = YES;
 }
 
 RCT_REMAP_METHOD(checkIfBusy,
