@@ -72,7 +72,7 @@ public class MainActivity extends ReactActivity {
     <service android:name="io.wazo.callkeep.VoiceConnectionService"
         android:label="Wazo"
         android:permission="android.permission.BIND_TELECOM_CONNECTION_SERVICE"
-        android:foregroundServiceType="camera|microphone">>
+        android:foregroundServiceType="phoneCall">
         <intent-filter>
             <action android:name="android.telecom.ConnectionService" />
         </intent-filter>
