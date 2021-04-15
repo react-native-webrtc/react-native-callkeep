@@ -117,6 +117,10 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
         this.reactContext = reactContext;
     }
 
+    private boolean isSelfManaged() {
+        return Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && _settings.hasKey("selfManaged") && _settings.getBoolean("selfManaged");
+    }
+
     @Override
     public String getName() {
         return REACT_NATIVE_MODULE_NAME;
@@ -124,21 +128,24 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
 
     @ReactMethod
     public void setup(ReadableMap options) {
-        this._settings = options;
-
-        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            if(_settings.hasKey("allowSelfManaged") && _settings.getBoolean("allowSelfManaged")) {
-                permissions = new String[]{ Manifest.permission.RECORD_AUDIO };
-            }
-            else {
-                permissions = new String[]{ Manifest.permission.READ_PHONE_STATE, Manifest.permission.CALL_PHONE, Manifest.permission.RECORD_AUDIO };
-            }
-        }
-
         Log.d(TAG, "setup");
         VoiceConnectionService.setAvailable(false);
         VoiceConnectionService.setInitialized(true);
         this._settings = options;
+
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            if(isSelfManaged()) {
+                Log.d(TAG, "API Version supports self managed, and is enabled in setup");
+            }
+            else {
+                Log.d(TAG, "API Version supports self managed, but it is not enabled in setup");
+            }
+        }
+
+        //If we're running in self managed mode we need fewer permissions.
+        if(isSelfManaged()) {
+            permissions = new String[]{ Manifest.permission.RECORD_AUDIO };
+        }
 
         if (isConnectionServiceAvailable()) {
             this.registerPhoneAccount();
@@ -620,20 +627,8 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
         this.initializeTelecomManager();
         String appName = this.getApplicationName(this.getAppContext());
 
-        Boolean selfManaged = Build.VERSION.SDK_INT >= Build.VERSION_CODES.O;
-        if(selfManaged) {
-            if(_settings.hasKey("allowSelfManaged") && _settings.getBoolean("allowSelfManaged")) {
-                Log.d(TAG, "API Version supports self managed, and is enabled in setup");
-                selfManaged = true;
-            }
-            else {
-                Log.d(TAG, "API Version supports self managed, but it is not enabled in setup");
-                selfManaged = false;
-            }
-        }
-
         PhoneAccount.Builder builder = new PhoneAccount.Builder(handle, appName);
-        if(selfManaged) {
+        if(isSelfManaged()) {
             builder.setCapabilities(PhoneAccount.CAPABILITY_SELF_MANAGED);
         }
         else {
