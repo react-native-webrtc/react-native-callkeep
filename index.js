@@ -17,7 +17,7 @@ const CONSTANTS = {
   },
 };
 
-export { CONSTANTS };
+export { emit, CONSTANTS };
 
 class RNCallKeep {
   constructor() {

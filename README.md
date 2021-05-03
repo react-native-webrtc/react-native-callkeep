@@ -61,6 +61,34 @@ const options = {
 RNCallKeep.setup(options).then(accepted => {});
 ```
 
+iOS only.
+
+Alternative on iOS you can perform setup in `AppDelegate.m`. Doing this allows capturing events prior to the react native event bridge being up. Please be aware that calling setup in `AppDelegate.m` will ignore any subsequent calls to `RNCallKeep.setup();`.
+
+```objective-c
+@implementation AppDelegate
+- (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
+{ 
+  self.bridge = [[RCTBridge alloc] initWithDelegate:self launchOptions:launchOptions];
+
+  [RNCallKeep setup:@{
+    @"appName": @"Awesome App",
+    @"maximumCallGroups": @3,
+    @"maximumCallsPerCallGroup": @1,
+    @"supportsVideo": @NO,
+  }];
+
+  RCTRootView *rootView = [[RCTRootView alloc] initWithBridge:self.bridge
+                                                   moduleName:@"App"
+                                            initialProperties:nil];
+
+  // ======== OTHER CODE REDACTED ==========
+
+  return YES;
+}
+
+```
+
 - `options`: Object
   - `ios`: object
     - `appName`: string (required)
@@ -642,6 +670,8 @@ iOS only.
 Called as soon as JS context initializes if there were some actions performed by user before JS context has been created.
 
 Since iOS 13, you must display incoming call on receiving PushKit push notification. But if app was killed, it takes some time to create JS context. If user answers the call (or ends it) before JS context has been initialized, user actions will be passed as events array of this event. Similar situation can happen if user would like to start a call from Recents or similar iOS app, assuming that your app was in killed state.
+
+In order for this event to reliably fire, it's necessary to perform setup in `AppDelegate.m`
 
 **NOTE: You still need to subscribe / handle the rest events as usuall. This is just a helper whcih cache and propagate early fired events if and only if for "the native events which DID fire BEFORE js bridge is initialed", it does NOT mean this will have events each time when the app reopened.**
 
