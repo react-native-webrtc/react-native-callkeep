@@ -46,6 +46,8 @@ import android.os.HandlerThread;
 
 
 public class VideoConnectionProvider extends Connection.VideoProvider {
+    private static String TAG = "RNCK:VideoConnectionProvider";
+
     private Connection mConnection;
     private CameraCapabilities mCameraCapabilities;
     private Surface mPreviewSurface;
@@ -68,7 +70,7 @@ public class VideoConnectionProvider extends Connection.VideoProvider {
 
     @Override
     public void onSetCamera(String cameraId) {
-        log("Set camera to " + cameraId);
+        Log.d(TAG, "Set camera to " + cameraId);
 
         mCameraId = cameraId;
         setCameraCapabilities(mCameraId);
@@ -76,7 +78,7 @@ public class VideoConnectionProvider extends Connection.VideoProvider {
 
     @Override
     public void onSetPreviewSurface(Surface surface) {
-        log("Set preview surface " + (surface == null ? "unset" : "set"));
+        Log.d(TAG, "Set preview surface " + (surface == null ? "unset" : "set"));
 
         mPreviewSurface = surface;
         if (!TextUtils.isEmpty(mCameraId) && mPreviewSurface != null) {
@@ -86,13 +88,13 @@ public class VideoConnectionProvider extends Connection.VideoProvider {
 
     @Override
     public void onSetDisplaySurface(Surface surface) {
-        log("Set display surface " + (surface == null ? "unset" : "set"));
+        Log.d(TAG, "Set display surface " + (surface == null ? "unset" : "set"));
         // Get the video flux from webrtc
     }
 
     @Override
     public void onSetDeviceOrientation(int rotation) {
-        log("Set device orientation " + rotation);
+        Log.d(TAG, "Set device orientation " + rotation);
     }
 
     /**
@@ -101,7 +103,7 @@ public class VideoConnectionProvider extends Connection.VideoProvider {
      */
     @Override
     public void onSetZoom(float value) {
-        log("Set zoom to " + value);
+        Log.d(TAG, ("Set zoom to " + value);
     }
 
     /**
@@ -110,12 +112,12 @@ public class VideoConnectionProvider extends Connection.VideoProvider {
      */
     @Override
     public void onSendSessionModifyRequest(final VideoProfile fromProfile, final VideoProfile requestProfile) {
-        log("On send session modify request");
+        Log.d(TAG, "On send session modify request");
     }
 
     @Override
     public void onSendSessionModifyResponse(VideoProfile responseProfile) {
-        log("On send session modify response");
+        Log.d(TAG, "On send session modify response");
     }
 
     /**
@@ -123,7 +125,7 @@ public class VideoConnectionProvider extends Connection.VideoProvider {
      */
     @Override
     public void onRequestCameraCapabilities() {
-        log("Requested camera capabilities");
+        Log.d(TAG, "Requested camera capabilities");
         changeCameraCapabilities(mCameraCapabilities);
     }
 
@@ -132,7 +134,7 @@ public class VideoConnectionProvider extends Connection.VideoProvider {
      */
     @Override
     public void onRequestConnectionDataUsage() {
-        log("Requested connection data usage");
+        Log.d(TAG, "Requested connection data usage");
     }
 
     /**
@@ -140,11 +142,7 @@ public class VideoConnectionProvider extends Connection.VideoProvider {
      */
     @Override
     public void onSetPauseImage(Uri uri) {
-        log("Set pause image");
-    }
-
-    private static void log(String msg) {
-        Log.w("CallKeepVideoProvider", "[CallKeepVideoProvider] " + msg);
+        Log.d(TAG, "Set pause image");
     }
 
     /**
@@ -206,13 +204,13 @@ public class VideoConnectionProvider extends Connection.VideoProvider {
         try {
             mCameraManager.openCamera(cameraId, mStateCallback, mBackgroundHandler);
         } catch (CameraAccessException e) {
-            log("CameraAccessException: " + e);
+            Log.w(TAG, "CameraAccessException: " + e);
             return;
         }
     }
 
     private void createCameraPreview() {
-        log("Create camera preview");
+        Log.d(TAG, "Create camera preview");
 
         if (mPreviewSurface == null) {
             return;
@@ -254,7 +252,7 @@ public class VideoConnectionProvider extends Connection.VideoProvider {
             mCaptureRequest.addTarget(mPreviewSurface);
 
         } catch (CameraAccessException e) {
-            log("CameraAccessException: " + e);
+            Log.w(TAG, "CameraAccessException: " + e);
             return;
         }
 
@@ -289,7 +287,7 @@ public class VideoConnectionProvider extends Connection.VideoProvider {
      * @param cameraId The camera ID to get the capabilities for.
      */
     private void setCameraCapabilities(String cameraId) {
-        log("Set camera capabilities");
+        Log.d(TAG, "Set camera capabilities");
         if (cameraId == null) {
             return;
         }
