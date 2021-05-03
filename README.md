@@ -121,7 +121,9 @@ Alternative on iOS you can perform setup in `AppDelegate.m`. Doing this allows c
     - `additionalPermissions`: [PermissionsAndroid] (optional)
       Any additional permissions you'd like your app to have at first launch. Can be used to simplify permission flows and avoid
       multiple popups to the user at different times.
-
+    - `selfManaged`: boolean (optional)
+      When set to true, call keep will configure itself to run as a self managed connection service. This is an advanced topic, and it's best to refer to [Googles Documentation](https://developer.android.com/guide/topics/connectivity/telecom/selfManaged) on the matter.
+      
 `setup` calls internally `registerPhoneAccount` and `registerEvents`.
 
 ## Constants
@@ -687,6 +689,27 @@ RNCallKeep.addEventListener('didLoadWithEvents', (events) => {
     Native event name like: `RNCallKeepPerformAnswerCallAction`
   - `data`: object
     Object with data passed together with specific event so it can be handled in the same way like original event, for example `({ callUUID })` for `answerCall` event if `name` is `RNCallKeepPerformAnswerCallAction`
+
+### - showIncomingCallUi
+
+Android only.
+
+Only when CallKeep is setup to be in self managed mode. Signals that the app must show an incoming call UI. The implementor must either call `displayIncomingCall` from react native or native android code to make this event fire.
+
+```js
+RNCallKeep.addEventListener('showIncomingCallUi', ({ handle, callUUID, name }) => {
+
+});
+```
+
+The following values will match those initially passed to `displayIncomingCall`
+
+- `handle` (string)
+  - Phone number of the incoming caller.
+- `callUUID` (string)
+  - The UUID of the call.
+- `name` (string)
+  - Caller Name.
 
 ### - checkReachability
 

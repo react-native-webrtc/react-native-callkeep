@@ -40,6 +40,7 @@ import android.telecom.Connection;
 import android.telecom.ConnectionRequest;
 import android.telecom.ConnectionService;
 import android.telecom.DisconnectCause;
+import android.telecom.PhoneAccount;
 import android.telecom.PhoneAccountHandle;
 import android.telecom.TelecomManager;
 import android.util.Log;
@@ -62,6 +63,7 @@ import static io.wazo.callkeep.Constants.ACTION_CHECK_REACHABILITY;
 import static io.wazo.callkeep.Constants.ACTION_WAKE_APP;
 import static io.wazo.callkeep.Constants.EXTRA_CALLER_NAME;
 import static io.wazo.callkeep.Constants.EXTRA_CALL_NUMBER;
+import static io.wazo.callkeep.Constants.EXTRA_CALL_NUMBER_SCHEMA;
 import static io.wazo.callkeep.Constants.EXTRA_CALL_UUID;
 import static io.wazo.callkeep.Constants.EXTRA_DISABLE_ADD_CALL;
 import static io.wazo.callkeep.Constants.FOREGROUND_SERVICE_TYPE_MICROPHONE;
@@ -328,9 +330,39 @@ public class VoiceConnectionService extends ConnectionService {
 
         Bundle extras = request.getExtras();
         HashMap<String, String> extrasMap = this.bundleToMap(extras);
-        extrasMap.put(EXTRA_CALL_NUMBER, request.getAddress().toString());
+
+        String callerNumber = request.getAddress().toString();
+        if (callerNumber.contains(":")) {
+            //CallerNumber contains a schema which we'll separate out
+            int schemaIndex = callerNumber.indexOf(":");
+            String number = callerNumber.substring(schemaIndex + 1);
+            String schema = callerNumber.substring(0, schemaIndex);
+
+            extrasMap.put(EXTRA_CALL_NUMBER, number);
+            extrasMap.put(EXTRA_CALL_NUMBER_SCHEMA, schema);
+        }
+        else {
+            extrasMap.put(EXTRA_CALL_NUMBER, callerNumber);
+        }
+
         VoiceConnection connection = new VoiceConnection(this, extrasMap);
         connection.setConnectionCapabilities(Connection.CAPABILITY_MUTE | Connection.CAPABILITY_SUPPORT_HOLD);
+
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            Context context = getApplicationContext();
+            TelecomManager telecomManager = (TelecomManager) context.getSystemService(context.TELECOM_SERVICE);
+            PhoneAccount phoneAccount = telecomManager.getPhoneAccount(request.getAccountHandle());
+
+            //If the phone account is self managed, then this connection must also be self managed.
+            if((phoneAccount.getCapabilities() & PhoneAccount.CAPABILITY_SELF_MANAGED) == PhoneAccount.CAPABILITY_SELF_MANAGED) {
+                Log.d(TAG, "PhoneAccount is SELF_MANAGED, so connection will be too");
+                connection.setConnectionProperties(Connection.PROPERTY_SELF_MANAGED);
+            }
+            else {
+                Log.d(TAG, "PhoneAccount is not SELF_MANAGED, so connection won't be either");
+            }
+        }
+
         connection.setInitializing();
         connection.setExtras(extras);
         currentConnections.put(extras.getString(EXTRA_CALL_UUID), connection);
