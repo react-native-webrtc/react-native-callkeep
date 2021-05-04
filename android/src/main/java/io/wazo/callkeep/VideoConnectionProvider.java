@@ -51,6 +51,7 @@ public class VideoConnectionProvider extends Connection.VideoProvider {
     private Connection mConnection;
     private CameraCapabilities mCameraCapabilities;
     private Surface mPreviewSurface;
+    private Surface mRemoteSurface;
     private Context mContext;
     private CameraManager mCameraManager;
     private CameraDevice mCameraDevice;
@@ -66,6 +67,10 @@ public class VideoConnectionProvider extends Connection.VideoProvider {
         mConnection = connection;
         mContext = context;
         mCameraManager = (CameraManager) context.getSystemService(Context.CAMERA_SERVICE);
+    }
+
+    public Surface getRemoteSurface() {
+        return mRemoteSurface;
     }
 
     @Override
@@ -89,7 +94,7 @@ public class VideoConnectionProvider extends Connection.VideoProvider {
     @Override
     public void onSetDisplaySurface(Surface surface) {
         Log.d(TAG, "Set display surface " + (surface == null ? "unset" : "set"));
-        // Get the video flux from webrtc
+        mRemoteSurface = surface;
     }
 
     @Override
@@ -103,7 +108,7 @@ public class VideoConnectionProvider extends Connection.VideoProvider {
      */
     @Override
     public void onSetZoom(float value) {
-        Log.d(TAG, ("Set zoom to " + value);
+        Log.d(TAG, "Set zoom to " + value);
     }
 
     /**
