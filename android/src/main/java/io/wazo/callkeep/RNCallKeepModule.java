@@ -678,7 +678,7 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
     }
 
     private void sendEventToJS(String eventName, @Nullable WritableMap params) {
-        Log.v(TAG, "[VoiceConnection] sendEventToJS, eventName :" + eventName + "args : " + (params != null ? params.toString() : "null"));
+        Log.v(TAG, "[VoiceConnection] sendEventToJS, eventName :" + eventName + ", args : " + (params != null ? params.toString() : "null"));
         this.reactContext.getJSModule(RCTDeviceEventEmitter.class).emit(eventName, params);
     }
 
