@@ -9,6 +9,8 @@ For more information about **CallKit** on iOS, please see [Official CallKit Fram
 
 For more information about **ConnectionService** on Android, please see [Android Documentation](https://developer.android.com/reference/android/telecom/ConnectionService) and [Build a calling app](https://developer.android.com/guide/topics/connectivity/telecom/selfManaged)
 
+⚠️ **CallKit** and **ConnectionService** are only available on real devices, this library will not work on simulators.
+
 # Demo
 
 A demo of `react-native-callkeep` is available in the [wazo-react-native-demo](https://github.com/wazo-pbx/wazo-react-native-demo) repository.
