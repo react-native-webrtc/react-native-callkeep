@@ -948,7 +948,7 @@ You have to set the `foregroundService` key in the [`setup()`](#setup) method an
 ### Android
 
 ```
-adb logcat *:S RNCallKeepModule:V
+adb logcat *:S RNCallKeep:V
 ```
 
 ## Troubleshooting
