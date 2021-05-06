@@ -63,6 +63,7 @@ import static io.wazo.callkeep.Constants.ACTION_CHECK_REACHABILITY;
 import static io.wazo.callkeep.Constants.ACTION_WAKE_APP;
 import static io.wazo.callkeep.Constants.EXTRA_CALLER_NAME;
 import static io.wazo.callkeep.Constants.EXTRA_CALL_NUMBER;
+import static io.wazo.callkeep.Constants.EXTRA_CALL_NUMBER_SCHEMA;
 import static io.wazo.callkeep.Constants.EXTRA_CALL_UUID;
 import static io.wazo.callkeep.Constants.EXTRA_DISABLE_ADD_CALL;
 import static io.wazo.callkeep.Constants.FOREGROUND_SERVICE_TYPE_MICROPHONE;
@@ -329,7 +330,21 @@ public class VoiceConnectionService extends ConnectionService {
 
         Bundle extras = request.getExtras();
         HashMap<String, String> extrasMap = this.bundleToMap(extras);
-        extrasMap.put(EXTRA_CALL_NUMBER, request.getAddress().toString());
+
+        String callerNumber = request.getAddress().toString();
+        if (callerNumber.contains(":")) {
+            //CallerNumber contains a schema which we'll separate out
+            int schemaIndex = callerNumber.indexOf(":");
+            String number = callerNumber.substring(schemaIndex + 1);
+            String schema = callerNumber.substring(0, schemaIndex);
+
+            extrasMap.put(EXTRA_CALL_NUMBER, number);
+            extrasMap.put(EXTRA_CALL_NUMBER_SCHEMA, schema);
+        }
+        else {
+            extrasMap.put(EXTRA_CALL_NUMBER, callerNumber);
+        }
+
         VoiceConnection connection = new VoiceConnection(this, extrasMap);
         connection.setConnectionCapabilities(Connection.CAPABILITY_MUTE | Connection.CAPABILITY_SUPPORT_HOLD);
 

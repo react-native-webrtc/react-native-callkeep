@@ -12,6 +12,7 @@
 #import <React/RCTConvert.h>
 #import <React/RCTEventDispatcher.h>
 #import <React/RCTUtils.h>
+#import <React/RCTLog.h>
 
 #import <AVFoundation/AVAudioSession.h>
 
@@ -43,6 +44,7 @@ static NSString *const RNCallKeepDidLoadWithEvents = @"RNCallKeepDidLoadWithEven
     NSMutableArray *_delayedEvents;
 }
 
+static bool isSetupNatively;
 static CXProvider* sharedProvider;
 
 // should initialise in AppDelegate.m
@@ -118,20 +120,21 @@ RCT_EXPORT_MODULE()
     if (_hasListeners) {
         [self sendEventWithName:name body:body];
     } else {
-        NSDictionary *dictionary = @{
-            @"name": name,
-            @"data": body ? body : @{}
-        };
+        NSDictionary *dictionary = [NSDictionary dictionaryWithObjectsAndKeys:
+            name, @"name",
+            body, @"data",
+            nil
+        ];
         if (_delayedEvents == nil) _delayedEvents = [NSMutableArray array];
         [_delayedEvents addObject:dictionary];
     }
 }
 
 - (void) initCallKitProvider {
-
 #ifdef DEBUG
     NSLog(@"[RNCallKeep][initCallKitProvider]");
 #endif
+
     NSDictionary *settings = [[NSUserDefaults standardUserDefaults] dictionaryForKey:@"RNCallKeepSettings"];
     sharedProvider = [[CXProvider alloc] initWithConfiguration:[RNCallKeep getProviderConfiguration:settings]];
 
@@ -139,8 +142,22 @@ RCT_EXPORT_MODULE()
     [self.callKeepProvider setDelegate:self queue:nil];
 }
 
++ (void)setup:(NSDictionary *)options {
+    RNCallKeep *callKeep = [RNCallKeep allocWithZone: nil];
+    [callKeep setup:options];
+    isSetupNatively = YES;
+}
+
 RCT_EXPORT_METHOD(setup:(NSDictionary *)options)
 {
+    if (isSetupNatively) {
+#ifdef DEBUG
+        NSLog(@"[RNCallKeep][setup] already setup");
+        RCTLog(@"[RNCallKeep][setup] already setup in native code");
+#endif
+        return;
+    }
+
 #ifdef DEBUG
     NSLog(@"[RNCallKeep][setup] options = %@", options);
 #endif
