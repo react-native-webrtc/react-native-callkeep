@@ -151,7 +151,7 @@ RCT_EXPORT_METHOD(setup:(NSDictionary *)options)
 #endif
         return;
     }
-    
+
 #ifdef DEBUG
     NSLog(@"[RNCallKeep][setup] options = %@", options);
 #endif
@@ -214,6 +214,15 @@ RCT_EXPORT_METHOD(displayIncomingCall:(NSString *)uuidString
                           fromPushKit: NO
                               payload: nil
                 withCompletionHandler: nil];
+}
+
+RCT_EXPORT_METHOD(getInitialEvents:(RCTPromiseResolveBlock)resolve
+                  reject:(RCTPromiseRejectBlock)reject)
+{
+#ifdef DEBUG
+    NSLog(@"getInitialEvents");
+#endif
+    resolve(_delayedEvents);
 }
 
 RCT_EXPORT_METHOD(startCall:(NSString *)uuidString

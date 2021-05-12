@@ -61,6 +61,8 @@ declare module 'react-native-callkeep' {
   };
 
   export default class RNCallKeep {
+    static getInitialEvents(): Promise<Array<Object>>
+
     static addEventListener(type: Events, handler: (args: any) => void): void
 
     static removeEventListener(type: Events): void
@@ -146,11 +148,11 @@ declare module 'react-native-callkeep' {
      * @description setMutedCall method is available only on iOS.
      */
     static setMutedCall(uuid: string, muted: boolean): void
-  
+
     /**
      * @description toggleAudioRouteSpeaker method is available only on Android.
-     * @param uuid 
-     * @param routeSpeaker 
+     * @param uuid
+     * @param routeSpeaker
      */
     static toggleAudioRouteSpeaker(uuid: string, routeSpeaker: boolean): void
     static setOnHold(uuid: string, held: boolean): void
