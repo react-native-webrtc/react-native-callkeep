@@ -326,6 +326,13 @@ class RNCallKeep {
 
     NativeModules.RNCallKeep.backToForeground();
   }
+
+  getInitialEvents() {
+    if (isIOS) {
+      return RNCallKeepModule.getInitialEvents()
+    }
+    return Promise.resolve([])
+  }
 }
 
 export default new RNCallKeep();
