@@ -43,6 +43,7 @@ import android.telecom.DisconnectCause;
 import android.telecom.PhoneAccount;
 import android.telecom.PhoneAccountHandle;
 import android.telecom.TelecomManager;
+import android.telecom.VideoProfile;
 import android.util.Log;
 
 import com.facebook.react.HeadlessJsTaskService;
@@ -67,6 +68,7 @@ import static io.wazo.callkeep.Constants.EXTRA_CALL_NUMBER_SCHEMA;
 import static io.wazo.callkeep.Constants.EXTRA_CALL_UUID;
 import static io.wazo.callkeep.Constants.EXTRA_DISABLE_ADD_CALL;
 import static io.wazo.callkeep.Constants.FOREGROUND_SERVICE_TYPE_MICROPHONE;
+import static io.wazo.callkeep.Constants.EXTRA_HAS_VIDEO;
 
 // @see https://github.com/kbagchiGWC/voice-quickstart-android/blob/9a2aff7fbe0d0a5ae9457b48e9ad408740dfb968/exampleConnectionService/src/main/java/com/twilio/voice/examples/connectionservice/VoiceConnectionService.java
 @TargetApi(Build.VERSION_CODES.M)
@@ -93,7 +95,6 @@ public class VoiceConnectionService extends ConnectionService {
 
     public VoiceConnectionService() {
         super();
-        Log.e(TAG, "Constructor");
         currentConnectionRequest = null;
         currentConnectionService = this;
     }
@@ -150,7 +151,13 @@ public class VoiceConnectionService extends ConnectionService {
 
         Log.d(TAG, "onCreateIncomingConnection, name:" + name);
 
+        Boolean hasVideo = extra.getBoolean(EXTRA_HAS_VIDEO, false);
         Connection incomingCallConnection = createConnection(request);
+
+        if (hasVideo) {
+            setVideoCallSupport(this.getApplicationContext(), incomingCallConnection);
+        }
+
         incomingCallConnection.setRinging();
         incomingCallConnection.setInitialized();
 
@@ -346,7 +353,6 @@ public class VoiceConnectionService extends ConnectionService {
         }
 
         VoiceConnection connection = new VoiceConnection(this, extrasMap);
-        connection.setConnectionCapabilities(Connection.CAPABILITY_MUTE | Connection.CAPABILITY_SUPPORT_HOLD);
 
         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             Context context = getApplicationContext();
@@ -362,6 +368,15 @@ public class VoiceConnectionService extends ConnectionService {
                 Log.d(TAG, "PhoneAccount is not SELF_MANAGED, so connection won't be either");
             }
         }
+
+        int capabilities = connection.getConnectionCapabilities();
+        capabilities |= Connection.CAPABILITY_SUPPORTS_VT_LOCAL_BIDIRECTIONAL;
+        capabilities |= Connection.CAPABILITY_SUPPORTS_VT_REMOTE_BIDIRECTIONAL;
+        capabilities |= Connection.CAPABILITY_CAN_UPGRADE_TO_VIDEO;
+        capabilities |= Connection.CAPABILITY_MUTE;
+        capabilities |= Connection.CAPABILITY_SUPPORT_HOLD;
+        capabilities |= Connection.CAPABILITY_HOLD;
+        connection.setConnectionCapabilities(capabilities);
 
         connection.setInitializing();
         connection.setExtras(extras);
@@ -418,6 +433,13 @@ public class VoiceConnectionService extends ConnectionService {
                 LocalBroadcastManager.getInstance(instance).sendBroadcast(intent);
             }
         });
+    }
+
+    private void setVideoCallSupport(Context context, Connection connection) {
+        VideoConnectionProvider VideoCallProvider = new VideoConnectionProvider(context, connection);
+
+        connection.setVideoState(VideoProfile.STATE_BIDIRECTIONAL);
+        connection.setVideoProvider(VideoCallProvider);
     }
 
     private HashMap<String, String> bundleToMap(Bundle extras) {

@@ -93,9 +93,11 @@ public class VoiceConnection extends Connection {
     }
 
     @Override
-    public void onAnswer() {
-        super.onAnswer();
+    public void onAnswer(int videoState) {
+        super.onAnswer(videoState);
         Log.d(TAG, "onAnswer called");
+
+        setVideoState(videoState);
 
         setConnectionCapabilities(getConnectionCapabilities() | Connection.CAPABILITY_HOLD);
         setAudioModeIsVoip(true);
@@ -223,4 +225,5 @@ public class VoiceConnection extends Connection {
             }
         });
     }
+
 }
