@@ -44,6 +44,7 @@ static NSString *const RNCallKeepDidLoadWithEvents = @"RNCallKeepDidLoadWithEven
     NSMutableArray *_delayedEvents;
 }
 
+void (^onEventHandler) (NSString * callUUID, id data);
 static bool isSetupNatively;
 static CXProvider* sharedProvider;
 
@@ -81,6 +82,7 @@ RCT_EXPORT_MODULE()
     if (self.callKeepProvider != nil) {
         [self.callKeepProvider invalidate];
     }
+    onEventHandler = nil;
     sharedProvider = nil;
 }
 
@@ -136,10 +138,14 @@ RCT_EXPORT_MODULE()
     }
 }
 
-+ (void)setup:(NSDictionary *)options {
++ (void)setup:(NSDictionary *)options withEventHandler: (void (^) (NSString * eventName, id data)) onEvent {
     RNCallKeep *callKeep = [RNCallKeep allocWithZone: nil];
     [callKeep setup:options];
     isSetupNatively = YES;
+    
+    if (onEvent != nil) {
+        onEventHandler = onEvent;
+    }
 }
 
 RCT_EXPORT_METHOD(setup:(NSDictionary *)options)
@@ -780,7 +786,12 @@ RCT_EXPORT_METHOD(reportUpdatedCall:(NSString *)uuidString contactIdentifier:(NS
     NSLog(@"[RNCallKeep][CXProviderDelegate][provider:performEndCallAction]");
 #endif
     [self sendEventWithNameWrapper:RNCallKeepPerformEndCallAction body:@{ @"callUUID": [action.callUUID.UUIDString lowercaseString] }];
-    [action fulfill];
+    
+    if (onEventHandler != nil) {
+         onEventHandler(action.callUUID.UUIDString, action);
+    } else {
+        [action fulfill];
+    }
 }
 
 -(void)provider:(CXProvider *)provider performSetHeldCallAction:(CXSetHeldCallAction *)action

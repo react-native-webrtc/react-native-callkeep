@@ -45,6 +45,6 @@ continueUserActivity:(NSUserActivity *)userActivity
 
 + (BOOL)isCallActive:(NSString *)uuidString;
 
-+ (void)setup:(NSDictionary *)options;
++ (void)setup:(NSDictionary *)options withEventHandler: (void (^) (NSString * eventName, id data)) onEvent;
 
 @end
