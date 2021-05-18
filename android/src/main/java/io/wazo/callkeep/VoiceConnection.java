@@ -55,7 +55,7 @@ public class VoiceConnection extends Connection {
     private boolean isMuted = false;
     private HashMap<String, String> handle;
     private Context context;
-    private static final String TAG = "RNCK:VoiceConnection";
+    private static final String TAG = "RNCallKeep";
 
     VoiceConnection(Context context, HashMap<String, String> handle) {
         super();
@@ -84,6 +84,7 @@ public class VoiceConnection extends Connection {
 
     @Override
     public void onCallAudioStateChanged(CallAudioState state) {
+        Log.d(TAG, "[VoiceConnection] onCallAudioStateChanged muted :" + (state.isMuted() ? "true" : "false"));
         if (state.isMuted() == this.isMuted) {
             return;
         }
@@ -95,22 +96,23 @@ public class VoiceConnection extends Connection {
     @Override
     public void onAnswer() {
         super.onAnswer();
-        Log.d(TAG, "onAnswer called");
+        Log.d(TAG, "[VoiceConnection] onAnswer called");
 
         setConnectionCapabilities(getConnectionCapabilities() | Connection.CAPABILITY_HOLD);
         setAudioModeIsVoip(true);
 
         sendCallRequestToActivity(ACTION_ANSWER_CALL, handle);
         sendCallRequestToActivity(ACTION_AUDIO_SESSION, handle);
-        Log.d(TAG, "onAnswer executed");
+        Log.d(TAG, "[VoiceConnection] onAnswer executed");
     }
 
     @Override
     public void onPlayDtmfTone(char dtmf) {
+        Log.d(TAG, "[VoiceConnection] Playing DTMF : " + dtmf);
         try {
             handle.put("DTMF", Character.toString(dtmf));
         } catch (Throwable exception) {
-            Log.e(TAG, "Handle map error", exception);
+            Log.e(TAG, "[VoiceConnection] Handle map error", exception);
         }
         sendCallRequestToActivity(ACTION_DTMF_TONE, handle);
     }
@@ -120,11 +122,11 @@ public class VoiceConnection extends Connection {
         super.onDisconnect();
         setDisconnected(new DisconnectCause(DisconnectCause.LOCAL));
         sendCallRequestToActivity(ACTION_END_CALL, handle);
-        Log.d(TAG, "onDisconnect executed");
+        Log.d(TAG, "[VoiceConnection] onDisconnect executed");
         try {
             ((VoiceConnectionService) context).deinitConnection(handle.get(EXTRA_CALL_UUID));
         } catch(Throwable exception) {
-            Log.e(TAG, "Handle map error", exception);
+            Log.e(TAG, "[VoiceConnection] onDisconnect handle map error", exception);
         }
         destroy();
     }
@@ -160,17 +162,18 @@ public class VoiceConnection extends Connection {
         super.onAbort();
         setDisconnected(new DisconnectCause(DisconnectCause.REJECTED));
         sendCallRequestToActivity(ACTION_END_CALL, handle);
-        Log.d(TAG, "onAbort executed");
+        Log.d(TAG, "[VoiceConnection] onAbort executed");
         try {
             ((VoiceConnectionService) context).deinitConnection(handle.get(EXTRA_CALL_UUID));
         } catch(Throwable exception) {
-            Log.e(TAG, "Handle map error", exception);
+            Log.e(TAG, "[VoiceConnection] onAbort handle map error", exception);
         }
         destroy();
     }
 
     @Override
     public void onHold() {
+        Log.d(TAG, "[VoiceConnection] onHold");
         super.onHold();
         this.setOnHold();
         sendCallRequestToActivity(ACTION_HOLD_CALL, handle);
@@ -178,6 +181,7 @@ public class VoiceConnection extends Connection {
 
     @Override
     public void onUnhold() {
+        Log.d(TAG, "[VoiceConnection] onUnhold");
         super.onUnhold();
         sendCallRequestToActivity(ACTION_UNHOLD_CALL, handle);
         setActive();
@@ -188,18 +192,18 @@ public class VoiceConnection extends Connection {
         super.onReject();
         setDisconnected(new DisconnectCause(DisconnectCause.REJECTED));
         sendCallRequestToActivity(ACTION_END_CALL, handle);
-        Log.d(TAG, "onReject executed");
+        Log.d(TAG, "[VoiceConnection] onReject executed");
         try {
             ((VoiceConnectionService) context).deinitConnection(handle.get(EXTRA_CALL_UUID));
         } catch(Throwable exception) {
-            Log.e(TAG, "Handle map error", exception);
+            Log.e(TAG, "[VoiceConnection] onReject, handle map error", exception);
         }
         destroy();
     }
 
     @Override
     public void onShowIncomingCallUi() {
-        Log.d(TAG, "onShowIncomingCallUi()");
+        Log.d(TAG, "[VoiceConnection] onShowIncomingCallUi");
         sendCallRequestToActivity(ACTION_SHOW_INCOMING_CALL_UI, handle);
     }
 
