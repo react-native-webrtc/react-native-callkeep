@@ -53,6 +53,8 @@ import static io.wazo.callkeep.Constants.ACTION_SHOW_INCOMING_CALL_UI;
 @TargetApi(Build.VERSION_CODES.M)
 public class VoiceConnection extends Connection {
     private boolean isMuted = false;
+    private boolean answered = false;
+    private boolean rejected = false;
     private HashMap<String, String> handle;
     private Context context;
     private static final String TAG = "RNCallKeep";
@@ -94,16 +96,19 @@ public class VoiceConnection extends Connection {
     }
 
     @Override
+    public void onAnswer(int videoState) {
+        super.onAnswer(videoState);
+        Log.d(TAG, "[VoiceConnection] onAnswer(int) executed");
+
+        this._onAnswer(videoState);
+    }
+
+    @Override
     public void onAnswer() {
         super.onAnswer();
-        Log.d(TAG, "[VoiceConnection] onAnswer called");
+        Log.d(TAG, "[VoiceConnection] onAnswer() executed");
 
-        setConnectionCapabilities(getConnectionCapabilities() | Connection.CAPABILITY_HOLD);
-        setAudioModeIsVoip(true);
-
-        sendCallRequestToActivity(ACTION_ANSWER_CALL, handle);
-        sendCallRequestToActivity(ACTION_AUDIO_SESSION, handle);
-        Log.d(TAG, "[VoiceConnection] onAnswer executed");
+        this._onAnswer(0);
     }
 
     @Override
@@ -190,6 +195,121 @@ public class VoiceConnection extends Connection {
     @Override
     public void onReject() {
         super.onReject();
+        Log.d(TAG, "[VoiceConnection] onReject() executed");
+
+        this._onReject(0, null);
+    }
+
+    @Override
+    public void onReject(int rejectReason) {
+        super.onReject(rejectReason);
+        Log.d(TAG, "[VoiceConnection] onReject(int) executed");
+
+        this._onReject(rejectReason, null);
+    }
+
+    @Override
+    public void onReject(String replyMessage) {
+        super.onReject(replyMessage);
+        Log.d(TAG, "[VoiceConnection] onReject(String) executed");
+
+        this._onReject(0, replyMessage);
+    }
+
+    @Override
+    public void onCallEvent(String event, Bundle extras) {
+        super.onCallEvent(event, extras);
+
+        Log.d(TAG, "[VoiceConnection] onCallEvent called, event: " + event);
+    }
+
+    @Override
+    public void onDeflect(Uri address) {
+        super.onDeflect(address);
+
+        Log.d(TAG, "[VoiceConnection] onDeflect called, address: " + address);
+    }
+
+    @Override
+    public void onHandoverComplete() {
+        super.onHandoverComplete();
+
+        Log.d(TAG, "[VoiceConnection] onHandoverComplete called");
+    }
+
+    @Override
+    public void onPostDialContinue(boolean proceed) {
+        super.onPostDialContinue(proceed);
+
+        Log.d(TAG, "[VoiceConnection] onPostDialContinue called, proceed: " + proceed);
+    }
+
+    @Override
+    public void onPullExternalCall() {
+        super.onPullExternalCall();
+
+        Log.d(TAG, "[VoiceConnection] onPullExternalCall called");
+    }
+
+    @Override
+    public void onSeparate() {
+        super.onSeparate();
+
+        Log.d(TAG, "[VoiceConnection] onSeparate called");
+    }
+
+    @Override
+    public void onStateChanged(int state) {
+        super.onStateChanged(state);
+
+        Log.d(TAG, "[VoiceConnection] onStateChanged called, state : " + state);
+    }
+
+    @Override
+    public void onSilence() {
+        super.onSilence();
+
+        Log.d(TAG, "[VoiceConnection] onSilence called");
+    }
+
+    @Override
+    public void onStopDtmfTone() {
+        super.onStopDtmfTone();
+
+        Log.d(TAG, "[VoiceConnection] onStopDtmfTone called");
+    }
+
+    @Override
+    public void onStopRtt() {
+        super.onStopRtt();
+
+        Log.d(TAG, "[VoiceConnection] onStopRtt called");
+    }
+
+    private void _onAnswer(int videoState) {
+        Log.d(TAG, "[VoiceConnection] onAnswer called, videoState: " + videoState + ", answered: " + answered);
+        // On some device (like Huawei P30 lite), both onAnswer() and onAnswer(int) are called
+        // we have to trigger the callback only once
+        if (answered) {
+            return;
+        }
+        answered = true;
+
+        setConnectionCapabilities(getConnectionCapabilities() | Connection.CAPABILITY_HOLD);
+        setAudioModeIsVoip(true);
+
+        sendCallRequestToActivity(ACTION_ANSWER_CALL, handle);
+        sendCallRequestToActivity(ACTION_AUDIO_SESSION, handle);
+        Log.d(TAG, "[VoiceConnection] onAnswer executed");
+    }
+
+    private void _onReject(int rejectReason, String replyMessage) {
+        Log.d(TAG, "[VoiceConnection] onReject executed, rejectReason: " + rejectReason + ", replyMessage: " + replyMessage + ", rejected:" + rejected);
+        if (rejected) {
+            return;
+        }
+        rejected = true;
+
         setDisconnected(new DisconnectCause(DisconnectCause.REJECTED));
         sendCallRequestToActivity(ACTION_END_CALL, handle);
         Log.d(TAG, "[VoiceConnection] onReject executed");
