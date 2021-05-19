@@ -43,8 +43,8 @@ static NSString *const RNCallKeepDidLoadWithEvents = @"RNCallKeepDidLoadWithEven
     bool _hasListeners;
     NSMutableArray *_delayedEvents;
 }
-
-void (^onEventHandler) (NSString * callUUID, id data);
+NSMutableDictionary *_answeredCalls;
+void (^onRejectHandler) (NSString* uuid, void (^completion)(void));
 static bool isSetupNatively;
 static CXProvider* sharedProvider;
 
@@ -82,8 +82,9 @@ RCT_EXPORT_MODULE()
     if (self.callKeepProvider != nil) {
         [self.callKeepProvider invalidate];
     }
-    onEventHandler = nil;
+    onRejectHandler = nil;
     sharedProvider = nil;
+    _answeredCalls = nil;
 }
 
 // Override method of RCTEventEmitter
@@ -138,13 +139,22 @@ RCT_EXPORT_MODULE()
     }
 }
 
-+ (void)setup:(NSDictionary *)options withEventHandler: (void (^) (NSString * eventName, id data)) onEvent {
++ (void)setup:(NSDictionary *)options {
+    RNCallKeep *callKeep = [RNCallKeep allocWithZone: nil];
+    [callKeep setup:options];
+    isSetupNatively = YES;
+}
+
++ (void)setup:(NSDictionary *)options callRejectHandler: (void (^) (NSString* uuid, void (^completion)(void))) onReject {
     RNCallKeep *callKeep = [RNCallKeep allocWithZone: nil];
     [callKeep setup:options];
     isSetupNatively = YES;
     
-    if (onEvent != nil) {
-        onEventHandler = onEvent;
+    if (onReject != nil) {
+        onRejectHandler = onReject;
+    }
+    if (_answeredCalls == nil) {
+        _answeredCalls = [[NSMutableDictionary alloc] init];
     }
 }
 
@@ -527,6 +537,8 @@ RCT_EXPORT_METHOD(getCalls:(RCTPromiseResolveBlock)resolve
     callUpdate.localizedCallerName = localizedCallerName;
 
     [RNCallKeep initCallKitProvider];
+    [_answeredCalls setValue:NO forKey:uuidString];
+    
     [sharedProvider reportNewIncomingCallWithUUID:uuid update:callUpdate completion:^(NSError * _Nullable error) {
         RNCallKeep *callKeep = [RNCallKeep allocWithZone: nil];
         [callKeep sendEventWithNameWrapper:RNCallKeepDidDisplayIncomingCall body:@{
@@ -774,6 +786,7 @@ RCT_EXPORT_METHOD(reportUpdatedCall:(NSString *)uuidString contactIdentifier:(NS
 #ifdef DEBUG
     NSLog(@"[RNCallKeep][CXProviderDelegate][provider:performAnswerCallAction]");
 #endif
+    [_answeredCalls setValue:[NSNumber numberWithBool:YES] forKey:action.callUUID.UUIDString];
     [self configureAudioSession];
     [self sendEventWithNameWrapper:RNCallKeepPerformAnswerCallAction body:@{ @"callUUID": [action.callUUID.UUIDString lowercaseString] }];
     [action fulfill];
@@ -787,8 +800,10 @@ RCT_EXPORT_METHOD(reportUpdatedCall:(NSString *)uuidString contactIdentifier:(NS
 #endif
     [self sendEventWithNameWrapper:RNCallKeepPerformEndCallAction body:@{ @"callUUID": [action.callUUID.UUIDString lowercaseString] }];
     
-    if (onEventHandler != nil) {
-         onEventHandler(action.callUUID.UUIDString, action);
+    if (onRejectHandler != nil && _answeredCalls[action.callUUID.UUIDString] == NO) {
+        onRejectHandler(action.callUUID.UUIDString, ^() {
+            [action fulfill];
+        });
     } else {
         [action fulfill];
     }
