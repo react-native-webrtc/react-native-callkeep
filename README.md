@@ -167,10 +167,10 @@ Self Managed calling apps are an advanced topic, and there are many steps involv
 ## Methods
 
 ### getInitialEvents
+_This feature is available only on iOS._
 
-if there were some actions performed by user before JS context has been created, this method would return early fired events. This is alternative to "didLoadWithEvents" handler.
-
-iOS only.
+If there were some actions performed by user before JS context has been created, this method would return early fired events. This is alternative to "didLoadWithEvents" event.
+>>>>>>> getInitialEvents-docs
 
 ```js
 RNCallKeep.getInitialEvents();
