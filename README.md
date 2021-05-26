@@ -720,7 +720,7 @@ RNCallKeep.addEventListener('didLoadWithEvents', (events) => {
 
 ### - showIncomingCallUi
 
-Android only.
+Android only. Self Managed only.
 
 Only when CallKeep is setup to be in self managed mode. Signals that the app must show an incoming call UI. The implementor must either call `displayIncomingCall` from react native or native android code to make this event fire.
 
@@ -738,6 +738,28 @@ The following values will match those initially passed to `displayIncomingCall`
   - The UUID of the call.
 - `name` (string)
   - Caller Name.
+
+### - silenceIncomingCall
+
+Android only. Self Managed only.
+
+Corresponds to the native [onSilence event](https://developer.android.com/reference/android/telecom/Connection#onSilence()). 
+
+```js
+RNCallKeep.addEventListener('silenceIncomingCall', ({ handle, callUUID, name }) => {
+
+});
+```
+
+The following values will match those initially passed to `silenceIncomingCall`
+
+- `handle` (string)
+  - Phone number of the incoming caller.
+- `callUUID` (string)
+  - The UUID of the call.
+- `name` (string)
+  - Caller Name.
+
 
 ### - checkReachability
 

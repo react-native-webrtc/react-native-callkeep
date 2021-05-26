@@ -49,6 +49,7 @@ import static io.wazo.callkeep.Constants.EXTRA_CALLER_NAME;
 import static io.wazo.callkeep.Constants.EXTRA_CALL_NUMBER;
 import static io.wazo.callkeep.Constants.EXTRA_CALL_UUID;
 import static io.wazo.callkeep.Constants.ACTION_SHOW_INCOMING_CALL_UI;
+import static io.wazo.callkeep.Constants.ACTION_ON_SILENCE_INCOMING_CALL;
 
 @TargetApi(Build.VERSION_CODES.M)
 public class VoiceConnection extends Connection {
@@ -269,6 +270,7 @@ public class VoiceConnection extends Connection {
     public void onSilence() {
         super.onSilence();
 
+        sendCallRequestToActivity(ACTION_ON_SILENCE_INCOMING_CALL, handle);
         Log.d(TAG, "[VoiceConnection] onSilence called");
     }
 
