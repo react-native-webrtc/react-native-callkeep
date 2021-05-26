@@ -743,7 +743,7 @@ The following values will match those initially passed to `displayIncomingCall`
 
 Android only. Self Managed only.
 
-Corresponds to the native [onSilence event](https://developer.android.com/reference/android/telecom/Connection#onSilence()). 
+Corresponds to the native [onSilence event](https://developer.android.com/reference/android/telecom/Connection#onSilence()). The implementor should silence the corresponding incoming calls notification sound when and if this event is fired.
 
 ```js
 RNCallKeep.addEventListener('silenceIncomingCall', ({ handle, callUUID, name }) => {
