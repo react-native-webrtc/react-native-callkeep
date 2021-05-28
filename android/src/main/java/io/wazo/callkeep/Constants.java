@@ -13,6 +13,8 @@ public class Constants {
     public static final String ACTION_UNMUTE_CALL = "ACTION_UNMUTE_CALL";
     public static final String ACTION_WAKE_APP = "ACTION_WAKE_APP";
     public static final String ACTION_SHOW_INCOMING_CALL_UI = "ACTION_SHOW_INCOMING_CALL_UI";
+    public static final String ACTION_ON_SILENCE_INCOMING_CALL = "ACTION_ON_SILENCE_INCOMING_CALL";
+
 
     public static final String EXTRA_CALL_NUMBER = "EXTRA_CALL_NUMBER";
     public static final String EXTRA_CALL_NUMBER_SCHEMA = "EXTRA_CALL_NUMBER_SCHEMA";
