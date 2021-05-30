@@ -12,7 +12,8 @@ declare module 'react-native-callkeep' {
     'checkReachability' |
     'didPerformSetMutedCallAction' |
     'didLoadWithEvents' |
-    'showIncomingCallUi';
+    'showIncomingCallUi' |
+    'silenceIncomingCall';
 
   type HandleType = 'generic' | 'number' | 'email';
 
@@ -61,6 +62,8 @@ declare module 'react-native-callkeep' {
   };
 
   export default class RNCallKeep {
+    static getInitialEvents(): Promise<Array<Object>>
+
     static addEventListener(type: Events, handler: (args: any) => void): void
 
     static removeEventListener(type: Events): void

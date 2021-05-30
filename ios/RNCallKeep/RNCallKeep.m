@@ -224,6 +224,15 @@ RCT_EXPORT_METHOD(displayIncomingCall:(NSString *)uuidString
                 withCompletionHandler: nil];
 }
 
+RCT_EXPORT_METHOD(getInitialEvents:(RCTPromiseResolveBlock)resolve
+                  reject:(RCTPromiseRejectBlock)reject)
+{
+#ifdef DEBUG
+    NSLog(@"getInitialEvents");
+#endif
+    resolve(_delayedEvents);
+}
+
 RCT_EXPORT_METHOD(startCall:(NSString *)uuidString
                      handle:(NSString *)handle
           contactIdentifier:(NSString * _Nullable)contactIdentifier
