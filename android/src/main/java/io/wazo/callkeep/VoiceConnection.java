@@ -202,14 +202,6 @@ public class VoiceConnection extends Connection {
     }
 
     @Override
-    public void onReject(int rejectReason) {
-        super.onReject(rejectReason);
-        Log.d(TAG, "[VoiceConnection] onReject(int) executed");
-
-        this._onReject(rejectReason, null);
-    }
-
-    @Override
     public void onReject(String replyMessage) {
         super.onReject(replyMessage);
         Log.d(TAG, "[VoiceConnection] onReject(String) executed");
