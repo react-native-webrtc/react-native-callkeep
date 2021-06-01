@@ -17,18 +17,22 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   button: {
-    marginTop: 20,
-    marginBottom: 20,
+    marginVertical: 20,
+    marginHorizontal: 2,
+    padding: 5,
+    borderWidth: 1,
+    borderColor: '#eee'
   },
   callButtons: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    paddingHorizontal: 30,
+    paddingHorizontal: 10,
     width: '100%',
   },
   logContainer: {
     flex: 3,
     width: '100%',
+    paddingHorizontal: 5,
     backgroundColor: '#D9D9D9',
   },
   log: {
@@ -41,7 +45,7 @@ RNCallKeep.setup({
     appName: 'CallKeepDemo',
   },
   android: {
-     alertTitle: 'Permissions required',
+    alertTitle: 'Permissions required',
     alertDescription: 'This application needs to access your phone accounts',
     cancelButton: 'Cancel',
     okButton: 'ok',
@@ -61,6 +65,7 @@ export default function App() {
   const [heldCalls, setHeldCalls] = useState({}); // callKeep uuid: held
   const [mutedCalls, setMutedCalls] = useState({}); // callKeep uuid: muted
   const [calls, setCalls] = useState({}); // callKeep uuid: number
+  const [isEmulator, setIsEmulator] = useState(false);
 
   const log = (text) => {
     console.info(text);
@@ -204,6 +209,12 @@ export default function App() {
     RNCallKeep.addEventListener('didToggleHoldCallAction', didToggleHoldCallAction);
     RNCallKeep.addEventListener('endCall', endCall);
 
+    if (isIOS) {
+      DeviceInfo.isEmulator().then(emulator => {
+        setIsEmulator(emulator);
+      })
+    }
+
     return () => {
       RNCallKeep.removeEventListener('answerCall', answerCall);
       RNCallKeep.removeEventListener('didPerformDTMFAction', didPerformDTMFAction);
@@ -214,7 +225,7 @@ export default function App() {
     }
   }, []);
 
-  if (isIOS && DeviceInfo.isEmulator()) {
+  if (isEmulator) {
     return <Text style={styles.container}>CallKeep doesn't work on iOS emulator</Text>;
   }
 
@@ -225,7 +236,7 @@ export default function App() {
       </TouchableOpacity>
 
       <TouchableOpacity onPress={displayIncomingCallDelayed} style={styles.button} hitSlop={hitSlop}>
-        <Text>Display incoming call now in 3s</Text>
+        <Text>Display incoming call in 3s</Text>
       </TouchableOpacity>
 
       {Object.keys(calls).map(callUUID => (
@@ -243,7 +254,7 @@ export default function App() {
             style={styles.button}
             hitSlop={hitSlop}
           >
-            <Text>Update display</Text>
+            <Text>Update</Text>
           </TouchableOpacity>
 
           <TouchableOpacity

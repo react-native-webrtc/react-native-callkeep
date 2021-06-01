@@ -1,41 +1,22 @@
-platform :ios, '10.0'
+require_relative '../node_modules/react-native/scripts/react_native_pods'
+require_relative '../node_modules/react-native-unimodules/cocoapods.rb'
+require_relative '../node_modules/@react-native-community/cli-platform-ios/native_modules'
 
-require_relative '../node_modules/react-native-unimodules/cocoapods'
+platform :ios, '11.0'
 
-target 'CallKeepDemo' do
-  # Pods for CallKeepDemo
-  pod 'React', :path => '../node_modules/react-native', :subspecs => [
-    'Core',
-    'CxxBridge',
-    'DevSupport',
-    'RCTActionSheet',
-    'RCTAnimation',
-    'RCTBlob',
-    'RCTGeolocation',
-    'RCTImage',
-    'RCTLinkingIOS',
-    'RCTNetwork',
-    'RCTSettings',
-    'RCTText',
-    'RCTVibration',
-    'RCTWebSocket',
-  ]
-
-  pod 'yoga', :path => '../node_modules/react-native/ReactCommon/yoga'
-
-  pod 'DoubleConversion', :podspec => '../node_modules/react-native/third-party-podspecs/DoubleConversion.podspec'
-  pod 'glog', :podspec => '../node_modules/react-native/third-party-podspecs/glog.podspec'
-  pod 'Folly', :podspec => '../node_modules/react-native/third-party-podspecs/Folly.podspec'
-  pod 'RNGestureHandler', :podspec => '../node_modules/react-native-gesture-handler/RNGestureHandler.podspec'
-  pod 'RNReanimated', :podspec => '../node_modules/react-native-reanimated/RNReanimated.podspec'
-  pod 'RNCallKeep', :path => '../node_modules/react-native-callkeep'
-  pod 'react-native-background-timer', :path => '../node_modules/react-native-background-timer'
-
+target 'callkeepdemo' do
   use_unimodules!
+  config = use_native_modules!
 
-  pod 'RNDeviceInfo', :path => '../node_modules/react-native-device-info'
+  use_react_native!(:path => config["reactNativePath"])
+  pod 'RNCallKeep', :path => '../node_modules/react-native-callkeep'
 
-  target 'CallKeepDemoTests' do
-    inherit! :search_paths
-  end
+  # Uncomment to opt-in to using Flipper
+  #
+  # if !ENV['CI']
+  #   use_flipper!('Flipper' => '0.75.1', 'Flipper-Folly' => '2.5.3', 'Flipper-RSocket' => '1.3.1')
+  #   post_install do |installer|
+  #     flipper_post_install(installer)
+  #   end
+  # end
 end

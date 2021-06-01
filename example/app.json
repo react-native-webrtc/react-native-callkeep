@@ -1,33 +1,18 @@
 {
+  "name": "callkeep-demo",
+  "displayName": "callkeep-demo",
   "expo": {
-    "name": "Simple example of react-native-callkeep functionnalities",
-    "slug": "CallKeepDemo",
-    "privacy": "public",
-    "sdkVersion": "34.0.0",
-    "platforms": [
-      "ios",
-      "android",
-      "web"
-    ],
+    "name": "callkeep-demo",
+    "slug": "callkeep-demo",
     "version": "1.0.0",
-    "orientation": "portrait",
-    "icon": "./assets/icon.png",
-    "splash": {
-      "image": "./assets/splash.png",
-      "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
-    },
-    "updates": {
-      "fallbackToCacheTimeout": 0
-    },
     "assetBundlePatterns": [
       "**/*"
     ],
-    "ios": {
-      "supportsTablet": true
+    "android": {
+      "package": "com.callkeep"
     },
-    "entryPoint": "node_modules/expo/AppEntry.js"
-  },
-  "displayName": "CallKeep example",
-  "name": "CallKeepDemo"
+    "ios": {
+      "bundleIdentifier": "com.callkeep"
+    }
+  }
 }
