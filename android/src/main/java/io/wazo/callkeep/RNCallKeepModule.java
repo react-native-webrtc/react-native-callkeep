@@ -177,6 +177,7 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
         Log.d(TAG, "[VoiceConnection] startObserving, event count: " + count);
         if (count > 0) {
             this.reactContext.getJSModule(RCTDeviceEventEmitter.class).emit("RNCallKeepDidLoadWithEvents", delayedEvents);
+            delayedEvents = new WritableNativeArray();
         }
     }
 
@@ -247,6 +248,13 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
         this.hasListeners = true;
         this.startObserving();
         VoiceConnectionService.setPhoneAccountHandle(handle);
+    }
+
+    @ReactMethod
+    public void unregisterEvents() {
+        Log.d(TAG, "[RNCallKeepModule] unregisterEvents");
+
+        this.hasListeners = false;
     }
 
     @ReactMethod
@@ -832,11 +840,14 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
 
     private void sendEventToJS(String eventName, @Nullable WritableMap params) {
         boolean isBoundToJS = this.reactContext.hasActiveCatalystInstance();
-        Log.v(TAG, "[VoiceConnection] sendEventToJS, eventName :" + eventName + ", bound: " + isBoundToJS + ", hasListeners: " + hasListeners + " args : " + (params != null ? params.toString() : "null"));
+        Log.v(TAG, "[VoiceConnection] sendEventToJS, eventName: " + eventName + ", bound: " + isBoundToJS + ", hasListeners: " + hasListeners + " args : " + (params != null ? params.toString() : "null"));
 
         if (isBoundToJS && hasListeners) {
             this.reactContext.getJSModule(RCTDeviceEventEmitter.class).emit(eventName, params);
         } else {
+            if (params == null) {
+                params = Arguments.createMap();
+            }
             params.putString("name", eventName);
             delayedEvents.pushMap(params);
         }
