@@ -30,7 +30,7 @@ public class RNCallKeepPackage implements ReactPackage {
 
     @Override
     public List<NativeModule> createNativeModules(ReactApplicationContext reactContext) {
-        return Collections.<NativeModule>singletonList(new RNCallKeepModule(reactContext));
+        return Collections.<NativeModule>singletonList(RNCallKeepModule.getInstance(reactContext, true));
     }
 
     // Deprecated RN 0.47
