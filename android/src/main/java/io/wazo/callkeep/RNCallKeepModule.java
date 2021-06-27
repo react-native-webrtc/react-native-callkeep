@@ -254,12 +254,14 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
             return;
         }
 
+        try {
         Connection conn = VoiceConnectionService.getConnection(uuid);
         if (conn == null) {
             Log.w(TAG, "[VoiceConnection] endCall ignored because no connection found, uuid: " + uuid);
             return;
         }
         conn.onDisconnect();
+        } catch (Exception e) {}
 
         Log.d(TAG, "[VoiceConnection] endCall executed, uuid: " + uuid);
     }
@@ -272,11 +274,15 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
             return;
         }
 
+        try {
         Map<String, VoiceConnection> currentConnections = VoiceConnectionService.currentConnections;
         for (Map.Entry<String, VoiceConnection> connectionEntry : currentConnections.entrySet()) {
+            try {
             Connection connectionToEnd = connectionEntry.getValue();
             connectionToEnd.onDisconnect();
+            } catch (Exception e) {}
         }
+        } catch (Exception e) {}
 
         Log.d(TAG, "[VoiceConnection] endAllCalls executed");
     }
