@@ -166,6 +166,11 @@ Self Managed calling apps are an advanced topic, and there are many steps involv
 - Android will deprioritize your high priority FCM notifications if you fail to show an incoming call ui when receiving them.
 - You can avoid getting flooded with sticky foreground service notifications by not defining a Foreground Service for CallKeep, and instead managing this on your own.
 
+⚠️ To be able to use the self managed mode, you'll have to add the `READ_CALL_LOG` permission in your `android/src/main/AndroidManifest.xml` file:
+```
+<uses-permission android:name="android.permission.READ_CALL_LOG" />
+```
+
 ## Methods
 
 ### getInitialEvents
