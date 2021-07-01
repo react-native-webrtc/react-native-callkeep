@@ -42,7 +42,7 @@ static NSString *const RNCallKeepDidLoadWithEvents = @"RNCallKeepDidLoadWithEven
     BOOL _isStartCallActionEventListenerAdded;
     bool _hasListeners;
     NSMutableArray *_delayedEvents;
-}
+} 
 
 static bool isSetupNatively;
 static CXProvider* sharedProvider;
@@ -396,6 +396,128 @@ RCT_EXPORT_METHOD(getCalls:(RCTPromiseResolveBlock)resolve
     NSLog(@"[RNCallKeep][getCalls]");
 #endif
     resolve([RNCallKeep getCalls]);
+}
+
+RCT_EXPORT_METHOD(setAudioRoute: (NSString *)inputName errorCallback:(RCTResponseSenderBlock)errorCallback successCallback:(RCTResponseSenderBlock)successCallback)
+{
+#ifdef DEBUG
+    NSLog(@"[setAudioRoute] - inputName: %@", inputName);
+#endif
+    @try {
+        NSError* err = nil;
+        AVAudioSession* myAudioSession = [AVAudioSession sharedInstance];
+        if ([inputName isEqualToString:@"Speaker"]) {
+            BOOL isOverrided = [myAudioSession overrideOutputAudioPort:AVAudioSessionPortOverrideSpeaker error:&err];
+            if(!isOverrided){
+                [NSException raise:@"overrideOutputAudioPort failed" format:@"error: %@", err];
+            }
+            successCallback(@"Speaker");
+            return;
+        }
+        
+        NSArray *ports = [RNCallKeep getAudioInputs];
+        for (AVAudioSessionPortDescription *port in ports) {
+            if ([port.portName isEqualToString:inputName]) {
+                BOOL isSetted = [myAudioSession setPreferredInput:(AVAudioSessionPortDescription *)port error:&err];
+                if(!isSetted){
+                    [NSException raise:@"setPreferredInput failed" format:@"error: %@", err];
+                }
+                successCallback(inputName);
+            }
+        }
+    }
+    @catch ( NSException *e ){
+        NSLog(@"%@",e);
+        errorCallback(@[e]);
+    }
+}
+
+RCT_EXPORT_METHOD(getAudioRoutes: (RCTResponseSenderBlock)errorCallback successCallback:(RCTResponseSenderBlock)successCallback)
+{
+#ifdef DEBUG
+    NSLog(@"[getAudioRoutes]");
+#endif
+   @try {
+        NSArray *inputs = [RNCallKeep getAudioInputs];
+        NSMutableArray *formatedInputs = [RNCallKeep formatAudioInputs: inputs];
+        successCallback(@[formatedInputs]);
+    }
+    @catch ( NSException *e ) {
+        NSLog(@"%@",e);
+        errorCallback(@[e]);
+    }
+}
+
++ (NSMutableArray *) formatAudioInputs: (NSMutableArray *)inputs
+{
+    NSMutableArray *newInputs = [NSMutableArray new];
+    
+    NSMutableDictionary *speakerDict = [[NSMutableDictionary alloc]init];
+    [speakerDict setObject:@"Speaker" forKey:@"name"];
+    [speakerDict setObject:AVAudioSessionPortBuiltInSpeaker forKey:@"type"];
+    [newInputs addObject:speakerDict];
+    
+    for (AVAudioSessionPortDescription* input in inputs)
+    {
+        NSString *str = [NSString stringWithFormat:@"PORTS :\"%@\": UID:%@", input.portName, input.UID ];
+        NSLog(@"%@",str);
+        NSMutableDictionary *dict = [[NSMutableDictionary alloc]init];
+        [dict setObject:input.portName forKey:@"name"];
+        NSString * type = [RNCallKeep getAudioInputType: input.portType];
+        [dict setObject:type forKey:@"type"];
+        [newInputs addObject:dict];
+    }
+    return newInputs;
+}
+
++ (NSArray *) getAudioInputs
+{
+    NSError* err = nil;
+    NSString *str = nil;
+
+    AVAudioSession* myAudioSession = [AVAudioSession sharedInstance];
+
+    BOOL isCategorySetted = [myAudioSession setCategory:AVAudioSessionCategoryPlayAndRecord withOptions:AVAudioSessionCategoryOptionAllowBluetooth error:&err];
+    if (!isCategorySetted)
+    {
+        NSLog(@"setCategory failed");
+        [NSException raise:@"setCategory failed" format:@"error: %@", err];
+    }
+
+    BOOL isCategoryActivated = [myAudioSession setActive:YES error:&err];
+    if (!isCategoryActivated)
+    {
+        NSLog(@"setActive failed");
+        [NSException raise:@"setActive failed" format:@"error: %@", err];
+    }
+
+    NSArray *inputs = [myAudioSession availableInputs];
+    return inputs;
+}
+
++ (NSString *) getAudioInputType: (NSString *) type
+{
+    if ([type isEqualToString:AVAudioSessionPortBuiltInMic]){
+        return @"Phone";
+    }
+    else if ([type isEqualToString:AVAudioSessionPortHeadsetMic]){
+        return @"Headset";
+    }
+    else if ([type isEqualToString:AVAudioSessionPortHeadphones]){
+        return @"Headset";
+    }
+    else if ([type isEqualToString:AVAudioSessionPortBluetoothHFP]){
+        return @"Bluetooth";
+    }
+    else if ([type isEqualToString:AVAudioSessionPortBluetoothA2DP]){
+        return @"Bluetooth";
+    }
+    else if ([type isEqualToString:AVAudioSessionPortBuiltInSpeaker]){
+        return @"Speaker";
+    }
+    else{
+        return @"Unrecognized";
+    }
 }
 
 - (void)requestTransaction:(CXTransaction *)transaction
