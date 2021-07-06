@@ -29,6 +29,8 @@ import android.content.pm.PackageManager;
 import android.content.res.Resources;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Icon;
+import android.media.AudioDeviceInfo;
+import android.media.AudioManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -488,6 +490,76 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
             conn.setAudioRoute(CallAudioState.ROUTE_SPEAKER);
         } else {
             conn.setAudioRoute(CallAudioState.ROUTE_EARPIECE);
+        }
+    }
+
+    @ReactMethod
+    public void setAudioRoute(String uuid, String audioRoute, Promise promise){
+        try {
+            VoiceConnection conn = (VoiceConnection) VoiceConnectionService.getConnection(uuid);
+            if (conn == null) {
+                return;
+            }
+            if(audioRoute.equals("Bluetooth")) {
+                conn.setAudioRoute(CallAudioState.ROUTE_BLUETOOTH);
+                promise.resolve("Successfully set bluetooth route");
+                return;
+            }
+            if(audioRoute.equals("Headset")) {
+                conn.setAudioRoute(CallAudioState.ROUTE_WIRED_HEADSET);
+                promise.resolve("Successfully set headset route");
+                return;
+            }
+            if(audioRoute.equals("Speaker")) {
+                conn.setAudioRoute(CallAudioState.ROUTE_SPEAKER);
+                promise.resolve("Successfully set speaker route");
+                return;
+            }
+            conn.setAudioRoute(CallAudioState.ROUTE_WIRED_OR_EARPIECE);
+            promise.resolve("Successfully set phone route");
+        } catch (Exception e) {
+            promise.reject("SetAudioRoute", e.getMessage());
+        }
+    }
+
+    @ReactMethod
+    public void getAudioRoutes(Promise promise){
+        try {
+            Context context = this.getAppContext();
+            AudioManager audioManager = (AudioManager) context.getSystemService(context.AUDIO_SERVICE);
+            WritableArray devices = Arguments.createArray();
+            ArrayList<String> typeChecker = new ArrayList<>();
+            AudioDeviceInfo[] audioDeviceInfo = audioManager.getDevices(AudioManager.GET_DEVICES_INPUTS + AudioManager.GET_DEVICES_OUTPUTS);
+            for (AudioDeviceInfo device : audioDeviceInfo){
+                String type = getAudioRouteType(device.getType());
+                if(type != null && !typeChecker.contains(type)) {
+                    WritableMap deviceInfo = Arguments.createMap();
+                    deviceInfo.putString("name",  type);
+                    deviceInfo.putString("type",  type);
+                    typeChecker.add(type);
+                    devices.pushMap(deviceInfo);
+                }
+            }
+            promise.resolve(devices);
+        } catch(Exception e) {
+            promise.reject("GetAudioRoutes Error", e.getMessage());
+        }
+    }
+
+    private String getAudioRouteType(int type){
+        switch (type){
+            case(AudioDeviceInfo.TYPE_BLUETOOTH_A2DP):
+            case(AudioDeviceInfo.TYPE_BLUETOOTH_SCO):
+                return "Bluetooth";
+            case(AudioDeviceInfo.TYPE_WIRED_HEADPHONES):
+            case(AudioDeviceInfo.TYPE_WIRED_HEADSET):
+                return "Headset";
+            case(AudioDeviceInfo.TYPE_BUILTIN_MIC):
+                return "Phone";
+            case(AudioDeviceInfo.TYPE_BUILTIN_SPEAKER):
+                return "Speaker";
+            default:
+                return null;
         }
     }
 

@@ -398,7 +398,10 @@ RCT_EXPORT_METHOD(getCalls:(RCTPromiseResolveBlock)resolve
     resolve([RNCallKeep getCalls]);
 }
 
-RCT_EXPORT_METHOD(setAudioRoute: (NSString *)inputName errorCallback:(RCTResponseSenderBlock)errorCallback successCallback:(RCTResponseSenderBlock)successCallback)
+RCT_EXPORT_METHOD(setAudioRoute: (NSString *)uuid 
+                inputName:(NSString *)inputName 
+                resolver:(RCTPromiseResolveBlock)resolve
+                rejecter:(RCTPromiseRejectBlock)reject)
 {
 #ifdef DEBUG
     NSLog(@"[setAudioRoute] - inputName: %@", inputName);
@@ -411,7 +414,7 @@ RCT_EXPORT_METHOD(setAudioRoute: (NSString *)inputName errorCallback:(RCTRespons
             if(!isOverrided){
                 [NSException raise:@"overrideOutputAudioPort failed" format:@"error: %@", err];
             }
-            successCallback(@"Speaker");
+            resolve(@"Speaker");
             return;
         }
         
@@ -422,17 +425,18 @@ RCT_EXPORT_METHOD(setAudioRoute: (NSString *)inputName errorCallback:(RCTRespons
                 if(!isSetted){
                     [NSException raise:@"setPreferredInput failed" format:@"error: %@", err];
                 }
-                successCallback(inputName);
+                resolve(inputName);
             }
         }
     }
     @catch ( NSException *e ){
         NSLog(@"%@",e);
-        errorCallback(@[e]);
+        reject(@"Failure to set audio route", e, nil);
     }
 }
 
-RCT_EXPORT_METHOD(getAudioRoutes: (RCTResponseSenderBlock)errorCallback successCallback:(RCTResponseSenderBlock)successCallback)
+RCT_EXPORT_METHOD(getAudioRoutes: (RCTPromiseResolveBlock)resolve
+                  rejecter:(RCTPromiseRejectBlock)reject)
 {
 #ifdef DEBUG
     NSLog(@"[getAudioRoutes]");
@@ -440,11 +444,11 @@ RCT_EXPORT_METHOD(getAudioRoutes: (RCTResponseSenderBlock)errorCallback successC
    @try {
         NSArray *inputs = [RNCallKeep getAudioInputs];
         NSMutableArray *formatedInputs = [RNCallKeep formatAudioInputs: inputs];
-        successCallback(@[formatedInputs]);
+        resolve(formatedInputs);
     }
     @catch ( NSException *e ) {
         NSLog(@"%@",e);
-        errorCallback(@[e]);
+        reject(@"Failure to get audio routes", e, nil);
     }
 }
 
@@ -493,6 +497,31 @@ RCT_EXPORT_METHOD(getAudioRoutes: (RCTResponseSenderBlock)errorCallback successC
 
     NSArray *inputs = [myAudioSession availableInputs];
     return inputs;
+}
+
++ (NSString *) getAudioInputType: (NSString *) type
+{
+    if ([type isEqualToString:AVAudioSessionPortBuiltInMic]){
+        return @"Phone";
+    }
+    else if ([type isEqualToString:AVAudioSessionPortHeadsetMic]){
+        return @"Headset";
+    }
+    else if ([type isEqualToString:AVAudioSessionPortHeadphones]){
+        return @"Headset";
+    }
+    else if ([type isEqualToString:AVAudioSessionPortBluetoothHFP]){
+        return @"Bluetooth";
+    }
+    else if ([type isEqualToString:AVAudioSessionPortBluetoothA2DP]){
+        return @"Bluetooth";
+    }
+    else if ([type isEqualToString:AVAudioSessionPortBuiltInSpeaker]){
+        return @"Speaker";
+    }
+    else{
+        return @"Unrecognized";
+    }
 }
 
 + (NSString *) getAudioInputType: (NSString *) type

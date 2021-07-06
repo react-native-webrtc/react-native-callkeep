@@ -138,16 +138,9 @@ declare module 'react-native-callkeep' {
 
     static getCalls(): Promise<object>
 
-    static getAudioRoutes(
-      errorCallback: (error: any) => void, 
-      successCallback: (data: any) => void
-    ): void
+    static getAudioRoutes(): Promise<void>
 
-    static setAudioRoute: (
-      inputName: string,      
-      errorCallback: (error: any) => void, 
-      successCallback: (data: any) => void
-    ) => void
+    static setAudioRoute: (uuid:string, inputName: string) => Promise<void>
 
     /**
      * @description supportConnectionService method is available only on Android.
