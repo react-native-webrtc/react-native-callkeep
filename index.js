@@ -183,13 +183,13 @@ class RNCallKeep {
 
   sendDTMF = (uuid, key) => RNCallKeepModule.sendDTMF(uuid, key);
   /**
-   * @description when Phone call is active, Android control the audio service via connection service. so this function help to toggle the audio to Speaker or wired/ear-piece or vice-versa
-   * @param {*} uuid
+   * @description when Phone call is active, Android control the audio service via connection service. so this function help to toggle the audio to Speaker or wired/ear-piece or vice-versa 
+   * @param {*} uuid 
    * @param {*} routeSpeaker
    * @returns Audio route state of audio service
    */
   toggleAudioRouteSpeaker = (uuid, routeSpeaker) => isIOS ? null : RNCallKeepModule.toggleAudioRouteSpeaker(uuid, routeSpeaker);
-
+  
   checkIfBusy = () =>
     isIOS ? RNCallKeepModule.checkIfBusy() : Promise.reject('RNCallKeep.checkIfBusy was called from unsupported OS');
 
@@ -325,13 +325,6 @@ class RNCallKeep {
     }
 
     NativeModules.RNCallKeep.backToForeground();
-  }
-
-  getInitialEvents() {
-    if (isIOS) {
-      return RNCallKeepModule.getInitialEvents()
-    }
-    return Promise.resolve([])
   }
 }
 

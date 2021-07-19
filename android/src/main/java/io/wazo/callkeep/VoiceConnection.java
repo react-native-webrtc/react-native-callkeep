@@ -49,16 +49,13 @@ import static io.wazo.callkeep.Constants.EXTRA_CALLER_NAME;
 import static io.wazo.callkeep.Constants.EXTRA_CALL_NUMBER;
 import static io.wazo.callkeep.Constants.EXTRA_CALL_UUID;
 import static io.wazo.callkeep.Constants.ACTION_SHOW_INCOMING_CALL_UI;
-import static io.wazo.callkeep.Constants.ACTION_ON_SILENCE_INCOMING_CALL;
 
 @TargetApi(Build.VERSION_CODES.M)
 public class VoiceConnection extends Connection {
     private boolean isMuted = false;
-    private boolean answered = false;
-    private boolean rejected = false;
     private HashMap<String, String> handle;
     private Context context;
-    private static final String TAG = "RNCallKeep";
+    private static final String TAG = "RNCK:VoiceConnection";
 
     VoiceConnection(Context context, HashMap<String, String> handle) {
         super();
@@ -87,7 +84,6 @@ public class VoiceConnection extends Connection {
 
     @Override
     public void onCallAudioStateChanged(CallAudioState state) {
-        Log.d(TAG, "[VoiceConnection] onCallAudioStateChanged muted :" + (state.isMuted() ? "true" : "false"));
         if (state.isMuted() == this.isMuted) {
             return;
         }
@@ -97,28 +93,24 @@ public class VoiceConnection extends Connection {
     }
 
     @Override
-    public void onAnswer(int videoState) {
-        super.onAnswer(videoState);
-        Log.d(TAG, "[VoiceConnection] onAnswer(int) executed");
-
-        this._onAnswer(videoState);
-    }
-
-    @Override
     public void onAnswer() {
         super.onAnswer();
-        Log.d(TAG, "[VoiceConnection] onAnswer() executed");
+        Log.d(TAG, "onAnswer called");
 
-        this._onAnswer(0);
+        setConnectionCapabilities(getConnectionCapabilities() | Connection.CAPABILITY_HOLD);
+        setAudioModeIsVoip(true);
+
+        sendCallRequestToActivity(ACTION_ANSWER_CALL, handle);
+        sendCallRequestToActivity(ACTION_AUDIO_SESSION, handle);
+        Log.d(TAG, "onAnswer executed");
     }
 
     @Override
     public void onPlayDtmfTone(char dtmf) {
-        Log.d(TAG, "[VoiceConnection] Playing DTMF : " + dtmf);
         try {
             handle.put("DTMF", Character.toString(dtmf));
         } catch (Throwable exception) {
-            Log.e(TAG, "[VoiceConnection] Handle map error", exception);
+            Log.e(TAG, "Handle map error", exception);
         }
         sendCallRequestToActivity(ACTION_DTMF_TONE, handle);
     }
@@ -128,11 +120,11 @@ public class VoiceConnection extends Connection {
         super.onDisconnect();
         setDisconnected(new DisconnectCause(DisconnectCause.LOCAL));
         sendCallRequestToActivity(ACTION_END_CALL, handle);
-        Log.d(TAG, "[VoiceConnection] onDisconnect executed");
+        Log.d(TAG, "onDisconnect executed");
         try {
             ((VoiceConnectionService) context).deinitConnection(handle.get(EXTRA_CALL_UUID));
         } catch(Throwable exception) {
-            Log.e(TAG, "[VoiceConnection] onDisconnect handle map error", exception);
+            Log.e(TAG, "Handle map error", exception);
         }
         destroy();
     }
@@ -168,18 +160,17 @@ public class VoiceConnection extends Connection {
         super.onAbort();
         setDisconnected(new DisconnectCause(DisconnectCause.REJECTED));
         sendCallRequestToActivity(ACTION_END_CALL, handle);
-        Log.d(TAG, "[VoiceConnection] onAbort executed");
+        Log.d(TAG, "onAbort executed");
         try {
             ((VoiceConnectionService) context).deinitConnection(handle.get(EXTRA_CALL_UUID));
         } catch(Throwable exception) {
-            Log.e(TAG, "[VoiceConnection] onAbort handle map error", exception);
+            Log.e(TAG, "Handle map error", exception);
         }
         destroy();
     }
 
     @Override
     public void onHold() {
-        Log.d(TAG, "[VoiceConnection] onHold");
         super.onHold();
         this.setOnHold();
         sendCallRequestToActivity(ACTION_HOLD_CALL, handle);
@@ -187,7 +178,6 @@ public class VoiceConnection extends Connection {
 
     @Override
     public void onUnhold() {
-        Log.d(TAG, "[VoiceConnection] onUnhold");
         super.onUnhold();
         sendCallRequestToActivity(ACTION_UNHOLD_CALL, handle);
         setActive();
@@ -196,136 +186,20 @@ public class VoiceConnection extends Connection {
     @Override
     public void onReject() {
         super.onReject();
-        Log.d(TAG, "[VoiceConnection] onReject() executed");
-
-        this._onReject(0, null);
-    }
-
-    @Override
-    public void onReject(int rejectReason) {
-        super.onReject(rejectReason);
-        Log.d(TAG, "[VoiceConnection] onReject(int) executed");
-
-        this._onReject(rejectReason, null);
-    }
-
-    @Override
-    public void onReject(String replyMessage) {
-        super.onReject(replyMessage);
-        Log.d(TAG, "[VoiceConnection] onReject(String) executed");
-
-        this._onReject(0, replyMessage);
-    }
-
-    @Override
-    public void onCallEvent(String event, Bundle extras) {
-        super.onCallEvent(event, extras);
-
-        Log.d(TAG, "[VoiceConnection] onCallEvent called, event: " + event);
-    }
-
-    @Override
-    public void onDeflect(Uri address) {
-        super.onDeflect(address);
-
-        Log.d(TAG, "[VoiceConnection] onDeflect called, address: " + address);
-    }
-
-    @Override
-    public void onHandoverComplete() {
-        super.onHandoverComplete();
-
-        Log.d(TAG, "[VoiceConnection] onHandoverComplete called");
-    }
-
-    @Override
-    public void onPostDialContinue(boolean proceed) {
-        super.onPostDialContinue(proceed);
-
-        Log.d(TAG, "[VoiceConnection] onPostDialContinue called, proceed: " + proceed);
-    }
-
-    @Override
-    public void onPullExternalCall() {
-        super.onPullExternalCall();
-
-        Log.d(TAG, "[VoiceConnection] onPullExternalCall called");
-    }
-
-    @Override
-    public void onSeparate() {
-        super.onSeparate();
-
-        Log.d(TAG, "[VoiceConnection] onSeparate called");
-    }
-
-    @Override
-    public void onStateChanged(int state) {
-        super.onStateChanged(state);
-
-        Log.d(TAG, "[VoiceConnection] onStateChanged called, state : " + state);
-    }
-
-    @Override
-    public void onSilence() {
-        super.onSilence();
-
-        sendCallRequestToActivity(ACTION_ON_SILENCE_INCOMING_CALL, handle);
-        Log.d(TAG, "[VoiceConnection] onSilence called");
-    }
-
-    @Override
-    public void onStopDtmfTone() {
-        super.onStopDtmfTone();
-
-        Log.d(TAG, "[VoiceConnection] onStopDtmfTone called");
-    }
-
-    @Override
-    public void onStopRtt() {
-        super.onStopRtt();
-
-        Log.d(TAG, "[VoiceConnection] onStopRtt called");
-    }
-
-    private void _onAnswer(int videoState) {
-        Log.d(TAG, "[VoiceConnection] onAnswer called, videoState: " + videoState + ", answered: " + answered);
-        // On some device (like Huawei P30 lite), both onAnswer() and onAnswer(int) are called
-        // we have to trigger the callback only once
-        if (answered) {
-            return;
-        }
-        answered = true;
-
-        setConnectionCapabilities(getConnectionCapabilities() | Connection.CAPABILITY_HOLD);
-        setAudioModeIsVoip(true);
-
-        sendCallRequestToActivity(ACTION_ANSWER_CALL, handle);
-        sendCallRequestToActivity(ACTION_AUDIO_SESSION, handle);
-        Log.d(TAG, "[VoiceConnection] onAnswer executed");
-    }
-
-    private void _onReject(int rejectReason, String replyMessage) {
-        Log.d(TAG, "[VoiceConnection] onReject executed, rejectReason: " + rejectReason + ", replyMessage: " + replyMessage + ", rejected:" + rejected);
-        if (rejected) {
-            return;
-        }
-        rejected = true;
-
         setDisconnected(new DisconnectCause(DisconnectCause.REJECTED));
         sendCallRequestToActivity(ACTION_END_CALL, handle);
-        Log.d(TAG, "[VoiceConnection] onReject executed");
+        Log.d(TAG, "onReject executed");
         try {
             ((VoiceConnectionService) context).deinitConnection(handle.get(EXTRA_CALL_UUID));
         } catch(Throwable exception) {
-            Log.e(TAG, "[VoiceConnection] onReject, handle map error", exception);
+            Log.e(TAG, "Handle map error", exception);
         }
         destroy();
     }
 
     @Override
     public void onShowIncomingCallUi() {
-        Log.d(TAG, "[VoiceConnection] onShowIncomingCallUi");
+        Log.d(TAG, "onShowIncomingCallUi()");
         sendCallRequestToActivity(ACTION_SHOW_INCOMING_CALL_UI, handle);
     }
 

@@ -9,8 +9,6 @@ For more information about **CallKit** on iOS, please see [Official CallKit Fram
 
 For more information about **ConnectionService** on Android, please see [Android Documentation](https://developer.android.com/reference/android/telecom/ConnectionService) and [Build a calling app](https://developer.android.com/guide/topics/connectivity/telecom/selfManaged)
 
-⚠️ **CallKit** and **ConnectionService** are only available on real devices, this library will not work on simulators.
-
 # Demo
 
 A demo of `react-native-callkeep` is available in the [wazo-react-native-demo](https://github.com/wazo-pbx/wazo-react-native-demo) repository.
@@ -166,21 +164,7 @@ Self Managed calling apps are an advanced topic, and there are many steps involv
 - Android will deprioritize your high priority FCM notifications if you fail to show an incoming call ui when receiving them.
 - You can avoid getting flooded with sticky foreground service notifications by not defining a Foreground Service for CallKeep, and instead managing this on your own.
 
-⚠️ To be able to use the self managed mode, you'll have to add the `READ_CALL_LOG` permission in your `android/src/main/AndroidManifest.xml` file:
-```
-<uses-permission android:name="android.permission.READ_CALL_LOG" />
-```
-
 ## Methods
-
-### getInitialEvents
-_This feature is available only on iOS._
-
-If there were some actions performed by user before JS context has been created, this method would return early fired events. This is alternative to "didLoadWithEvents" event.
-
-```js
-RNCallKeep.getInitialEvents();
-```
 
 ### setAvailable
 _This feature is available only on Android._
@@ -725,7 +709,7 @@ RNCallKeep.addEventListener('didLoadWithEvents', (events) => {
 
 ### - showIncomingCallUi
 
-Android only. Self Managed only.
+Android only.
 
 Only when CallKeep is setup to be in self managed mode. Signals that the app must show an incoming call UI. The implementor must either call `displayIncomingCall` from react native or native android code to make this event fire.
 
@@ -743,28 +727,6 @@ The following values will match those initially passed to `displayIncomingCall`
   - The UUID of the call.
 - `name` (string)
   - Caller Name.
-
-### - silenceIncomingCall
-
-Android only. Self Managed only.
-
-Corresponds to the native [onSilence event](https://developer.android.com/reference/android/telecom/Connection#onSilence()). The implementor should silence the corresponding incoming calls notification sound when and if this event is fired.
-
-```js
-RNCallKeep.addEventListener('silenceIncomingCall', ({ handle, callUUID, name }) => {
-
-});
-```
-
-The following values will match those initially passed to `silenceIncomingCall`
-
-- `handle` (string)
-  - Phone number of the incoming caller.
-- `callUUID` (string)
-  - The UUID of the call.
-- `name` (string)
-  - Caller Name.
-
 
 ### - checkReachability
 
@@ -986,7 +948,7 @@ You have to set the `foregroundService` key in the [`setup()`](#setup) method an
 ### Android
 
 ```
-adb logcat *:S RNCallKeep:V
+adb logcat *:S RNCallKeepModule:V
 ```
 
 ## Troubleshooting
