@@ -426,6 +426,7 @@ RCT_EXPORT_METHOD(setAudioRoute: (NSString *)uuid
                     [NSException raise:@"setPreferredInput failed" format:@"error: %@", err];
                 }
                 resolve(inputName);
+                return;
             }
         }
     }
@@ -468,8 +469,11 @@ RCT_EXPORT_METHOD(getAudioRoutes: (RCTPromiseResolveBlock)resolve
         NSMutableDictionary *dict = [[NSMutableDictionary alloc]init];
         [dict setObject:input.portName forKey:@"name"];
         NSString * type = [RNCallKeep getAudioInputType: input.portType];
-        [dict setObject:type forKey:@"type"];
-        [newInputs addObject:dict];
+        if(type)
+        {
+            [dict setObject:type forKey:@"type"];
+            [newInputs addObject:dict];
+        }
     }
     return newInputs;
 }
@@ -520,32 +524,7 @@ RCT_EXPORT_METHOD(getAudioRoutes: (RCTPromiseResolveBlock)resolve
         return @"Speaker";
     }
     else{
-        return @"Unrecognized";
-    }
-}
-
-+ (NSString *) getAudioInputType: (NSString *) type
-{
-    if ([type isEqualToString:AVAudioSessionPortBuiltInMic]){
-        return @"Phone";
-    }
-    else if ([type isEqualToString:AVAudioSessionPortHeadsetMic]){
-        return @"Headset";
-    }
-    else if ([type isEqualToString:AVAudioSessionPortHeadphones]){
-        return @"Headset";
-    }
-    else if ([type isEqualToString:AVAudioSessionPortBluetoothHFP]){
-        return @"Bluetooth";
-    }
-    else if ([type isEqualToString:AVAudioSessionPortBluetoothA2DP]){
-        return @"Bluetooth";
-    }
-    else if ([type isEqualToString:AVAudioSessionPortBuiltInSpeaker]){
-        return @"Speaker";
-    }
-    else{
-        return @"Unrecognized";
+        return nil;
     }
 }
 
