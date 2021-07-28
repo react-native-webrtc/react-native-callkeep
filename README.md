@@ -12,19 +12,19 @@ For more information about **ConnectionService** on Android, please see [Android
 ⚠️ **CallKit** and **ConnectionService** are only available on real devices, this library will not work on simulators.
 
 #  Summary
-1. [Demo](#Demo)
-2. [Installation](#Installation)
-3. [Usage](#Usage)
-3.1 [Constants](#Constants)
-3.2 [Android Self Managed](#Android-Self-Managed-Mode)
-3.3 [Methods](#Methods)
-4. [Example](##Example)
-5. [PushKit](###PushKit)
-6. [Android 11](###Android-11)
-7. [Debug](#Debug)
-8. [Troubleshooting](#Troubleshooting)
-9. [Contributing](#Contributing)
-10. [License](#License)
+- [Demo](#Demo)
+- [Installation](#Installation)
+- [Usage](#Usage)
+  - [Constants](#Constants)
+  - [Android Self Managed](#Android-Self-Managed-Mode)
+  - [Methods](#Methods)
+  - [Example](##Example)
+- [PushKit](###PushKit)
+- [Android 11](###Android-11)
+- [Debug](#Debug)
+- [Troubleshooting](#Troubleshooting)
+- [Contributing](#Contributing)
+- [License](#License)
 
 
 # Demo
@@ -163,7 +163,7 @@ const { CONSTANTS as CK_CONSTANTS, RNCallKeep } from 'react-native-callkeep';
 console.log(CK_CONSTANTS.END_CALL_REASONS.FAILED) // outputs 1
 ```
 
-# AndroidSelfManagedMode
+# Android Self Managed Mode
 _This feature is available only on Android._
 
 Android supports calling apps running in what's called "Self Managed". This means the apps are able (and required) to provide their own UI for managing calls. This includes both in call UI elements and incoming call notification UI. This method is all or nothing. You can't mix partial elements, such as having a custom in call view, but use the default incoming call UI.
