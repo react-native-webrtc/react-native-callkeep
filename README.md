@@ -19,8 +19,8 @@ For more information about **ConnectionService** on Android, please see [Android
   - [Android Self Managed](#Android-Self-Managed-Mode)
   - [Methods](#Methods)
   - [Example](##Example)
-- [PushKit](###PushKit)
-- [Android 11](###Android-11)
+- [PushKit](##PushKit)
+- [Android 11](##Android-11)
 - [Debug](#Debug)
 - [Troubleshooting](#Troubleshooting)
 - [Contributing](#Contributing)
@@ -958,7 +958,7 @@ To be able to wake up your application to display the incoming call, you can use
 
 You have to send a push to your application, like with Firebase for Android and with a library supporting PushKit pushes for iOS.
 
-### PushKit
+## PushKit
 
 Since iOS 13, you'll have to report the incoming calls that wakes up your application with a VoIP push. Add this in your `AppDelegate.m` if you're using VoIP pushes to wake up your application :
 
@@ -988,7 +988,7 @@ Since iOS 13, you'll have to report the incoming calls that wakes up your applic
 }
 ```
 
-## Android11
+## Android 11
 
 Since Android 11, your application [requires to start a foregroundService](https://developer.android.com/about/versions/11/privacy/foreground-services) in order to access the microphone in background.
 You'll need to upgrade your `compileSdkVersion` to `30` to be able to use this feature.
