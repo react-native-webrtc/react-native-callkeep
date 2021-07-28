@@ -11,18 +11,32 @@ For more information about **ConnectionService** on Android, please see [Android
 
 ⚠️ **CallKit** and **ConnectionService** are only available on real devices, this library will not work on simulators.
 
-# Demo
+#  Summary
+1. [Demo](#Demo)
+2. [Installation](#Installation)
+3. [Usage](#Usage)
+3.1 [Constants](#Constants)
+3.2 [Android Self Managed](#Android-Self-Managed-Mode)
+3.3 [Methods](#Methods)
+4. [Example](##Example)
+5. [PushKit](###PushKit)
+6. [Android 11](###Android-11)
+7. [Debug](#Debug)
+8. [Troubleshooting](#Troubleshooting)
+9. [Contributing](#Contributing)
+10. [License](#License)
 
+
+# Demo
 A demo of `react-native-callkeep` is available in the [wazo-react-native-demo](https://github.com/wazo-pbx/wazo-react-native-demo) repository.
 
-## Android
+#### Android
 ![Connection Service](docs/pictures/connection-service.jpg)
 
-## iOS
+#### iOS
 ![Connection Service](docs/pictures/call-kit.png)
 
 # Installation
-
 ```sh
 npm install --save react-native-callkeep
 # or
@@ -34,7 +48,7 @@ yarn add react-native-callkeep
 
 # Usage
 
-## Setup
+#### Setup
 
 ```js
 import RNCallKeep from 'react-native-callkeep';
@@ -128,7 +142,7 @@ Alternative on iOS you can perform setup in `AppDelegate.m`. Doing this allows c
       
 `setup` calls internally `registerPhoneAccount` and `registerEvents`.
 
-## Constants
+# Constants
 
 To make passing the right integer into methods easier, there are constants that are exported from the module.
 
@@ -149,7 +163,7 @@ const { CONSTANTS as CK_CONSTANTS, RNCallKeep } from 'react-native-callkeep';
 console.log(CK_CONSTANTS.END_CALL_REASONS.FAILED) // outputs 1
 ```
 
-## Android Self Managed Mode
+# AndroidSelfManagedMode
 _This feature is available only on Android._
 
 Android supports calling apps running in what's called "Self Managed". This means the apps are able (and required) to provide their own UI for managing calls. This includes both in call UI elements and incoming call notification UI. This method is all or nothing. You can't mix partial elements, such as having a custom in call view, but use the default incoming call UI.
@@ -171,7 +185,7 @@ Self Managed calling apps are an advanced topic, and there are many steps involv
 <uses-permission android:name="android.permission.READ_CALL_LOG" />
 ```
 
-## Methods
+# Methods
 
 ### getInitialEvents
 _This feature is available only on iOS._
@@ -974,7 +988,7 @@ Since iOS 13, you'll have to report the incoming calls that wakes up your applic
 }
 ```
 
-## Android 11
+## Android11
 
 Since Android 11, your application [requires to start a foregroundService](https://developer.android.com/about/versions/11/privacy/foreground-services) in order to access the microphone in background.
 You'll need to upgrade your `compileSdkVersion` to `30` to be able to use this feature.
