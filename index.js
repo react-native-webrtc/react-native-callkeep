@@ -106,6 +106,11 @@ class RNCallKeep {
     RNCallKeepModule.answerIncomingCall(uuid);
   };
 
+  fulfillAnswerCallAction = () => {
+      if (!isIOS) return;
+      RNCallKeepModule.fulfillAnswerCallAction();
+  }
+
   startCall = (uuid, handle, contactIdentifier, handleType = 'number', hasVideo = false) => {
     if (!isIOS) {
       RNCallKeepModule.startCall(uuid, handle, contactIdentifier);
@@ -168,6 +173,11 @@ class RNCallKeep {
   };
 
   endCall = (uuid) => RNCallKeepModule.endCall(uuid);
+
+  fulfillEndCallAction = () => {
+      if (!isIOS) return;
+      RNCallKeepModule.fulfillEndCallAction();
+  }
 
   endAllCalls = () => RNCallKeepModule.endAllCalls();
 

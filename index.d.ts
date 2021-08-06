@@ -74,6 +74,8 @@ declare module 'react-native-callkeep' {
 
     static answerIncomingCall(uuid: string): void
 
+    static fulfillAnswerCallAction(): void
+
     static registerPhoneAccount(): void
 
     static registerAndroidEvents(): void
@@ -121,6 +123,8 @@ declare module 'react-native-callkeep' {
     static rejectCall(uuid: string): void
 
     static endCall(uuid: string): void
+
+    static fulfillEndCallAction(): void
 
     static endAllCalls(): void
 

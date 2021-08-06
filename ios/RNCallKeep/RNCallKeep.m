@@ -42,6 +42,8 @@ static NSString *const RNCallKeepDidLoadWithEvents = @"RNCallKeepDidLoadWithEven
     BOOL _isStartCallActionEventListenerAdded;
     bool _hasListeners;
     NSMutableArray *_delayedEvents;
+    CXAnswerCallAction *_answerCallAction;
+    CXEndCallAction *_endCallAction;
 }
 
 static bool isSetupNatively;
@@ -259,6 +261,14 @@ RCT_EXPORT_METHOD(answerIncomingCall:(NSString *)uuidString)
     [self requestTransaction:transaction];
 }
 
+RCT_EXPORT_METHOD(fulfillAnswerCallAction)
+{
+    if (_answerCallAction) {
+        [_answerCallAction fulfill];
+        _answerCallAction = nil;
+    }
+}
+
 RCT_EXPORT_METHOD(endCall:(NSString *)uuidString)
 {
 #ifdef DEBUG
@@ -269,6 +279,14 @@ RCT_EXPORT_METHOD(endCall:(NSString *)uuidString)
     CXTransaction *transaction = [[CXTransaction alloc] initWithAction:endCallAction];
 
     [self requestTransaction:transaction];
+}
+
+RCT_EXPORT_METHOD(fulfillEndCallAction)
+{
+    if (_endCallAction) {
+        [_endCallAction fulfill];
+        _endCallAction = nil;
+    }
 }
 
 RCT_EXPORT_METHOD(endAllCalls)
@@ -770,7 +788,7 @@ RCT_EXPORT_METHOD(reportUpdatedCall:(NSString *)uuidString contactIdentifier:(NS
 #endif
     [self configureAudioSession];
     [self sendEventWithNameWrapper:RNCallKeepPerformAnswerCallAction body:@{ @"callUUID": [action.callUUID.UUIDString lowercaseString] }];
-    [action fulfill];
+    _answerCallAction = action;
 }
 
 // Ending incoming call
@@ -780,7 +798,7 @@ RCT_EXPORT_METHOD(reportUpdatedCall:(NSString *)uuidString contactIdentifier:(NS
     NSLog(@"[RNCallKeep][CXProviderDelegate][provider:performEndCallAction]");
 #endif
     [self sendEventWithNameWrapper:RNCallKeepPerformEndCallAction body:@{ @"callUUID": [action.callUUID.UUIDString lowercaseString] }];
-    [action fulfill];
+    _endCallAction = action;
 }
 
 -(void)provider:(CXProvider *)provider performSetHeldCallAction:(CXSetHeldCallAction *)action
