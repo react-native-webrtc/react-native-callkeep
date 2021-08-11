@@ -192,6 +192,12 @@ public class VoiceConnection extends Connection {
         sendCallRequestToActivity(ACTION_UNHOLD_CALL, handle);
         setActive();
     }
+    
+    public void onReject(int rejectReason) {
+        Log.d(TAG, "[VoiceConnection] onReject(int) executed");
+
+        this._onReject(rejectReason, null);
+    }
 
     @Override
     public void onReject() {
