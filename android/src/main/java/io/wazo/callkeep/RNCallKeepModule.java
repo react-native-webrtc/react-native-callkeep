@@ -150,7 +150,7 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
         }
 
         if (isConnectionServiceAvailable()) {
-            this.registerPhoneAccount();
+            this.registerPhoneAccount(options);
             this.registerEvents();
             VoiceConnectionService.setAvailable(true);
         }
@@ -159,7 +159,9 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
     }
 
     @ReactMethod
-    public void registerPhoneAccount() {
+    public void registerPhoneAccount(ReadableMap options) {
+        this._settings = options;
+
         if (!isConnectionServiceAvailable()) {
             Log.w(TAG, "[VoiceConnection] registerPhoneAccount ignored due to no ConnectionService");
             return;

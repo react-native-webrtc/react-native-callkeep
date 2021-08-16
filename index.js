@@ -48,11 +48,11 @@ class RNCallKeep {
     return this._setupIOS(options.ios);
   };
 
-  registerPhoneAccount = () => {
+  registerPhoneAccount = (options) => {
     if (isIOS) {
       return;
     }
-    RNCallKeepModule.registerPhoneAccount();
+    RNCallKeepModule.registerPhoneAccount(options.android);
   };
 
   registerAndroidEvents = () => {
