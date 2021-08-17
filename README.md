@@ -17,7 +17,7 @@ For more information about **ConnectionService** on Android, please see [Android
 - [Usage](#Usage)
   - [Constants](#Constants)
   - [Android Self Managed](#Android-Self-Managed-Mode)
-  - [Methods](#Methods)
+  - [API](#Api)
   - [Example](##Example)
 - [PushKit](#PushKit)
 - [Android 11](#Android-11)
@@ -185,7 +185,41 @@ Self Managed calling apps are an advanced topic, and there are many steps involv
 <uses-permission android:name="android.permission.READ_CALL_LOG" />
 ```
 
-# Methods
+# API
+
+| Method                                                            | Return Type         |  iOS | Android |
+| ----------------------------------------------------------------- | ------------------- | :--: | :-----: |
+| [getInitialEvents()](#getInitialEvents)                           | `Promise<String[]>` |  ✅  |   ❌    |
+| [setAvailable()](#setAvailable)                                   | `Promise<void>`     |  ❌  |   ✅    |
+| [setForegroundServiceSettings()](#setForegroundServiceSettings)   | `Promise<void>`     |  ❌  |   ✅    |
+| [canMakeMultipleCalls()](#canMakeMultipleCalls)                   | `Promise<void>`     |  ❌  |   ✅    |
+| [setCurrentCallActive()](#setCurrentCallActive)                   | `Promise<void>`     |  ❌  |   ✅    |
+| [isCallActive()](#isCallActive)                                   | `Promise<Boolean>`  |  ✅  |   ❌    |
+| [getCalls()](#getCalls)                                           | `Promise<Object[]>` |  ✅  |   ❌    |
+| [displayIncomingCall()](#displayIncomingCall)                     | `Promise<void>`     |  ✅  |   ✅    |
+| [answerIncomingCall()](#answerIncomingCall)                       | `Promise<void>`     |  ✅  |   ✅    |
+| [startCall()](#startCall)                                         | `Promise<void>`     |  ✅  |   ✅    |
+| [updateDisplay()](#updateDisplay)                                 | `Promise<void>`     |  ✅  |   ✅    |
+| [endCall()](#endCall)                                             | `Promise<void>`     |  ✅  |   ✅    |
+| [endAllCalls()](#endAllCalls)                                     | `Promise<void>`     |  ✅  |   ✅    |
+| [rejectCall()](#rejectCall)                                       | `Promise<void>`     |  ✅  |   ✅    |
+| [reportEndCallWithUUID()](#reportEndCallWithUUID)                 | `Promise<void>`     |  ✅  |   ✅    |
+| [setMutedCall()](#setMutedCall)                                   | `Promise<void>`     |  ✅  |   ✅    |
+| [setOnHold()](#setOnHold)                                         | `Promise<void>`     |  ✅  |   ✅    |
+| [checkIfBusy()](#checkIfBusy)                                     | `Promise<Boolean>`  |  ✅  |   ❌    |
+| [checkSpeaker()](#checkSpeaker)                                   | `Promise<Boolean>`  |  ✅  |   ❌    |
+| [toggleAudioRouteSpeaker()](#toggleAudioRouteSpeaker)             | `Promise<void>`     |  ❌  |   ✅    |
+| [supportConnectionService()](#supportConnectionService)           | `Promise<Boolean>`  |  ❌  |   ✅    |
+| [hasPhoneAccount()](#hasPhoneAccount)                             | `Promise<Boolean>`  |  ❌  |   ✅    |
+| [hasOutgoingCall()](#hasOutgoingCall)                             | `Promise<Boolean>`  |  ❌  |   ✅    |
+| [hasDefaultPhoneAccount()](#hasDefaultPhoneAccount)               | `Promise<Boolean>`  |  ❌  |   ✅    |
+| [checkPhoneAccountEnabled()](#checkPhoneAccountEnabled)           | `Promise<Boolean>`  |  ❌  |   ✅    |
+| [isConnectionServiceAvailable()](#isConnectionServiceAvailable)   | `Promise<Boolean>`  |  ❌  |   ✅    |
+| [backToForeground()](#backToForeground)                           | `Promise<void>`     |  ❌  |   ✅    |
+| [removeEventListener()](#removeEventListener)                     | `void`              |  ✅  |   ✅    |
+| [registerPhoneAccount()](#registerPhoneAccount)                   | `void`              |  ❌  |   ✅    |
+| [registerAndroidEvents()](#registerAndroidEvents)                 | `void`              |  ❌  |   ✅    |
+
 
 ### getInitialEvents
 _This feature is available only on iOS._
@@ -276,11 +310,11 @@ RNCallKeep.getCalls();
 
 response:
 [{
-  callUUID: "E26B14F7-2CDF-48D0-9925-532199AE7C48"
-  hasConnected: true
-  hasEnded: false
-  onHold: false
-  outgoing: false
+  callUUID: "E26B14F7-2CDF-48D0-9925-532199AE7C48",
+  hasConnected: true,
+  hasEnded: false,
+  onHold: false,
+  outgoing: false,
 }]
 ```
 
@@ -289,7 +323,7 @@ response:
 Display system UI for incoming calls
 
 ```js
-RNCallKeep.displayIncomingCall(uuid, handle, localizedCallerName);
+RNCallKeep.displayIncomingCall(uid, handle, localizedCallerName = '', handleType = 'number', hasVideo = false, options = null);
 ```
 
 - `uuid`: string
@@ -459,8 +493,9 @@ RNCallKeep.setOnHold(uuid, true)
 
 ### checkIfBusy
 
+_This feature is available only on IOS._
+
 Checks if there are any active calls on the device and returns a promise with a boolean value (`true` if there're active calls, `false` otherwise).
-_This feature is available only on iOS._
 
 ```js
 RNCallKeep.checkIfBusy();
@@ -468,8 +503,9 @@ RNCallKeep.checkIfBusy();
 
 ### checkSpeaker
 
+_This feature is available only on IOS._
+
 Checks if the device speaker is on and returns a promise with a boolean value (`true` if speaker is on, `false` otherwise).
-_This feature is available only on iOS._
 
 ```js
 RNCallKeep.checkSpeaker();
@@ -477,10 +513,10 @@ RNCallKeep.checkSpeaker();
 
 ### toggleAudioRouteSpeaker
 
+_This feature is available only on Android._
+
 Update the audio route of Audio Service on Android with a `routeSpeaker` boolean value (`true` if speaker need on, `false` otherwise).
 When Phone call is active, Android control the audio via connection service. so this function help to toggle the audio to Speaker or wired/ear-piece or vice-versa 
-
-_This feature is available only on Android._
 
 ```js
 RNCallKeep.toggleAudioRouteSpeaker(uuid, true);
@@ -492,9 +528,9 @@ RNCallKeep.toggleAudioRouteSpeaker(uuid, true);
 
 ### supportConnectionService (async)
 
-Tells if `ConnectionService` is available on the device (returns a boolean).
-
 _This feature is available only on Android._
+
+Tells if `ConnectionService` is available on the device (returns a boolean).
 
 ```js
 RNCallKeep.supportConnectionService();
@@ -502,12 +538,12 @@ RNCallKeep.supportConnectionService();
 
 ### hasPhoneAccount (async)
 
+_This feature is available only on Android._
+
 Checks if the user has enabled the [phone account](https://developer.android.com/reference/android/telecom/PhoneAccount) for your application.
 A phone account must be enable to be able to display UI screen on incoming call and make outgoing calls from native Contact application.
 
 Returns a promise of a boolean.
-
-_This feature is available only on Android._
 
 ```js
 await RNCallKeep.hasPhoneAccount();
@@ -529,12 +565,12 @@ const hasOutgoingCall = await RNCallKeep.hasOutgoingCall();
 
 ### hasDefaultPhoneAccount
 
+_This feature is available only on Android._
+
 Checks if the user has set a default [phone account](https://developer.android.com/reference/android/telecom/PhoneAccount).
 If the user has not set a default they will be prompted to do so with an alert.
 
 This is a workaround for an [issue](https://github.com/wazo-pbx/react-native-callkeep/issues/33) affecting some Samsung devices.
-
-_This feature is available only on Android._
 
 ```js
 const options = {
@@ -547,12 +583,13 @@ RNCallKeep.hasDefaultPhoneAccount(options);
 
 ### checkPhoneAccountEnabled
 
+_This feature is available only on Android._
+
 Checks if the user has set a default [phone account](https://developer.android.com/reference/android/telecom/PhoneAccount) and it's enabled.
 
 It's useful for custom permission prompts. It should be used in pair with `registerPhoneAccount`
 Similar to `hasDefaultPhoneAccount` but without trigering a prompt if the user doesn't have a phone account.
 
-_This feature is available only on Android._
 
 ```js
 RNCallKeep.checkPhoneAccountEnabled();
@@ -560,15 +597,17 @@ RNCallKeep.checkPhoneAccountEnabled();
 
 ### isConnectionServiceAvailable
 
+_This feature is available only on Android._
+
 Check if the device support ConnectionService.
 
-_This feature is available only on Android._
 
 ```js
 RNCallKeep.checkPhoneAccountEnabled();
 ```
 
 ### backToForeground
+
 _This feature is available only on Android._
 
 Use this to display the application in foreground if the application was in background state. 
@@ -578,7 +617,54 @@ This method will open the application if it was closed.
 RNCallKeep.backToForeground();
 ```
 
+### removeEventListener
+
+Allows to remove the listener on an event.
+
+```js
+RNCallKeep.removeEventListener('checkReachability');
+```
+
+### registerPhoneAccount
+
+Registers Android phone account manually, useful for custom permission prompts when you don't want to call `setup()`.
+This method is called by `setup`, if you already use setup you don't need it.
+
+_This feature is available only on Android._
+_On iOS you still have to call `setup()`._
+
+```js
+RNCallKeep.registerPhoneAccount();
+```
+
+### registerAndroidEvents
+
+Registers Android UI events, useful when you don't want to call `setup()`.
+This method is called by `setup`, if you already use setup you don't need it.
+
+_This feature is available only on Android._
+_On iOS you still have to call `setup()`._
+
+```js
+RNCallKeep.registerAndroidEvents();
+```
+
 ## Events
+
+| Event                                                             |  iOS | Android |
+| ----------------------------------------------------------------- | :--: | :-----: |
+| [didReceiveStartCallAction()](#didReceiveStartCallAction)         |  ✅  |   ✅    |
+| [answerCall()](#answerCall)                                       |  ✅  |   ✅    |
+| [endCall()](#endCall)                                             |  ✅  |   ✅    |
+| [didActivateAudioSession()](#didActivateAudioSession)             |  ✅  |   ✅    |
+| [didDisplayIncomingCall()](#didDisplayIncomingCall)               |  ✅  |   ✅    |
+| [didPerformSetMutedCallAction()](#didPerformSetMutedCallAction)   |  ✅  |   ✅    |
+| [didToggleHoldCallAction()](#didToggleHoldCallAction)             |  ✅  |   ✅    |
+| [didPerformDTMFAction()](#didPerformDTMFAction)                   |  ✅  |   ✅    |
+| [didLoadWithEvents()](#didLoadWithEvents)                         |  ✅  |   ✅    |
+| [showIncomingCallUi()](#showIncomingCallUi)                       |  ❌  |   ✅    |
+| [silenceIncomingCall()](#silenceIncomingCall)                     |  ❌  |   ✅    |
+| [checkReachability()](#checkReachability)                         |  ❌  |   ✅    |
 
 ### didReceiveStartCallAction
 
@@ -739,7 +825,7 @@ RNCallKeep.addEventListener('didLoadWithEvents', (events) => {
 
 ### - showIncomingCallUi
 
-Android only. Self Managed only.
+_Android only. Self Managed only._
 
 Only when CallKeep is setup to be in self managed mode. Signals that the app must show an incoming call UI. The implementor must either call `displayIncomingCall` from react native or native android code to make this event fire.
 
@@ -760,7 +846,7 @@ The following values will match those initially passed to `displayIncomingCall`
 
 ### - silenceIncomingCall
 
-Android only. Self Managed only.
+_Android only. Self Managed only._
 
 Corresponds to the native [onSilence event](https://developer.android.com/reference/android/telecom/Connection#onSilence()). The implementor should silence the corresponding incoming calls notification sound when and if this event is fired.
 
@@ -782,6 +868,8 @@ The following values will match those initially passed to `silenceIncomingCall`
 
 ### - checkReachability
 
+_Android only._
+
 On Android when the application is in background, after a certain delay the OS will close every connection with informing about it.
 So we have to check if the application is reachable before making a call from the native phone application.
 
@@ -790,37 +878,6 @@ RNCallKeep.addEventListener('checkReachability', () => {
   RNCallKeep.setReachable();
 });
 
-```
-### removeEventListener
-
-Allows to remove the listener on an event.
-
-```js
-RNCallKeep.removeEventListener('checkReachability');
-```
-
-### registerPhoneAccount
-
-Registers Android phone account manually, useful for custom permission prompts when you don't want to call `setup()`.
-This method is called by `setup`, if you already use setup you don't need it.
-
-_This feature is available only on Android._
-_On iOS you still have to call `setup()`._
-
-```js
-RNCallKeep.registerPhoneAccount();
-```
-
-### registerAndroidEvents
-
-Registers Android UI events, useful when you don't want to call `setup()`.
-This method is called by `setup`, if you already use setup you don't need it.
-
-_This feature is available only on Android._
-_On iOS you still have to call `setup()`._
-
-```js
-RNCallKeep.registerAndroidEvents();
 ```
 
 ## Example
