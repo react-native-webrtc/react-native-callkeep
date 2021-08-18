@@ -526,6 +526,34 @@ RNCallKeep.toggleAudioRouteSpeaker(uuid, true);
   - uuid of the current call.
 - `routeSpeaker`: boolean
 
+### getAudioRoutes
+
+Get the list of available audio routes. i.e. bluetooth, wired/ear-piece, speaker and phone.
+
+```js
+await RNCallKeep.getAudioRoutes(): AudioRoute;
+```
+
+```
+type AudioRoute = {
+    name: string,
+    type: string
+}
+```
+
+### setAudioRoute
+
+Set audio route using a route from `getAudioRoutes`.
+
+```js
+await RNCallKeep.setAudioRoute(uuid, routeName);
+```
+
+- `uuid`: string
+  - uuid of the current call.
+- `routeName`: String
+  - AudioRoute.name. 
+
 ### supportConnectionService (async)
 
 _This feature is available only on Android._
