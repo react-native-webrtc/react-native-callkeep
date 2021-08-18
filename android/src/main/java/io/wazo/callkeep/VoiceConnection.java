@@ -317,6 +317,17 @@ public class VoiceConnection extends Connection {
 
     @Override
     public void onShowIncomingCallUi() {
+        String uuid = handle.get(EXTRA_CALL_UUID);
+        if (RNCallKeepModule.fcmCallbacks.containsKey(uuid)) {
+            try {
+                RNCallKeepModule.fcmCallbacks.get(uuid).run();
+            } catch(Exception ex) {
+                Log.e(TAG, "fcmCallbacks.get(uuid).run(): " + ex.getMessage());
+                ex.printStackTrace();
+            }
+        } else {
+          Log.e(TAG, "fcmCallbacks.get(uuid).run(): runnable not found for " + uuid);
+        }
         Log.d(TAG, "[VoiceConnection] onShowIncomingCallUi");
         sendCallRequestToActivity(ACTION_SHOW_INCOMING_CALL_UI, handle);
     }

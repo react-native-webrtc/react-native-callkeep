@@ -110,7 +110,8 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
     public static PhoneAccountHandle handle;
     private boolean isReceiverRegistered = false;
     private VoiceBroadcastReceiver voiceBroadcastReceiver;
-    private ReadableMap _settings;
+    private static ReadableMap _settings;
+    public static HashMap<String, Runnable> fcmCallbacks = new HashMap<String, Runnable>();
 
     public RNCallKeepModule(ReactApplicationContext reactContext) {
         super(reactContext);
@@ -119,7 +120,7 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
         this.reactContext = reactContext;
     }
 
-    private boolean isSelfManaged() {
+    private static boolean isSelfManaged() {
         return Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && _settings.hasKey("selfManaged") && _settings.getBoolean("selfManaged");
     }
 
@@ -191,7 +192,10 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
             Log.w(TAG, "[VoiceConnection] displayIncomingCall ignored due to no ConnectionService or no phone account");
             return;
         }
+        staticDisplayIncomingCall(uuid, number, callerName);
+    }
 
+    public static void staticDisplayIncomingCall(String uuid, String number, String callerName) {
         Log.d(TAG, "[VoiceConnection] displayIncomingCall, uuid: " + uuid + ", number: " + number + ", callerName: " + callerName);
 
         Bundle extras = new Bundle();
@@ -648,24 +652,36 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
 
     private void initializeTelecomManager() {
         Context context = this.getAppContext();
+        initializeTelecomManager(context);
+    }
+
+    public static void initializeTelecomManager(Context context) {
+        if (telecomManager != null) {
+            return;
+        }
+
         ComponentName cName = new ComponentName(context, VoiceConnectionService.class);
-        String appName = this.getApplicationName(context);
+        String appName = getApplicationName(context);
 
         handle = new PhoneAccountHandle(cName, appName);
         telecomManager = (TelecomManager) context.getSystemService(Context.TELECOM_SERVICE);
     }
 
-    private void registerPhoneAccount(Context appContext) {
+    public static void registerPhoneAccount(Context appContext) {
+        if (telephonyManager != null) {
+          return;
+        }
+
         if (!isConnectionServiceAvailable()) {
             Log.w(TAG, "[VoiceConnection] registerPhoneAccount ignored due to no ConnectionService");
             return;
         }
 
-        this.initializeTelecomManager();
-        String appName = this.getApplicationName(this.getAppContext());
+        initializeTelecomManager(appContext);
+        String appName = getApplicationName(appContext);
 
         PhoneAccount.Builder builder = new PhoneAccount.Builder(handle, appName);
-        if (isSelfManaged()) {
+        if (_settings == null || isSelfManaged()) {
             builder.setCapabilities(PhoneAccount.CAPABILITY_SELF_MANAGED);
         }
         else {
@@ -680,7 +696,7 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
 
         PhoneAccount account = builder.build();
 
-        telephonyManager = (TelephonyManager) this.getAppContext().getSystemService(Context.TELEPHONY_SERVICE);
+        telephonyManager = (TelephonyManager) appContext.getSystemService(Context.TELEPHONY_SERVICE);
 
         telecomManager.registerPhoneAccount(account);
     }
@@ -690,7 +706,7 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
         this.reactContext.getJSModule(RCTDeviceEventEmitter.class).emit(eventName, params);
     }
 
-    private String getApplicationName(Context appContext) {
+    private static String getApplicationName(Context appContext) {
         ApplicationInfo applicationInfo = appContext.getApplicationInfo();
         int stringId = applicationInfo.labelRes;
 
