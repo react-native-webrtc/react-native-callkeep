@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "414106787178",
+    "project_id": "eyrmedical-test",
+    "storage_bucket": "eyrmedical-test.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:414106787178:android:9dbf34093bce5a94fe9913",
+        "android_client_info": {
+          "package_name": "com.callkeepdemo"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "414106787178-9djkjm9m2ena5kk5ucur0s6n3mrneht3.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCUNDfRiLwnGb0KzgTP4zixSLeH5frwxSg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "414106787178-9djkjm9m2ena5kk5ucur0s6n3mrneht3.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
