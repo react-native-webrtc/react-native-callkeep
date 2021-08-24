@@ -5,7 +5,7 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>en</string>
 	<key>CFBundleDisplayName</key>
-	<string>CallKeep example</string>
+	<string>CallKeepDemo</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
@@ -26,8 +26,6 @@
 	<true/>
 	<key>NSAppTransportSecurity</key>
 	<dict>
-		<key>NSAllowsArbitraryLoads</key>
-		<true/>
 		<key>NSExceptionDomains</key>
 		<dict>
 			<key>localhost</key>
@@ -37,33 +35,8 @@
 			</dict>
 		</dict>
 	</dict>
-	<key>NSCalendarsUsageDescription</key>
-	<string>Allow CallKeep example to access your calendar</string>
-	<key>NSCameraUsageDescription</key>
-	<string>Allow CallKeep example to use the camera</string>
-	<key>NSContactsUsageDescription</key>
-	<string>Allow CallKeep example experiences to access your contacts</string>
-	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
-	<string>Allow CallKeep example to use your location</string>
-	<key>NSLocationAlwaysUsageDescription</key>
-	<string>Allow CallKeep example to use your location</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
-	<string>Allow CallKeep example to use your location</string>
-	<key>NSMicrophoneUsageDescription</key>
-	<string>Allow CallKeep example to access your microphone</string>
-	<key>NSMotionUsageDescription</key>
-	<string>Allow CallKeep example to access your device's accelerometer</string>
-	<key>NSPhotoLibraryAddUsageDescription</key>
-	<string>Give CallKeep example periences permission to save photos</string>
-	<key>NSPhotoLibraryUsageDescription</key>
-	<string>Give CallKeep example periences permission to access your photos</string>
-	<key>NSRemindersUsageDescription</key>
-	<string>Allow CallKeep example to access your reminders</string>
-	<key>UIBackgroundModes</key>
-	<array>
-		<string>fetch</string>
-		<string>voip</string>
-	</array>
+	<string></string>
 	<key>UILaunchStoryboardName</key>
 	<string>LaunchScreen</string>
 	<key>UIRequiredDeviceCapabilities</key>
