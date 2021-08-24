@@ -16,7 +16,8 @@
     "react-native": "0.65.1",
     "react-native-background-timer": "^2.4.1",
     "react-native-callkeep": "^4.2.0",
-    "react-native-device-info": "^8.3.1"
+    "react-native-device-info": "^8.3.1",
+    "react-native-push-notification": "^8.0.0"
   },
   "devDependencies": {
     "@babel/core": "^7.12.9",
