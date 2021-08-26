@@ -21,7 +21,8 @@ declare module 'react-native-callkeep' {
 
   export type AudioRoute = {
     name: string,
-    type: string
+    type: string,
+    selected?: boolean
   }
 
   interface IOptions {

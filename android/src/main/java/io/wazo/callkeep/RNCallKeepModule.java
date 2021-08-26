@@ -681,12 +681,16 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
             WritableArray devices = Arguments.createArray();
             ArrayList<String> typeChecker = new ArrayList<>();
             AudioDeviceInfo[] audioDeviceInfo = audioManager.getDevices(AudioManager.GET_DEVICES_INPUTS + AudioManager.GET_DEVICES_OUTPUTS);
+            String selectedAudioRoute = getSelectedAudioRoute(audioManager);
             for (AudioDeviceInfo device : audioDeviceInfo){
                 String type = getAudioRouteType(device.getType());
                 if(type != null && !typeChecker.contains(type)) {
                     WritableMap deviceInfo = Arguments.createMap();
                     deviceInfo.putString("name",  type);
                     deviceInfo.putString("type",  type);
+                    if(type.equals(selectedAudioRoute)) {
+                        deviceInfo.putBoolean("selected",  true);
+                    }
                     typeChecker.add(type);
                     devices.pushMap(deviceInfo);
                 }
@@ -712,6 +716,19 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
             default:
                 return null;
         }
+    }
+
+    private String getSelectedAudioRoute(AudioManager audioManager){
+        if(audioManager.isBluetoothScoOn()){
+            return "Bluetooth";
+        }
+        if(audioManager.isSpeakerphoneOn()){
+            return "Speaker";
+        }
+        if(audioManager.isWiredHeadsetOn()){
+            return "Headset";
+        }
+        return "Phone";
     }
 
     @ReactMethod
