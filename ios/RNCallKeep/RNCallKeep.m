@@ -144,6 +144,7 @@ RCT_EXPORT_MODULE()
     isSetupNatively = YES;
 }
 
+// ------ BEGIN EXPORTING RCT CALL --------
 RCT_EXPORT_METHOD(setup:(NSDictionary *)options)
 {
     if (isSetupNatively) {
@@ -470,6 +471,7 @@ RCT_EXPORT_METHOD(getAudioRoutes: (RCTPromiseResolveBlock)resolve
         reject(@"Failure to get audio routes", e, nil);
     }
 }
+// ------ END EXPORTING RCT CALL --------
 
 + (NSMutableArray *) formatAudioInputs: (NSMutableArray *)inputs
 {
@@ -546,6 +548,7 @@ RCT_EXPORT_METHOD(getAudioRoutes: (RCTPromiseResolveBlock)resolve
     }
 }
 
+//Done
 - (void)requestTransaction:(CXTransaction *)transaction
 {
 #ifdef DEBUG

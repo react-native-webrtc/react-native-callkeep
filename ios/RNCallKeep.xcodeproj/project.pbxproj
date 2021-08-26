@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		23DBCD131E13B465003D485F /* RNCallKeep.m in Sources */ = {isa = PBXBuildFile; fileRef = 23DBCD121E13B465003D485F /* RNCallKeep.m */; };
+		6C6D414326D6314A00E5D3B6 /* RNCallKeep.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C6D414226D6314A00E5D3B6 /* RNCallKeep.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -26,6 +27,8 @@
 		234528921E0B88C700D1A033 /* libRNCallKeep.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libRNCallKeep.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		23DBCD111E13B465003D485F /* RNCallKeep.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = RNCallKeep.h; path = RNCallKeep/RNCallKeep.h; sourceTree = SOURCE_ROOT; };
 		23DBCD121E13B465003D485F /* RNCallKeep.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = RNCallKeep.m; path = RNCallKeep/RNCallKeep.m; sourceTree = SOURCE_ROOT; };
+		6C6D414126D6314900E5D3B6 /* RNCallKeep-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "RNCallKeep-Bridging-Header.h"; sourceTree = "<group>"; };
+		6C6D414226D6314A00E5D3B6 /* RNCallKeep.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RNCallKeep.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -58,10 +61,11 @@
 		234528941E0B88C700D1A033 /* RNCallKeep */ = {
 			isa = PBXGroup;
 			children = (
+				6C6D414226D6314A00E5D3B6 /* RNCallKeep.swift */,
 				23DBCD111E13B465003D485F /* RNCallKeep.h */,
 				23DBCD121E13B465003D485F /* RNCallKeep.m */,
+				6C6D414126D6314900E5D3B6 /* RNCallKeep-Bridging-Header.h */,
 			);
-			name = RNCallKeep;
 			path = RNCallKeep;
 			sourceTree = "<group>";
 		};
@@ -96,6 +100,7 @@
 				TargetAttributes = {
 					234528911E0B88C700D1A033 = {
 						CreatedOnToolsVersion = 8.1;
+						LastSwiftMigration = 1250;
 						ProvisioningStyle = Automatic;
 					};
 				};
@@ -105,6 +110,7 @@
 			developmentRegion = English;
 			hasScannedForEncodings = 0;
 			knownRegions = (
+				English,
 				en,
 			);
 			mainGroup = 234528891E0B88C700D1A033;
@@ -122,6 +128,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				6C6D414326D6314A00E5D3B6 /* RNCallKeep.swift in Sources */,
 				23DBCD131E13B465003D485F /* RNCallKeep.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -220,20 +227,29 @@
 		2345289C1E0B88C700D1A033 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_ENABLE_MODULES = YES;
 				HEADER_SEARCH_PATHS = "$(SRCROOT)/../../react-native/React/**";
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
+				SWIFT_OBJC_BRIDGING_HEADER = "RNCallKeep/RNCallKeep-Bridging-Header.h";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
 			};
 			name = Debug;
 		};
 		2345289D1E0B88C700D1A033 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_ENABLE_MODULES = YES;
 				HEADER_SEARCH_PATHS = "$(SRCROOT)/../../react-native/React/**";
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
+				SWIFT_OBJC_BRIDGING_HEADER = "RNCallKeep/RNCallKeep-Bridging-Header.h";
+				SWIFT_VERSION = 5.0;
 			};
 			name = Release;
 		};
