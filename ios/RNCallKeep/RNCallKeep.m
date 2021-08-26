@@ -131,6 +131,7 @@ RCT_EXPORT_MODULE()
     }
 }
 
+// DONE
 + (void)initCallKitProvider {
     if (sharedProvider == nil) {
         NSDictionary *settings = [[NSUserDefaults standardUserDefaults] dictionaryForKey:@"RNCallKeepSettings"];
@@ -138,6 +139,7 @@ RCT_EXPORT_MODULE()
     }
 }
 
+// DONE
 + (void)setup:(NSDictionary *)options {
     RNCallKeep *callKeep = [RNCallKeep allocWithZone: nil];
     [callKeep setup:options];
@@ -725,6 +727,7 @@ RCT_EXPORT_METHOD(getAudioRoutes: (RCTPromiseResolveBlock)resolve
     return _handleType;
 }
 
+// DONE
 + (CXProviderConfiguration *)getProviderConfiguration:(NSDictionary*)settings
 {
 #ifdef DEBUG

@@ -1,5 +1,6 @@
 import Foundation
 import CallKit
+import AVKit
 
 @objc(RNCallKeep)
 
@@ -93,10 +94,15 @@ class RNCallKeep: NSObject {
         RNCallKeep.createCallKitProvider()
         
         if let sharedProvider = sharedProvider {
-            sharedProvider.reportNewIncomingCall(with: uuid, update: cxCallUpdate, completion: { err in
+            sharedProvider.reportNewIncomingCall(with: uuid,
+                                                 update: cxCallUpdate,
+                                                 completion: {err in
+                
+                                                    //sendEventWithNameWrapper
                 
             })
         } else {
+            
             
             print("[RNCallKeep][reportIncomingCall] Error: Shared provider is nil")
         }
@@ -160,18 +166,57 @@ class RNCallKeep: NSObject {
             if let action = transaction.actions.first {
                 if let startAction = action as? CXStartCallAction {
                     
-                    let callUpdate = CXCallUpdate()
-                    callUpdate.remoteHandle = startAction.handle
-                    callUpdate.hasVideo = startAction.isVideo
-                    callUpdate.localizedCallerName = startAction.contactIdentifier
-                    callUpdate.supportsDTMF = true;
-                    callUpdate.supportsHolding = true;
+                    let cxCallUpdate = CXCallUpdate()
+                    cxCallUpdate.remoteHandle = startAction.handle
+                    cxCallUpdate.hasVideo = startAction.isVideo
+                    cxCallUpdate.localizedCallerName = startAction.contactIdentifier
+                    cxCallUpdate.supportsDTMF = true;
+                    cxCallUpdate.supportsHolding = true;
                     
                     // reportCallWithUUID
-                    
+                    self.callKeepProvider?.reportCall(with: startAction.callUUID, updated: cxCallUpdate)
                 }
             }
         })
+    }
+    
+    private func configureAudioSession() {
+        
+        let audioSession = AVAudioSession.sharedInstance()
+        
+        // All the calls below are throwable, so enclose them in try catch block
+        do {
+        
+            try audioSession.setCategory(.playAndRecord, mode: .voiceChat, options: .allowBluetooth)
+        } catch {
+            print("[RNCallKeep][requestTransaction] Audio session setCategory error: ", error)
+        }
+        
+        do {
+            
+            let sampleRate = 44100.0
+            try audioSession.setPreferredSampleRate(sampleRate)
+        } catch {
+            
+            print("[RNCallKeep][requestTransaction] Audio session setPreferredSampleRate error: ", error)
+        }
+        
+        do {
+            
+            let bufferDuration: TimeInterval = 0.005
+            try audioSession.setPreferredIOBufferDuration(bufferDuration)
+        } catch {
+            
+            print("[RNCallKeep][requestTransaction] Audio session setPreferredIOBufferDuration error: ", error)
+        }
+        
+        do {
+            
+            try audioSession.setActive(true, options: .notifyOthersOnDeactivation)
+        } catch {
+            
+            print("[RNCallKeep][requestTransaction] Audio session setActive error: ", error)
+        }
     }
 }
 
@@ -185,10 +230,47 @@ extension RNCallKeep: CXProviderDelegate {
     /// Answer incoming call
     func provider(_ provider: CXProvider, perform action: CXAnswerCallAction) {
         
+        self.configureAudioSession()
+        
+        // Send event with name wrapper
     }
     
     /// End ongoing call
     func provider(_ provider: CXProvider, perform action: CXEndCallAction) {
         
+        // Send event with name wrapper
+    }
+    
+    /// Muted ongoing call
+    func provider(_ provider: CXProvider, perform action: CXSetMutedCallAction) {
+        
+        // Send event with name wrapper
+    }
+    
+    /// Held ongoing call
+    func provider(_ provider: CXProvider, perform action: CXSetHeldCallAction) {
+        
+        // Send event with name wrapper
+    }
+    
+    func provider(_ provider: CXProvider, didActivate audioSession: AVAudioSession) {
+        
+        let userInfo: [String: Any] = [
+            AVAudioSessionInterruptionTypeKey: AVAudioSession.InterruptionType.ended,
+            AVAudioSessionInterruptionOptionKey: AVAudioSession.InterruptionOptions.shouldResume
+        ]
+        
+        NotificationCenter.default.post(name: AVAudioSession.interruptionNotification,
+                                        object: nil,
+                                        userInfo: userInfo)
+        self.configureAudioSession()
+        
+        // Send event with name wrapper
+    }
+    
+    func provider(_ provider: CXProvider, didDeactivate audioSession: AVAudioSession) {
+        
+        // Send event with name wrapper
     }
 }
+
