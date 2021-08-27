@@ -2,7 +2,7 @@ import { NativeModules, Platform, Alert } from 'react-native';
 
 import { listeners, emit } from './actions';
 
-const RNCallKeepModule = NativeModules.RNCallKeep;
+const RNCallKeepModule = NativeModules.EYRCallKeep;
 const isIOS = Platform.OS === 'ios';
 const supportConnectionService = !isIOS && Platform.Version >= 23;
 

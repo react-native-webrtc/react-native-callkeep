@@ -13,7 +13,6 @@
 #import <React/RCTEventDispatcher.h>
 #import <React/RCTUtils.h>
 #import <React/RCTLog.h>
-
 #import <AVFoundation/AVAudioSession.h>
 
 #ifdef DEBUG
@@ -475,6 +474,7 @@ RCT_EXPORT_METHOD(getAudioRoutes: (RCTPromiseResolveBlock)resolve
 }
 // ------ END EXPORTING RCT CALL --------
 
+//Done
 + (NSMutableArray *) formatAudioInputs: (NSMutableArray *)inputs
 {
     NSMutableArray *newInputs = [NSMutableArray new];
@@ -500,6 +500,7 @@ RCT_EXPORT_METHOD(getAudioRoutes: (RCTPromiseResolveBlock)resolve
     return newInputs;
 }
 
+//Done
 + (NSArray *) getAudioInputs
 {
     NSError* err = nil;
@@ -525,6 +526,7 @@ RCT_EXPORT_METHOD(getAudioRoutes: (RCTPromiseResolveBlock)resolve
     return inputs;
 }
 
+//Done
 + (NSString *) getAudioInputType: (NSString *) type
 {
     if ([type isEqualToString:AVAudioSessionPortBuiltInMic]){
@@ -582,6 +584,7 @@ RCT_EXPORT_METHOD(getAudioRoutes: (RCTPromiseResolveBlock)resolve
     }];
 }
 
+// Done
 + (BOOL)isCallActive:(NSString *)uuidString
 {
     CXCallObserver *callObserver = [[CXCallObserver alloc] init];
@@ -596,6 +599,7 @@ RCT_EXPORT_METHOD(getAudioRoutes: (RCTPromiseResolveBlock)resolve
     return false;
 }
 
+// Done
 + (NSMutableArray *) getCalls
 {
 #ifdef DEBUG
@@ -617,6 +621,7 @@ RCT_EXPORT_METHOD(getAudioRoutes: (RCTPromiseResolveBlock)resolve
     return currentCalls;
 }
 
+// Done
 + (void)endCallWithUUID:(NSString *)uuidString
                  reason:(int)reason
 {
@@ -727,7 +732,7 @@ RCT_EXPORT_METHOD(getAudioRoutes: (RCTPromiseResolveBlock)resolve
     return _handleType;
 }
 
-// DONE
+
 + (CXProviderConfiguration *)getProviderConfiguration:(NSDictionary*)settings
 {
 #ifdef DEBUG

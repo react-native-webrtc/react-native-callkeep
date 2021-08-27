@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		23DBCD131E13B465003D485F /* RNCallKeep.m in Sources */ = {isa = PBXBuildFile; fileRef = 23DBCD121E13B465003D485F /* RNCallKeep.m */; };
 		6C6D414326D6314A00E5D3B6 /* RNCallKeep.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C6D414226D6314A00E5D3B6 /* RNCallKeep.swift */; };
+		6CE9D6B126D8D5ED00DD2141 /* RNCallKeepBridge.m in Sources */ = {isa = PBXBuildFile; fileRef = 6CE9D6B026D8D5ED00DD2141 /* RNCallKeepBridge.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -28,7 +29,8 @@
 		23DBCD111E13B465003D485F /* RNCallKeep.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = RNCallKeep.h; path = RNCallKeep/RNCallKeep.h; sourceTree = SOURCE_ROOT; };
 		23DBCD121E13B465003D485F /* RNCallKeep.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = RNCallKeep.m; path = RNCallKeep/RNCallKeep.m; sourceTree = SOURCE_ROOT; };
 		6C6D414126D6314900E5D3B6 /* RNCallKeep-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "RNCallKeep-Bridging-Header.h"; sourceTree = "<group>"; };
-		6C6D414226D6314A00E5D3B6 /* RNCallKeep.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RNCallKeep.swift; sourceTree = "<group>"; };
+		6C6D414226D6314A00E5D3B6 /* RNCallKeep.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = RNCallKeep.swift; path = RNCallKeep/RNCallKeep.swift; sourceTree = SOURCE_ROOT; };
+		6CE9D6B026D8D5ED00DD2141 /* RNCallKeepBridge.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = RNCallKeepBridge.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -65,6 +67,7 @@
 				23DBCD111E13B465003D485F /* RNCallKeep.h */,
 				23DBCD121E13B465003D485F /* RNCallKeep.m */,
 				6C6D414126D6314900E5D3B6 /* RNCallKeep-Bridging-Header.h */,
+				6CE9D6B026D8D5ED00DD2141 /* RNCallKeepBridge.m */,
 			);
 			path = RNCallKeep;
 			sourceTree = "<group>";
@@ -128,6 +131,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				6CE9D6B126D8D5ED00DD2141 /* RNCallKeepBridge.m in Sources */,
 				6C6D414326D6314A00E5D3B6 /* RNCallKeep.swift in Sources */,
 				23DBCD131E13B465003D485F /* RNCallKeep.m in Sources */,
 			);

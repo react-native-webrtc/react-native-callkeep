@@ -2,29 +2,26 @@ import Foundation
 import CallKit
 import AVKit
 
-@objc(RNCallKeep)
-
-class RNCallKeep: NSObject {
+@objc(EYRCallKeep)
+class EYRCallKeep: NSObject {
     
     var cxCallController: CXCallController?
     var callKeepProvider: CXProvider?
-    
-    // MARK: - Private params
-    private var _version: OperatingSystemVersion?
-    static private let _settingsKey = "RNCallKeepSettings"
     static var sharedProvider: CXProvider?
     
+    // MARK: - Private params
+    private var _hasListener = false
+    private var _version: OperatingSystemVersion?
+    static private let _settingsKey = "RNCallKeepSettings"
+    
     // MARK: - Singleton init
-    static let sharedInstance: RNCallKeep = {
-        let callkeep = RNCallKeep()
-        return callkeep
-    }()
+    static let sharedInstance = EYRCallKeep()
     
     static func createCallKitProvider() {
         
         let settings = UserDefaults.standard.object(forKey: _settingsKey) as! [String: Any]
         
-        guard let config = RNCallKeep.getProviderConfiguration(settings: settings) else {
+        guard let config = EYRCallKeep.getProviderConfiguration(settings: settings) else {
             
             print("[RNCallKeep][createCallKitProvider] Fails to retrieve config")
             return
@@ -32,6 +29,71 @@ class RNCallKeep: NSObject {
         
         sharedProvider = CXProvider(configuration: config)
     }
+    
+    
+    // MARK: - Exported methods
+    /// Activating a mute call action
+    /// - Parameter uuidString: Device's uuid
+    /// - Parameter muted: Mute or unmute the recipient
+    @objc(setMutedCall:muted:)
+    func setMutedCall(_ uuidString: String, muted: Bool) {
+        
+        guard let uuid = UUID(uuidString: uuidString) else {
+            print("[RNCallKeep][setMutedCall] Cant find uuid")
+            return
+        }
+        let mutedAction = CXSetMutedCallAction(call: uuid, muted: muted)
+        let transaction = CXTransaction()
+        transaction.addAction(mutedAction)
+        
+        // Request transaction
+        self.requestTransaction(transaction)
+    }
+    
+    @objc(endCall:)
+    func endCall(_ uuidString: String) {
+        
+        guard let uuid = UUID(uuidString: uuidString) else {
+            print("[RNCallKeep][setMutedCall] Cant find uuid")
+            return
+        }
+        let endCallAction = CXEndCallAction(call: uuid)
+        let transaction = CXTransaction()
+        transaction.addAction(endCallAction)
+        
+        // Request transaction
+        self.requestTransaction(transaction)
+    }
+    
+    @objc(reportEndCall:reason:)
+    func reportEndCall(_ uuidString: String, reason: Int) {
+        
+        guard let uuid = UUID(uuidString: uuidString) else {
+            print("[RNCallKeep][endCall] Cant find uuid")
+            return
+        }
+        
+        switch reason {
+        case 1:
+            self.callKeepProvider?.reportCall(with: uuid, endedAt: Date(), reason: .failed)
+            break
+        case 2, 6:
+            self.callKeepProvider?.reportCall(with: uuid, endedAt: Date(), reason: .remoteEnded)
+            break
+        case 3:
+            self.callKeepProvider?.reportCall(with: uuid, endedAt: Date(), reason: .unanswered)
+            break
+        case 4:
+            self.callKeepProvider?.reportCall(with: uuid, endedAt: Date(), reason: .answeredElsewhere)
+            break
+        case 5:
+            self.callKeepProvider?.reportCall(with: uuid, endedAt: Date(), reason: .declinedElsewhere)
+            break
+        default:
+            break
+        }
+    }
+    
     
     // MARK: - Class func
     @objc(options:)
@@ -70,7 +132,6 @@ class RNCallKeep: NSObject {
                                   hasVideo: Bool,
                                   localizedCallerName: String?,
                                   supportsHolding: Bool,
-                                  supportsDTMF: Bool,
                                   fromPushKit: Bool,
                                   payload: [String: Any]?,
                                   completionHandler: @escaping () -> Void ) {
@@ -84,14 +145,13 @@ class RNCallKeep: NSObject {
         let cxCallUpdate = CXCallUpdate()
         cxCallUpdate.remoteHandle = CXHandle(type: handleType, value: handle)
         cxCallUpdate.supportsHolding = supportsHolding;
-        cxCallUpdate.supportsDTMF = supportsDTMF;
         cxCallUpdate.hasVideo = hasVideo;
         
         if let name = localizedCallerName {
             cxCallUpdate.localizedCallerName = localizedCallerName;
         }
         
-        RNCallKeep.createCallKitProvider()
+        EYRCallKeep.createCallKitProvider()
         
         if let sharedProvider = sharedProvider {
             sharedProvider.reportNewIncomingCall(with: uuid,
@@ -109,6 +169,131 @@ class RNCallKeep: NSObject {
         
     }
     
+    class func formatAudioInputs(inputs: [AVAudioSessionPortDescription]) -> [[String: Any]] {
+    
+        let speakerDict = [
+            "name": "Speaker",
+            "type": AVAudioSession.Port.builtInSpeaker
+        ] as [String : Any]
+        var newInputs = [speakerDict]
+        
+        for input in inputs {
+            
+            print("PORT: \(input.portName). UID: \(input.uid)")
+            
+            let type = EYRCallKeep.getAudioInputType(type: input.portType.rawValue)
+            
+            if let type = type {
+                
+                let dict = [
+                    "name": input.portName,
+                    "type": type
+                ] as [String : Any]
+                newInputs.append(dict)
+            }
+        }
+        
+        return newInputs
+    }
+    
+    /// Returns current audio inputs
+    class func getAudioInputs() -> [AVAudioSessionPortDescription]? {
+        
+        let audioSession = AVAudioSession.sharedInstance()
+        
+        do {
+        
+            try audioSession.setCategory(.playAndRecord, options: [.allowBluetooth, .defaultToSpeaker])
+        } catch {
+            
+            print("[RNCallKeep][getAudioInputs] Audio session setCategory error: ", error)
+        }
+        
+        do {
+            
+            try audioSession.setActive(true, options: .notifyOthersOnDeactivation)
+        } catch {
+            
+            print("[RNCallKeep][getAudioInputs] Audio session setActive error: ", error)
+        }
+        
+        return audioSession.availableInputs
+        
+    }
+    
+    /// Returns audio type. Used to be ported to JS file
+    class func getAudioInputType(type: String) -> String? {
+        
+        if type == AVAudioSession.Port.builtInMic.rawValue {
+            
+            return "Phone"
+        }
+        
+        if type == AVAudioSession.Port.headphones.rawValue || type == AVAudioSession.Port.headsetMic.rawValue {
+            
+            return "Phone"
+        }
+        
+        if type == AVAudioSession.Port.bluetoothHFP.rawValue
+            || type == AVAudioSession.Port.bluetoothLE.rawValue
+            || type == AVAudioSession.Port.bluetoothA2DP.rawValue {
+            
+            return "Bluetooth"
+        }
+        
+        if type == AVAudioSession.Port.builtInSpeaker.rawValue {
+            
+            return "Speaker"
+        }
+        
+        print("[RNCallKeep][getAudioInputType] Error: Can't identify audio input type")
+        return nil
+    }
+    
+    /// Returns true if the associated with uuidString is active
+    class func isCallActive(uuidString: String) -> Bool {
+        
+        guard let uuid = UUID(uuidString: uuidString) else {
+            print("[RNCallKeep][isCallActive] Cant find uuid")
+            return false
+        }
+        
+        let callObserver = CXCallObserver()
+        for call in callObserver.calls {
+            print("[RNCallKeep][isCallActive] \(call.uuid) \(call.uuid == uuid)?")
+            if call.uuid == uuid {
+                
+                return call.hasConnected
+            }
+        }
+        
+        return false
+    }
+    
+    /// Retrieves all current calls
+    class func getCalls() -> [[String : Any]] {
+        
+        let callObserver = CXCallObserver()
+        var currentCalls = [[String : Any]]()
+        for call in callObserver.calls {
+            
+            let uuidString = call.uuid.uuidString
+            let requestedCall = [
+                "callUUID": uuidString,
+                "outgoing": call.isOutgoing,
+                "onHold": call.isOnHold,
+                "hasConnected": call.hasConnected,
+                "hasEnded": call.hasEnded
+            ] as [String : Any]
+            
+            currentCalls.append(requestedCall)
+        }
+        
+        return currentCalls
+    }
+    
+    // END OF CLASS FUNC
+    
     /// Setup CXProvider and CXCallController
     /// - Parameter options: List of options
     @objc(options:)
@@ -119,35 +304,16 @@ class RNCallKeep: NSObject {
         
         // Save default settings
         let standard = UserDefaults.standard
-        standard.set(options, forKey: RNCallKeep._settingsKey)
+        standard.set(options, forKey: EYRCallKeep._settingsKey)
         
-        RNCallKeep.createCallKitProvider()
+        EYRCallKeep.createCallKitProvider()
         
-        self.callKeepProvider = RNCallKeep.sharedProvider;
+        self.callKeepProvider = EYRCallKeep.sharedProvider;
         self.callKeepProvider?.setDelegate(self, queue: nil)
     }
     
-    
-    /// Activating a mute call action
-    /// - Parameter uuidString: Device's uuid
-    /// - Parameter muted: Mute or unmute the recipient
-    @objc(uuid:muted:)
-    func setMutedCall(uuidString: String, muted: Bool) {
-        
-        guard let uuid = UUID(uuidString: uuidString) else {
-            print("Cant find uuid")
-            return
-        }
-        let mutedAction = CXSetMutedCallAction(call: uuid, muted: muted)
-        let transaction = CXTransaction()
-        transaction.addAction(mutedAction)
-        
-        // Request transaction
-        self.requestTransaction(transaction)
-    }
-    
     // MARK: - Private func
-    private func requestTransaction(_ transaction: CXTransaction) {
+    fileprivate func requestTransaction(_ transaction: CXTransaction) {
         
         if self.cxCallController == nil {
             self.cxCallController = CXCallController()
@@ -180,14 +346,14 @@ class RNCallKeep: NSObject {
         })
     }
     
-    private func configureAudioSession() {
+    fileprivate func configureAudioSession() {
         
         let audioSession = AVAudioSession.sharedInstance()
         
         // All the calls below are throwable, so enclose them in try catch block
         do {
         
-            try audioSession.setCategory(.playAndRecord, mode: .voiceChat, options: .allowBluetooth)
+            try audioSession.setCategory(.playAndRecord, mode: .voiceChat, options: [.allowBluetooth, .defaultToSpeaker])
         } catch {
             print("[RNCallKeep][requestTransaction] Audio session setCategory error: ", error)
         }
@@ -218,10 +384,14 @@ class RNCallKeep: NSObject {
             print("[RNCallKeep][requestTransaction] Audio session setActive error: ", error)
         }
     }
+    
+    fileprivate func sendEvent(name: String, body: Any) {
+        
+    }
 }
 
 // MARK: - CXProvider delegate
-extension RNCallKeep: CXProviderDelegate {
+extension EYRCallKeep: CXProviderDelegate {
     
     func providerDidReset(_ provider: CXProvider) {
         
