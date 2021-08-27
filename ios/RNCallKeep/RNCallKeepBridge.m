@@ -11,5 +11,5 @@
 RCT_EXTERN_METHOD(setMutedCall:(NSString *)uuidString :(BOOL)muted)
 RCT_EXTERN_METHOD(endCall:(NSString*)uuidString)
 RCT_EXTERN_METHOD(reportEndCall:(NSString*)uuidString :(int)reason)
-
+RCT_EXTERN_METHOD(getAudioRoutes:(RCTPromiseResolveBlock)resolve :(RCTPromiseRejectBlock)reject)
 @end

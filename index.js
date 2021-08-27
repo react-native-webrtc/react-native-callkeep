@@ -1,11 +1,14 @@
+
 import { NativeModules, Platform, Alert } from 'react-native';
 
 import { listeners, emit } from './actions';
 
-const RNCallKeepModule = NativeModules.EYRCallKeep;
+//const RNCallKeepModule = NativeModules.EYRCallKeep;
+const RNCallKeepModule = NativeModules.RNCallKeep;
 const isIOS = Platform.OS === 'ios';
 const supportConnectionService = !isIOS && Platform.Version >= 23;
 
+console.log(NativeModules)
 const CONSTANTS = {
   END_CALL_REASONS: {
     FAILED: 1,
@@ -350,3 +353,5 @@ class RNCallKeep {
 }
 
 export default new RNCallKeep();
+
+

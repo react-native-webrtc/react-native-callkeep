@@ -94,6 +94,20 @@ class EYRCallKeep: NSObject {
         }
     }
     
+    @objc
+    func getAudioRoutes(_ resolve: RCTPromiseResolveBlock, reject: RCTPromiseRejectBlock) {
+        
+        
+        let inputs = EYRCallKeep.getAudioInputs()
+        
+        if let inputs = inputs {
+            let formatedInputs = EYRCallKeep.formatAudioInputs(inputs: inputs)
+            resolve(formatedInputs)
+        } else {
+            
+            reject("Fail to get audio routes", nil, nil)
+        }
+    }
     
     // MARK: - Class func
     @objc(options:)
@@ -104,7 +118,7 @@ class EYRCallKeep: NSObject {
     
     /// Return provider config
     /// - Parameter settings: List of available settings
-    @objc(settings:)
+    @objc(getProviderConfiguration:)
     class func getProviderConfiguration(settings: [String: Any]) -> CXProviderConfiguration? {
     
         guard let appName = settings["appName"] as? String else {
@@ -122,6 +136,7 @@ class EYRCallKeep: NSObject {
             config.ringtoneSound = ringtoneSound
         }
         
+        config.supportedHandleTypes = [.generic]
         return config
     }
     
@@ -207,6 +222,7 @@ class EYRCallKeep: NSObject {
         } catch {
             
             print("[RNCallKeep][getAudioInputs] Audio session setCategory error: ", error)
+            NSException(name: NSExceptionName(rawValue: "RNCallKeep: Get audio inputs"), reason: error.localizedDescription, userInfo: nil).raise()
         }
         
         do {
@@ -215,6 +231,7 @@ class EYRCallKeep: NSObject {
         } catch {
             
             print("[RNCallKeep][getAudioInputs] Audio session setActive error: ", error)
+            NSException(name: NSExceptionName(rawValue: "RNCallKeep: Get audio inputs"), reason: error.localizedDescription, userInfo: nil).raise()
         }
         
         return audioSession.availableInputs
