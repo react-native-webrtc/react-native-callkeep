@@ -257,7 +257,9 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
            Log.w(TAG, "[VoiceConnection] endCall ignored due to no ConnectionService or no phone account");
             return;
         }
-
+        staticEndCall(uuid);
+    }
+    public static void staticEndCall(String uuid) {
         try {
         Connection conn = VoiceConnectionService.getConnection(uuid);
         if (conn == null) {
@@ -266,7 +268,6 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
         }
         conn.onDisconnect();
         } catch (Exception e) {}
-
         Log.d(TAG, "[VoiceConnection] endCall executed, uuid: " + uuid);
     }
 
