@@ -3,7 +3,7 @@ import { NativeModules, Platform, Alert } from 'react-native';
 
 import { listeners, emit } from './actions';
 
-//const RNCallKeepModule = NativeModules.EYRCallKeep;
+const EYRCallKeepModule = NativeModules.EYRCallKeep;
 const RNCallKeepModule = NativeModules.RNCallKeep;
 const isIOS = Platform.OS === 'ios';
 const supportConnectionService = !isIOS && Platform.Version >= 23;
@@ -73,37 +73,6 @@ class RNCallKeep {
     return;
   };
 
-  displayIncomingCall = (
-    uuid,
-    handle,
-    localizedCallerName = '',
-    handleType = 'number',
-    hasVideo = false,
-    options = null
-  ) => {
-    if (!isIOS) {
-      RNCallKeepModule.displayIncomingCall(uuid, handle, localizedCallerName);
-      return;
-    }
-
-    // should be boolean type value
-    let supportsHolding = !!(options?.ios?.supportsHolding ?? true);
-    let supportsDTMF = !!(options?.ios?.supportsDTMF ?? true);
-    let supportsGrouping = !!(options?.ios?.supportsGrouping ?? true);
-    let supportsUngrouping = !!(options?.ios?.supportsUngrouping ?? true);
-
-    RNCallKeepModule.displayIncomingCall(
-      uuid,
-      handle,
-      handleType,
-      hasVideo,
-      localizedCallerName,
-      supportsHolding,
-      supportsDTMF,
-      supportsGrouping,
-      supportsUngrouping
-    );
-  };
 
   answerIncomingCall = (uuid) => {
     RNCallKeepModule.answerIncomingCall(uuid);
@@ -153,8 +122,10 @@ class RNCallKeep {
     }
   };
 
-  reportEndCallWithUUID = (uuid, reason) => RNCallKeepModule.reportEndCallWithUUID(uuid, reason);
+  // Using new module
+  reportEndCallWithUUID = (uuid, reason) => EYRCallKeepModule.reportEndCall(uuid, reason);
 
+    
   /*
    * Android explicitly states we reject a call
    * On iOS we just notify of an endCall
@@ -175,7 +146,7 @@ class RNCallKeep {
     }
   };
 
-  endCall = (uuid) => RNCallKeepModule.endCall(uuid);
+  endCall = (uuid) => EYRCallKeepModule.endCall(uuid);
 
   fulfillEndCallAction = () => {
       if (!isIOS) return;
@@ -194,7 +165,6 @@ class RNCallKeep {
     RNCallKeepModule.setMutedCall(uuid, shouldMute);
   };
 
-  sendDTMF = (uuid, key) => RNCallKeepModule.sendDTMF(uuid, key);
   /**
    * @description when Phone call is active, Android control the audio service via connection service. so this function help to toggle the audio to Speaker or wired/ear-piece or vice-versa
    * @param {*} uuid
@@ -266,15 +236,6 @@ class RNCallKeep {
   setOnHold = (uuid, shouldHold) => RNCallKeepModule.setOnHold(uuid, shouldHold);
 
   setReachable = () => RNCallKeepModule.setReachable();
-
-  // @deprecated
-  reportUpdatedCall = (uuid, localizedCallerName) => {
-    console.warn('RNCallKeep.reportUpdatedCall is deprecated, use RNCallKeep.updateDisplay instead');
-
-    return isIOS
-      ? RNCallKeepModule.reportUpdatedCall(uuid, localizedCallerName)
-      : Promise.reject('RNCallKeep.reportUpdatedCall was called from unsupported OS');
-  };
 
   _setupIOS = async (options) =>
     new Promise((resolve, reject) => {

@@ -740,7 +740,7 @@ RCT_EXPORT_METHOD(getAudioRoutes: (RCTPromiseResolveBlock)resolve
 #endif
     CXProviderConfiguration *providerConfiguration = [[CXProviderConfiguration alloc] initWithLocalizedName:settings[@"appName"]];
     providerConfiguration.supportsVideo = YES;
-    providerConfiguration.maximumCallGroups = 3;
+    providerConfiguration.maximumCallGroups = 1;
     providerConfiguration.maximumCallsPerCallGroup = 1;
     if(settings[@"handleType"]){
         int _handleType = [RNCallKeep getHandleType:settings[@"handleType"]];
@@ -780,10 +780,16 @@ RCT_EXPORT_METHOD(getAudioRoutes: (RCTPromiseResolveBlock)resolve
 #endif
 
     AVAudioSession* audioSession = [AVAudioSession sharedInstance];
-    [audioSession setCategory:AVAudioSessionCategoryPlayAndRecord withOptions:AVAudioSessionCategoryOptionAllowBluetooth error:nil];
-
-    [audioSession setMode:AVAudioSessionModeVoiceChat error:nil];
-
+    AVAudioSessionCategoryOptions options = AVAudioSessionCategoryOptionAllowBluetooth |
+                                            AVAudioSessionCategoryOptionDefaultToSpeaker |
+                                            AVAudioSessionCategoryOptionAllowBluetoothA2DP;
+    
+    [audioSession setCategory:AVAudioSessionCategoryPlayAndRecord
+                  withOptions:options
+                        error:nil];
+    
+    [audioSession setMode:AVAudioSessionModeVideoChat error:nil];
+    
     double sampleRate = 44100.0;
     [audioSession setPreferredSampleRate:sampleRate error:nil];
 

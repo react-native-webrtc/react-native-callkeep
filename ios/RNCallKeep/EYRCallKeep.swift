@@ -3,7 +3,7 @@ import CallKit
 import AVKit
 
 @objc(EYRCallKeep)
-class EYRCallKeep: NSObject {
+public class EYRCallKeep: RCTEventEmitter {
     
     var cxCallController: CXCallController?
     var callKeepProvider: CXProvider?
@@ -12,7 +12,15 @@ class EYRCallKeep: NSObject {
     // MARK: - Private params
     private var _hasListener = false
     private var _version: OperatingSystemVersion?
+    private var _delayedEvents = [[String: Any]]()
+    
     static private let _settingsKey = "RNCallKeepSettings"
+    static let EYRCallKeepDidLoadWithEvents = "EYRCallKeepDidLoadWithEvents"
+    static let EYRCallKeepDidReceiveStartCallAction = "EYRCallKeepDidReceiveStartCallAction"
+    static let EYRCallKeepDidDisplayIncomingCall = "EYRCallKeepDidDisplayIncomingCall"
+    static let EYRCallKeepPerformEndCallAction = "EYRCallKeepPerformEndCallAction"
+    static let EYRCallKeepSetMutedCallAction = "EYRCallKeepSetMutedCallAction"
+    
     
     // MARK: - Singleton init
     static let sharedInstance = EYRCallKeep()
@@ -30,7 +38,38 @@ class EYRCallKeep: NSObject {
         sharedProvider = CXProvider(configuration: config)
     }
     
+    // MARK: - Override methods
+    public override func startObserving() {
+        _hasListener = true
+        if _delayedEvents.count > 0 {
+            self.sendEvent(withName: EYRCallKeep.EYRCallKeepDidLoadWithEvents, body: _delayedEvents)
+        }
+    }
+
+    public override func stopObserving() {
+        _hasListener = false
+    }
     
+    func sendEventWithNameWrapper(_ name: String, body: Any) {
+        
+        if _hasListener {
+            
+            self.sendEvent(withName: name, body: body)
+        } else {
+            
+            let dict: [String: Any] = ["name": name, "body": body]
+            _delayedEvents.append(dict)
+        }
+    }
+    
+    public override func supportedEvents() -> [String]! {
+        return [
+            EYRCallKeep.EYRCallKeepDidDisplayIncomingCall,
+            EYRCallKeep.EYRCallKeepDidLoadWithEvents,
+            EYRCallKeep.EYRCallKeepDidReceiveStartCallAction
+            
+        ]
+    }
     // MARK: - Exported methods
     /// Activating a mute call action
     /// - Parameter uuidString: Device's uuid
@@ -54,7 +93,7 @@ class EYRCallKeep: NSObject {
     func endCall(_ uuidString: String) {
         
         guard let uuid = UUID(uuidString: uuidString) else {
-            print("[RNCallKeep][setMutedCall] Cant find uuid")
+            print("[RNCallKeep][endCall] Cant find uuid")
             return
         }
         let endCallAction = CXEndCallAction(call: uuid)
@@ -97,7 +136,6 @@ class EYRCallKeep: NSObject {
     @objc
     func getAudioRoutes(_ resolve: RCTPromiseResolveBlock, reject: RCTPromiseRejectBlock) {
         
-        
         let inputs = EYRCallKeep.getAudioInputs()
         
         if let inputs = inputs {
@@ -108,14 +146,146 @@ class EYRCallKeep: NSObject {
             reject("Fail to get audio routes", nil, nil)
         }
     }
-    
+        
     // MARK: - Class func
-    @objc(options:)
-    class func setup(options: [String: Any]) {
+    @objc(setup:)
+    public class func setup(options: [String: Any]) {
         
         sharedInstance.setup(options: options)        
     }
     
+    @objc
+    public class func reportIncomingCall(uuidString: String,
+                                  handle: String,
+                                  handleType: String,
+                                  hasVideo: Bool,
+                                  localizedCallerName: String?,
+                                  supportsHolding: Bool,
+                                  fromPushKit: Bool,
+                                  payload: [String: Any]?,
+                                  completionHandler: (() -> Void)? ) {
+        
+        guard let uuid = UUID(uuidString: uuidString) else {
+            
+            print("[RNCallKeep][reportIncomingCall] Error: Cant create uuid from string")
+            return
+        }
+            
+        let cxCallUpdate = CXCallUpdate()
+        let _handleType = EYRCallKeep.getHandleType(handleType: handleType)
+        cxCallUpdate.remoteHandle = CXHandle(type: _handleType, value: handle)
+        cxCallUpdate.supportsHolding = supportsHolding;
+        cxCallUpdate.hasVideo = hasVideo;
+        
+        if let _ = localizedCallerName {
+            cxCallUpdate.localizedCallerName = localizedCallerName;
+        }
+        
+        EYRCallKeep.createCallKitProvider()
+        
+        if let sharedProvider = sharedProvider {
+            sharedProvider.reportNewIncomingCall(with: uuid,
+                                                 update: cxCallUpdate,
+                                                 completion: {err in
+                
+            let dict = [
+                "error": err?.localizedDescription ?? "",
+                "callUUID": uuidString,
+                "handle": handle,
+                "localizedCallerName": localizedCallerName ?? "",
+                "hasVideo": hasVideo,
+                "supportHolding": supportsHolding,
+                "fromPushKit": fromPushKit,
+                "payload": payload ?? [:]
+                
+            ] as [String : Any]
+            let sharedInstance = EYRCallKeep.sharedInstance
+            sharedInstance.sendEventWithNameWrapper(EYRCallKeep.EYRCallKeepDidDisplayIncomingCall,
+                                                    body: dict)
+            })
+        } else {
+            
+            print("[RNCallKeep][reportIncomingCall] Error: Shared provider is nil")
+        }
+        
+        if let handler = completionHandler {
+            handler()
+        }
+    }
+    
+    @objc
+    public class func application(_ application: UIApplication,
+                                  continue userActivity: NSUserActivity,
+                                  restorationHandler: @escaping ([UIUserActivityRestoring]?) -> Void) -> Bool {
+        
+        guard let interaction =  userActivity.interaction else {
+            
+            print("[EYRCallKeep][applicationError] Cant get interaction")
+            return false
+        }
+        
+        var isAudioCall = false
+        var isVideoCall = false
+        
+        if #available(iOS 13, *) {
+            
+            let intent = interaction.intent as? INStartCallIntent
+            if let intent = intent {
+                
+                if intent.responds(to: #selector(getter: INCallRecord.callCapability)) {
+                    isAudioCall = intent.callCapability == INCallCapability.audioCall;
+                    isVideoCall = intent.callCapability == INCallCapability.videoCall;
+                } else {
+                    isAudioCall = userActivity.activityType == INStartAudioCallIntentIdentifier
+                    isVideoCall = userActivity.activityType == INStartVideoCallIntentIdentifier
+                }
+            }
+        } else {
+            
+            isAudioCall = userActivity.activityType == INStartAudioCallIntentIdentifier
+            isVideoCall = userActivity.activityType == INStartVideoCallIntentIdentifier
+        }
+        
+        var contact: INPerson?
+        var handle: String?
+
+        if isAudioCall {
+            let startAudioCallIntent = interaction.intent as? INStartAudioCallIntent
+            contact = (startAudioCallIntent?.contacts?.first!)!
+        } else if isVideoCall {
+            let startVideoCallIntent = interaction.intent as? INStartVideoCallIntent
+            contact = (startVideoCallIntent?.contacts?.first!)!
+        }
+
+        if let contact = contact {
+            handle = contact.personHandle?.value
+        }
+
+        if let handle = handle {
+            if handle.count > 0 {
+                let userInfo = [
+                    "handle": handle,
+                    "video": NSNumber(value: isVideoCall)
+                ] as [String : Any]
+
+                let callKeep = EYRCallKeep.sharedInstance
+                callKeep.sendEvent(withName: EYRCallKeep.EYRCallKeepDidReceiveStartCallAction, body: userInfo)
+                return true
+            }
+        }
+        
+        return false
+    }
+    
+    @objc
+    public class func application(_ app: UIApplication,
+                                  open url: URL,
+                                  options: [UIApplication.OpenURLOptionsKey : Any] = [:]) -> Bool {
+        
+        
+        
+        return true
+    }
     /// Return provider config
     /// - Parameter settings: List of available settings
     @objc(getProviderConfiguration:)
@@ -138,50 +308,6 @@ class EYRCallKeep: NSObject {
         
         config.supportedHandleTypes = [.generic]
         return config
-    }
-    
-    // IMPORTANT
-    class func reportIncomingCall(uuidString: String,
-                                  handle: String,
-                                  handleType: CXHandle.HandleType,
-                                  hasVideo: Bool,
-                                  localizedCallerName: String?,
-                                  supportsHolding: Bool,
-                                  fromPushKit: Bool,
-                                  payload: [String: Any]?,
-                                  completionHandler: @escaping () -> Void ) {
-        
-        guard let uuid = UUID(uuidString: uuidString) else {
-            
-            print("[RNCallKeep][reportIncomingCall] Error: Cant create uuid from string")
-            return
-        }
-            
-        let cxCallUpdate = CXCallUpdate()
-        cxCallUpdate.remoteHandle = CXHandle(type: handleType, value: handle)
-        cxCallUpdate.supportsHolding = supportsHolding;
-        cxCallUpdate.hasVideo = hasVideo;
-        
-        if let name = localizedCallerName {
-            cxCallUpdate.localizedCallerName = localizedCallerName;
-        }
-        
-        EYRCallKeep.createCallKitProvider()
-        
-        if let sharedProvider = sharedProvider {
-            sharedProvider.reportNewIncomingCall(with: uuid,
-                                                 update: cxCallUpdate,
-                                                 completion: {err in
-                
-                                                    //sendEventWithNameWrapper
-                
-            })
-        } else {
-            
-            
-            print("[RNCallKeep][reportIncomingCall] Error: Shared provider is nil")
-        }
-        
     }
     
     class func formatAudioInputs(inputs: [AVAudioSessionPortDescription]) -> [[String: Any]] {
@@ -285,6 +411,16 @@ class EYRCallKeep: NSObject {
         }
         
         return false
+    }
+    
+    /// Convert Handle type string to Handle type nume
+    class func getHandleType(handleType: String) -> CXHandle.HandleType {
+        
+        if handleType == "generic" { return CXHandle.HandleType.generic}
+        if handleType == "number" { return CXHandle.HandleType.phoneNumber}
+        if handleType == "email" { return CXHandle.HandleType.emailAddress}
+        
+        return CXHandle.HandleType.generic
     }
     
     /// Retrieves all current calls
@@ -401,21 +537,17 @@ class EYRCallKeep: NSObject {
             print("[RNCallKeep][requestTransaction] Audio session setActive error: ", error)
         }
     }
-    
-    fileprivate func sendEvent(name: String, body: Any) {
-        
-    }
 }
 
 // MARK: - CXProvider delegate
 extension EYRCallKeep: CXProviderDelegate {
     
-    func providerDidReset(_ provider: CXProvider) {
+    public func providerDidReset(_ provider: CXProvider) {
         
     }
     
     /// Answer incoming call
-    func provider(_ provider: CXProvider, perform action: CXAnswerCallAction) {
+    public func provider(_ provider: CXProvider, perform action: CXAnswerCallAction) {
         
         self.configureAudioSession()
         
@@ -423,24 +555,24 @@ extension EYRCallKeep: CXProviderDelegate {
     }
     
     /// End ongoing call
-    func provider(_ provider: CXProvider, perform action: CXEndCallAction) {
+    public func provider(_ provider: CXProvider, perform action: CXEndCallAction) {
         
         // Send event with name wrapper
     }
     
     /// Muted ongoing call
-    func provider(_ provider: CXProvider, perform action: CXSetMutedCallAction) {
+    public func provider(_ provider: CXProvider, perform action: CXSetMutedCallAction) {
         
         // Send event with name wrapper
     }
     
     /// Held ongoing call
-    func provider(_ provider: CXProvider, perform action: CXSetHeldCallAction) {
+    public func provider(_ provider: CXProvider, perform action: CXSetHeldCallAction) {
         
         // Send event with name wrapper
     }
     
-    func provider(_ provider: CXProvider, didActivate audioSession: AVAudioSession) {
+    public func provider(_ provider: CXProvider, didActivate audioSession: AVAudioSession) {
         
         let userInfo: [String: Any] = [
             AVAudioSessionInterruptionTypeKey: AVAudioSession.InterruptionType.ended,
@@ -455,7 +587,7 @@ extension EYRCallKeep: CXProviderDelegate {
         // Send event with name wrapper
     }
     
-    func provider(_ provider: CXProvider, didDeactivate audioSession: AVAudioSession) {
+    public func provider(_ provider: CXProvider, didDeactivate audioSession: AVAudioSession) {
         
         // Send event with name wrapper
     }

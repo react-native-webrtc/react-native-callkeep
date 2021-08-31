@@ -10,7 +10,6 @@
 #import <UIKit/UIKit.h>
 #import <CallKit/CallKit.h>
 #import <Intents/Intents.h>
-//#import <AVFoundation/AVAudioSession.h>
 
 #import <React/RCTEventEmitter.h>
 
