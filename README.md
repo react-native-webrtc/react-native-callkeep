@@ -908,7 +908,6 @@ RNCallKeep.addEventListener('checkReachability', () => {
 
 ```
 
-
 ## Example
 
 A full example is available in the [example](https://github.com/react-native-webrtc/react-native-callkeep/tree/master/example) folder.
