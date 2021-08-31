@@ -51,13 +51,6 @@ class RNCallKeep {
     return this._setupIOS(options.ios);
   };
 
-  registerPhoneAccount = () => {
-    if (isIOS) {
-      return;
-    }
-    RNCallKeepModule.registerPhoneAccount();
-  };
-
   registerAndroidEvents = () => {
     if (isIOS) {
       return;
@@ -65,32 +58,15 @@ class RNCallKeep {
     RNCallKeepModule.registerEvents();
   };
 
-  hasDefaultPhoneAccount = async (options) => {
-    if (!isIOS) {
-      return this._hasDefaultPhoneAccount(options);
-    }
-
-    return;
-  };
-
-
   answerIncomingCall = (uuid) => {
-    RNCallKeepModule.answerIncomingCall(uuid);
+    EYRCallKeepModule.answerIncomingCalld(uuid);
+    //RNCallKeepModule.answerIncomingCall(uuid);
   };
 
   fulfillAnswerCallAction = () => {
       if (!isIOS) return;
-      RNCallKeepModule.fulfillAnswerCallAction();
+      EYRCallKeepModule.fulfillAnswerCallAction();
   }
-
-  startCall = (uuid, handle, contactIdentifier, handleType = 'number', hasVideo = false) => {
-    if (!isIOS) {
-      RNCallKeepModule.startCall(uuid, handle, contactIdentifier);
-      return;
-    }
-
-    RNCallKeepModule.startCall(uuid, handle, contactIdentifier, handleType, hasVideo);
-  };
 
   checkPhoneAccountEnabled = async () => {
     if (isIOS) {
@@ -108,24 +84,9 @@ class RNCallKeep {
     return RNCallKeepModule.isConnectionServiceAvailable();
   };
 
-  reportConnectingOutgoingCallWithUUID = (uuid) => {
-    //only available on iOS
-    if (isIOS) {
-      RNCallKeepModule.reportConnectingOutgoingCallWithUUID(uuid);
-    }
-  };
-
-  reportConnectedOutgoingCallWithUUID = (uuid) => {
-    //only available on iOS
-    if (isIOS) {
-      RNCallKeepModule.reportConnectedOutgoingCallWithUUID(uuid);
-    }
-  };
-
   // Using new module
   reportEndCallWithUUID = (uuid, reason) => EYRCallKeepModule.reportEndCall(uuid, reason);
-
-    
+    //reportEndCallWithUUID = (uuid, reason) => RNCallKeepModule.reportEndCallWithUUID(uuid, reason);
   /*
    * Android explicitly states we reject a call
    * On iOS we just notify of an endCall
@@ -134,7 +95,7 @@ class RNCallKeep {
     if (!isIOS) {
       RNCallKeepModule.rejectCall(uuid);
     } else {
-      RNCallKeepModule.endCall(uuid);
+      EYRCallKeepModule.endCall(uuid);
     }
   };
 
@@ -147,17 +108,14 @@ class RNCallKeep {
   };
 
   endCall = (uuid) => EYRCallKeepModule.endCall(uuid);
-
+  //endCall = (uuid) => RNCallKeepModule.endCallWithUUID(uuid);
+    
   fulfillEndCallAction = () => {
       if (!isIOS) return;
-      RNCallKeepModule.fulfillEndCallAction();
+      EYRCallKeepModule.fulfillEndCallAction();
   }
 
   endAllCalls = () => RNCallKeepModule.endAllCalls();
-
-  supportConnectionService = () => supportConnectionService;
-
-  hasPhoneAccount = async () => (isIOS ? true : await RNCallKeepModule.hasPhoneAccount());
 
   hasOutgoingCall = async () => (isIOS ? null : await RNCallKeepModule.hasOutgoingCall());
 
@@ -176,12 +134,6 @@ class RNCallKeep {
   getAudioRoutes = () => RNCallKeepModule.getAudioRoutes();
 
   setAudioRoute = (uuid, inputName) => RNCallKeepModule.setAudioRoute(uuid, inputName);
-
-  checkIfBusy = () =>
-    isIOS ? RNCallKeepModule.checkIfBusy() : Promise.reject('RNCallKeep.checkIfBusy was called from unsupported OS');
-
-  checkSpeaker = () =>
-    isIOS ? RNCallKeepModule.checkSpeaker() : Promise.reject('RNCallKeep.checkSpeaker was called from unsupported OS');
 
   setAvailable = (state) => {
     if (isIOS) {
@@ -202,14 +154,6 @@ class RNCallKeep {
     });
   };
 
-  canMakeMultipleCalls = (state) => {
-    if (isIOS) {
-      return;
-    }
-
-    RNCallKeepModule.canMakeMultipleCalls(state);
-  };
-
   setCurrentCallActive = (callUUID) => {
     if (isIOS) {
       return;
@@ -218,6 +162,34 @@ class RNCallKeep {
     RNCallKeepModule.setCurrentCallActive(callUUID);
   };
 
+    displayIncomingCall = (
+        uuid,
+        handle,
+        localizedCallerName = '',
+        handleType = 'number',
+        hasVideo = false,
+        options = null
+      ) => {
+        if (!isIOS) {
+          RNCallKeepModule.displayIncomingCall(uuid, handle, localizedCallerName);
+          return;
+        }
+
+        // should be boolean type value
+        let supportsHolding = !!(options?.ios?.supportsHolding ?? true);
+        let supportsDTMF = !!(options?.ios?.supportsDTMF ?? true);
+        let supportsGrouping = !!(options?.ios?.supportsGrouping ?? true);
+        let supportsUngrouping = !!(options?.ios?.supportsUngrouping ?? true);
+
+        EYRCallKeepModule.displayIncomingCall(
+          uuid,
+          handle,
+          handleType,
+          hasVideo,
+          localizedCallerName,
+        );
+      };
+    
   updateDisplay = (uuid, displayName, handle, options = null) => {
     if (!isIOS) {
       RNCallKeepModule.updateDisplay(uuid, displayName, handle);
@@ -246,7 +218,7 @@ class RNCallKeep {
         reject('RNCallKeep.setup: option "appName" should be of type "string"');
       }
 
-      resolve(RNCallKeepModule.setup(options));
+      resolve(EYRCallKeepModule.setup(options));
     });
 
   _setupAndroid = async (options) => {
@@ -266,37 +238,7 @@ class RNCallKeep {
 
     return false;
   };
-
-  _hasDefaultPhoneAccount = async (options) => {
-    const hasDefault = await RNCallKeepModule.checkDefaultPhoneAccount();
-    const shouldOpenAccounts = await this._alert(options, hasDefault);
-
-    if (shouldOpenAccounts) {
-      RNCallKeepModule.openPhoneAccountSettings();
-    }
-  };
-
-  _alert = async (options, condition) =>
-    new Promise((resolve, reject) => {
-      if (!condition) {
-        return resolve(false);
-      }
-
-      Alert.alert(
-        options.alertTitle,
-        options.alertDescription,
-        [
-          {
-            text: options.cancelButton,
-            onPress: reject,
-            style: 'cancel',
-          },
-          { text: options.okButton, onPress: () => resolve(true) },
-        ],
-        { cancelable: true }
-      );
-    });
-
+    
   backToForeground() {
     if (isIOS) {
       return;
@@ -307,7 +249,7 @@ class RNCallKeep {
 
   getInitialEvents() {
     if (isIOS) {
-      return RNCallKeepModule.getInitialEvents()
+      return EYRCallKeepModule.getInitialEvents()
     }
     return Promise.resolve([])
   }

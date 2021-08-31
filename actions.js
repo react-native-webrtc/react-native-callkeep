@@ -3,6 +3,10 @@ import { NativeModules, NativeEventEmitter, Platform } from 'react-native';
 const RNCallKeepModule = NativeModules.RNCallKeep;
 const eventEmitter = new NativeEventEmitter(RNCallKeepModule);
 
+// new
+const EYRCallKeepModule = NativeModules.EYRCallKeep;
+const newEventEmitter = new NativeEventEmitter(EYRCallKeepModule);
+
 const RNCallKeepDidReceiveStartCallAction = 'RNCallKeepDidReceiveStartCallAction';
 const RNCallKeepPerformAnswerCallAction = 'RNCallKeepPerformAnswerCallAction';
 const RNCallKeepPerformEndCallAction = 'RNCallKeepPerformEndCallAction';
@@ -28,8 +32,10 @@ const didReceiveStartCallAction = handler => {
   return eventEmitter.addListener(RNCallKeepDidReceiveStartCallAction, (data) => handler(data));
 };
 
-const answerCall = handler =>
-  eventEmitter.addListener(RNCallKeepPerformAnswerCallAction, (data) => handler(data));
+
+const answerCall = handler => newEventEmitter.addListener(RNCallKeepPerformAnswerCallAction, (data) => handler(data));
+//const answerCall = handler =>
+//  eventEmitter.addListener(RNCallKeepPerformAnswerCallAction, (data) => handler(data));
 
 const endCall = handler =>
   eventEmitter.addListener(RNCallKeepPerformEndCallAction, (data) => handler(data));

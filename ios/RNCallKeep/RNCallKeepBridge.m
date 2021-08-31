@@ -7,10 +7,14 @@
 //
 
 #import <React/RCTBridgeModule.h>
-@interface RCT_EXTERN_MODULE(EYRCallKeep, NSObject)
-RCT_EXTERN_METHOD(setMutedCall:(NSString *)uuidString :(BOOL)muted)
+#import <React/RCTEventEmitter.h>
+
+@interface RCT_EXTERN_MODULE(EYRCallKeep, RCTEventEmitter)
+RCT_EXTERN_METHOD(setMutedCall:(NSString *)uuidString muted:(BOOL))
 RCT_EXTERN_METHOD(endCall:(NSString*)uuidString)
-RCT_EXTERN_METHOD(reportEndCall:(NSString*)uuidString :(int)reason)
-RCT_EXTERN_METHOD(getAudioRoutes:(RCTPromiseResolveBlock)resolve :(RCTPromiseRejectBlock)reject)
-RCT_EXTERN_METHOD(displayIncomingCal:(NSString *)uuidString :(NSString*))
+RCT_EXTERN_METHOD(answerIncomingCall:(NSString*)uuidString)
+RCT_EXTERN_METHOD(reportEndCall:(NSString*)uuidString reason:(int))
+RCT_EXTERN_METHOD(fulfillAnswerCallAction)
+RCT_EXTERN_METHOD(fulfillEndCallAction)
+RCT_EXTERN_METHOD(getInitialEvents:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock))
 @end
