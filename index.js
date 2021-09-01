@@ -8,7 +8,6 @@ const RNCallKeepModule = NativeModules.RNCallKeep;
 const isIOS = Platform.OS === 'ios';
 const supportConnectionService = !isIOS && Platform.Version >= 23;
 
-console.log(NativeModules)
 const CONSTANTS = {
   END_CALL_REASONS: {
     FAILED: 1,
@@ -60,7 +59,6 @@ class RNCallKeep {
 
   answerIncomingCall = (uuid) => {
     EYRCallKeepModule.answerIncomingCalld(uuid);
-    //RNCallKeepModule.answerIncomingCall(uuid);
   };
 
   fulfillAnswerCallAction = () => {
@@ -86,7 +84,15 @@ class RNCallKeep {
 
   // Using new module
   reportEndCallWithUUID = (uuid, reason) => EYRCallKeepModule.reportEndCall(uuid, reason);
-    //reportEndCallWithUUID = (uuid, reason) => RNCallKeepModule.reportEndCallWithUUID(uuid, reason);
+    
+
+  endCall = (uuid) => EYRCallKeepModule.endCall(uuid);
+      
+  fulfillEndCallAction = () => {
+     if (!isIOS) return;
+     EYRCallKeepModule.fulfillEndCallAction();
+  }
+    
   /*
    * Android explicitly states we reject a call
    * On iOS we just notify of an endCall
@@ -107,20 +113,13 @@ class RNCallKeep {
     }
   };
 
-  endCall = (uuid) => EYRCallKeepModule.endCall(uuid);
-  //endCall = (uuid) => RNCallKeepModule.endCallWithUUID(uuid);
-    
-  fulfillEndCallAction = () => {
-      if (!isIOS) return;
-      EYRCallKeepModule.fulfillEndCallAction();
-  }
 
   endAllCalls = () => RNCallKeepModule.endAllCalls();
 
   hasOutgoingCall = async () => (isIOS ? null : await RNCallKeepModule.hasOutgoingCall());
 
   setMutedCall = (uuid, shouldMute) => {
-    RNCallKeepModule.setMutedCall(uuid, shouldMute);
+    EYRCallKeepModule.setMutedCall(uuid, shouldMute);
   };
 
   /**
@@ -189,7 +188,7 @@ class RNCallKeep {
           localizedCallerName,
         );
       };
-    
+
   updateDisplay = (uuid, displayName, handle, options = null) => {
     if (!isIOS) {
       RNCallKeepModule.updateDisplay(uuid, displayName, handle);
