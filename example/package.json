@@ -9,7 +9,7 @@
     "expo": "^34.0.1",
     "react": "16.8.3",
     "react-dom": "^16.8.6",
-    "react-native": "0.59.8",
+    "react-native": "0.62.3",
     "react-native-background-timer": "^2.1.1",
     "react-native-callkeep": "3.0.7",
     "react-native-device-info": "^2.3.2",

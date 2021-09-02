@@ -17,6 +17,11 @@ declare module 'react-native-callkeep' {
 
   type HandleType = 'generic' | 'number' | 'email';
 
+  export type AudioRoute = {
+    name: string,
+    type: string
+  }
+
   interface IOptions {
     ios: {
       appName: string,
@@ -132,6 +137,10 @@ declare module 'react-native-callkeep' {
     static isCallActive(uuid: string): Promise<boolean>
 
     static getCalls(): Promise<object>
+
+    static getAudioRoutes(): Promise<void>
+
+    static setAudioRoute: (uuid:string, inputName: string) => Promise<void>
 
     /**
      * @description supportConnectionService method is available only on Android.
