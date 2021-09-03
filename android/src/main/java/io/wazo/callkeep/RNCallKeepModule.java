@@ -505,24 +505,24 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
                 return;
             }
             if(audioRoute.equals("Bluetooth")) {
-                Log.d(TAG,"[VoiceConnection] setting audio route: Bluetooth")
+                Log.d(TAG,"[VoiceConnection] setting audio route: Bluetooth");
                 conn.setAudioRoute(CallAudioState.ROUTE_BLUETOOTH);
                 promise.resolve(true);
                 return;
             }
             if(audioRoute.equals("Headset")) {
-                Log.d(TAG,"[VoiceConnection] setting audio route: Headset")
+                Log.d(TAG,"[VoiceConnection] setting audio route: Headset");
                 conn.setAudioRoute(CallAudioState.ROUTE_WIRED_HEADSET);
                 promise.resolve(true);
                 return;
             }
             if(audioRoute.equals("Speaker")) {
-                Log.d(TAG,"[VoiceConnection] setting audio route: Speaker")
+                Log.d(TAG,"[VoiceConnection] setting audio route: Speaker");
                 conn.setAudioRoute(CallAudioState.ROUTE_SPEAKER);
                 promise.resolve(true);
                 return;
             }
-            Log.d(TAG,"[VoiceConnection] setting audio route: Wired/Earpiece")
+            Log.d(TAG,"[VoiceConnection] setting audio route: Wired/Earpiece");
             conn.setAudioRoute(CallAudioState.ROUTE_WIRED_OR_EARPIECE);
             promise.resolve(true);
         } catch (Exception e) {
