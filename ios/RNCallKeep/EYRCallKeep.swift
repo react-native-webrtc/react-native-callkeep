@@ -183,7 +183,7 @@ public class EYRCallKeep: RCTEventEmitter {
             self.createCallKitProvider()
         } else {
             
-            print("[EYRCallKeep][reportIncomingCall] Error: Options not set")
+            print("[EYRCallKeep][setup] Error: Options not set")
         }
     }
     
@@ -197,22 +197,18 @@ public class EYRCallKeep: RCTEventEmitter {
             return
         }
         
-        let supportsHolding = userInfo["supportsHolding"] as? Bool ?? true
         let hasVideo = userInfo["hasVideo"] as? Bool ?? true
         let handle = userInfo["handle"] as? String ?? ""
         let name = userInfo["localizedCallerName"] as? String ?? ""
         
         let cxCallUpdate = CXCallUpdate()
         cxCallUpdate.remoteHandle = CXHandle(type: .generic, value: handle)
-        cxCallUpdate.supportsHolding = supportsHolding
         cxCallUpdate.hasVideo = hasVideo
         cxCallUpdate.localizedCallerName = name;
         
-        self.createCallKitProvider()
-        
+        createCallKitProvider()
         if let provider = callKeepProvider {
             
-            //OTAudioDeviceManager.setAudioDevice(OTDefaultAudioDevice.sharedInstance())
             provider.reportNewIncomingCall(with: uuid,
                                                  update: cxCallUpdate,
                                                  completion: {err in
@@ -235,14 +231,11 @@ public class EYRCallKeep: RCTEventEmitter {
         
         let config = CXProviderConfiguration(localizedName: appName)
         
-        if let supportsVideo = settings["supportsVideo"] as? Bool {
-            config.supportsVideo = supportsVideo
-        }
-        
         if let ringtoneSound = settings["ringtoneSound"] as? String {
             config.ringtoneSound = ringtoneSound
         }
         
+        config.supportsVideo = true
         config.maximumCallGroups = 1
         config.maximumCallsPerCallGroup = 1
         config.supportedHandleTypes = [.generic]
@@ -271,26 +264,23 @@ public class EYRCallKeep: RCTEventEmitter {
         let audioSession = AVAudioSession.sharedInstance()
         
         // All the calls below are throwable, so enclose them in try catch block
-        
         do {
             
+            // Simply set a category here to initialize the call
+            // The actual setting will be handled by OpenTok when the video view is open
+            // Setting AudioSession.active here might interfere with OpenTok config
             try audioSession.setCategory(.playAndRecord,
                                          mode: .voiceChat,
                                          options: [.allowBluetooth, .defaultToSpeaker])
             
-            let sampleRate = 44100.0
-            try audioSession.setPreferredSampleRate(sampleRate)
-            
-            let bufferDuration: TimeInterval = 0.005
-            try audioSession.setPreferredIOBufferDuration(bufferDuration)
-            
-            try audioSession.setActive(true, options: .notifyOthersOnDeactivation)
         } catch let error as NSError {
             print("Audio Session error: \(error.localizedDescription)")
         }
     }
     
     private func createCallKitProvider() {
+        
+        if callKeepProvider != nil { return}
         
         let settings = UserDefaults.standard.object(forKey: _settingsKey) as! [String: Any]
         
@@ -318,6 +308,7 @@ extension EYRCallKeep: CXProviderDelegate {
         self.configureAudioSession()
         self.sendEventWithNameWrapper(EYRCallKeepAnswerCallAction,
                                       body: ["callUUID": action.callUUID.uuidString.lowercased()])
+        
         _answerCallAction = action
     }
     
@@ -327,6 +318,7 @@ extension EYRCallKeep: CXProviderDelegate {
         self.sendEventWithNameWrapper(EYRCallKeepPerformEndCallAction,
                                       body: ["callUUID": action.callUUID.uuidString.lowercased()])
         _endCallAction = action
+    
     }
     
     /// Muted ongoing call

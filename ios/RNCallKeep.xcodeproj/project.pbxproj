@@ -7,8 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		23DBCD131E13B465003D485F /* RNCallKeep.m in Sources */ = {isa = PBXBuildFile; fileRef = 23DBCD121E13B465003D485F /* RNCallKeep.m */; };
-		6C6D414326D6314A00E5D3B6 /* RNCallKeep.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C6D414226D6314A00E5D3B6 /* RNCallKeep.swift */; };
+		6882D0B9A6999C74C9AA2180 /* Pods_RNCallKeep.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2D36A64148B4BAAF041677E0 /* Pods_RNCallKeep.framework */; };
+		6C23854026E0D59A004A29BD /* EYRCallKeep.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C23853F26E0D59A004A29BD /* EYRCallKeep.swift */; };
 		6CE9D6B126D8D5ED00DD2141 /* RNCallKeepBridge.m in Sources */ = {isa = PBXBuildFile; fileRef = 6CE9D6B026D8D5ED00DD2141 /* RNCallKeepBridge.m */; };
 /* End PBXBuildFile section */
 
@@ -27,10 +27,12 @@
 /* Begin PBXFileReference section */
 		234528921E0B88C700D1A033 /* libRNCallKeep.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libRNCallKeep.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		23DBCD111E13B465003D485F /* RNCallKeep.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = RNCallKeep.h; path = RNCallKeep/RNCallKeep.h; sourceTree = SOURCE_ROOT; };
-		23DBCD121E13B465003D485F /* RNCallKeep.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = RNCallKeep.m; path = RNCallKeep/RNCallKeep.m; sourceTree = SOURCE_ROOT; };
+		2D36A64148B4BAAF041677E0 /* Pods_RNCallKeep.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_RNCallKeep.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		6C23853F26E0D59A004A29BD /* EYRCallKeep.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EYRCallKeep.swift; sourceTree = "<group>"; };
 		6C6D414126D6314900E5D3B6 /* RNCallKeep-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "RNCallKeep-Bridging-Header.h"; sourceTree = "<group>"; };
-		6C6D414226D6314A00E5D3B6 /* RNCallKeep.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = RNCallKeep.swift; path = RNCallKeep/RNCallKeep.swift; sourceTree = SOURCE_ROOT; };
 		6CE9D6B026D8D5ED00DD2141 /* RNCallKeepBridge.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = RNCallKeepBridge.m; sourceTree = "<group>"; };
+		99D33120C13EF807815C0E63 /* Pods-RNCallKeep.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-RNCallKeep.debug.xcconfig"; path = "Target Support Files/Pods-RNCallKeep/Pods-RNCallKeep.debug.xcconfig"; sourceTree = "<group>"; };
+		CAD2624A2A8F61D8426431DA /* Pods-RNCallKeep.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-RNCallKeep.release.xcconfig"; path = "Target Support Files/Pods-RNCallKeep/Pods-RNCallKeep.release.xcconfig"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -38,17 +40,28 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				6882D0B9A6999C74C9AA2180 /* Pods_RNCallKeep.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		0ACAA8FB73E0F3914CC6BFEC /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				2D36A64148B4BAAF041677E0 /* Pods_RNCallKeep.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
 		234528891E0B88C700D1A033 = {
 			isa = PBXGroup;
 			children = (
 				234528941E0B88C700D1A033 /* RNCallKeep */,
 				234528931E0B88C700D1A033 /* Products */,
+				A59912D009E5582AFDFB50C7 /* Pods */,
+				0ACAA8FB73E0F3914CC6BFEC /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -63,13 +76,21 @@
 		234528941E0B88C700D1A033 /* RNCallKeep */ = {
 			isa = PBXGroup;
 			children = (
-				6C6D414226D6314A00E5D3B6 /* RNCallKeep.swift */,
+				6C23853F26E0D59A004A29BD /* EYRCallKeep.swift */,
 				23DBCD111E13B465003D485F /* RNCallKeep.h */,
-				23DBCD121E13B465003D485F /* RNCallKeep.m */,
 				6C6D414126D6314900E5D3B6 /* RNCallKeep-Bridging-Header.h */,
 				6CE9D6B026D8D5ED00DD2141 /* RNCallKeepBridge.m */,
 			);
 			path = RNCallKeep;
+			sourceTree = "<group>";
+		};
+		A59912D009E5582AFDFB50C7 /* Pods */ = {
+			isa = PBXGroup;
+			children = (
+				99D33120C13EF807815C0E63 /* Pods-RNCallKeep.debug.xcconfig */,
+				CAD2624A2A8F61D8426431DA /* Pods-RNCallKeep.release.xcconfig */,
+			);
+			path = Pods;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -79,6 +100,7 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 2345289B1E0B88C700D1A033 /* Build configuration list for PBXNativeTarget "RNCallKeep" */;
 			buildPhases = (
+				3F62DADEF598FB44BF8CEEAB /* [CP] Check Pods Manifest.lock */,
 				2345288E1E0B88C700D1A033 /* Sources */,
 				2345288F1E0B88C700D1A033 /* Frameworks */,
 				234528901E0B88C700D1A033 /* CopyFiles */,
@@ -126,14 +148,38 @@
 		};
 /* End PBXProject section */
 
+/* Begin PBXShellScriptBuildPhase section */
+		3F62DADEF598FB44BF8CEEAB /* [CP] Check Pods Manifest.lock */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
+				"${PODS_ROOT}/Manifest.lock",
+			);
+			name = "[CP] Check Pods Manifest.lock";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+				"$(DERIVED_FILE_DIR)/Pods-RNCallKeep-checkManifestLockResult.txt",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
+			showEnvVarsInLog = 0;
+		};
+/* End PBXShellScriptBuildPhase section */
+
 /* Begin PBXSourcesBuildPhase section */
 		2345288E1E0B88C700D1A033 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
 				6CE9D6B126D8D5ED00DD2141 /* RNCallKeepBridge.m in Sources */,
-				6C6D414326D6314A00E5D3B6 /* RNCallKeep.swift in Sources */,
-				23DBCD131E13B465003D485F /* RNCallKeep.m in Sources */,
+				6C23854026E0D59A004A29BD /* EYRCallKeep.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -230,6 +276,7 @@
 		};
 		2345289C1E0B88C700D1A033 /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 99D33120C13EF807815C0E63 /* Pods-RNCallKeep.debug.xcconfig */;
 			buildSettings = {
 				CLANG_ENABLE_MODULES = YES;
 				DEFINES_MODULE = YES;
@@ -246,6 +293,7 @@
 		};
 		2345289D1E0B88C700D1A033 /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = CAD2624A2A8F61D8426431DA /* Pods-RNCallKeep.release.xcconfig */;
 			buildSettings = {
 				CLANG_ENABLE_MODULES = YES;
 				DEFINES_MODULE = YES;
