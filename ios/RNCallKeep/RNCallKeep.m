@@ -613,8 +613,10 @@ RCT_EXPORT_METHOD(getCalls:(RCTPromiseResolveBlock)resolve
     if (settings[@"maximumCallsPerCallGroup"]) {
         providerConfiguration.maximumCallsPerCallGroup = [settings[@"maximumCallsPerCallGroup"] integerValue];
     }
+    NSString *img = @"callkit.png";
     if (settings[@"imageName"]) {
-        providerConfiguration.iconTemplateImageData = UIImagePNGRepresentation([UIImage imageNamed:settings[@"imageName"]]);
+        img = settings[@"imageName"];
+        providerConfiguration.iconTemplateImageData = UIImagePNGRepresentation([UIImage imageNamed:img]);
     }
     if (settings[@"ringtoneSound"]) {
         providerConfiguration.ringtoneSound = settings[@"ringtoneSound"];
