@@ -242,6 +242,11 @@ RCT_EXPORT_METHOD(startCall:(NSString *)uuidString
 #ifdef DEBUG
     NSLog(@"[RNCallKeep][startCall] uuidString = %@", uuidString);
 #endif
+
+    if (self.callKeepProvider == nil) {
+      [self initCallKitProvider];
+    }
+    
     int _handleType = [RNCallKeep getHandleType:handleType];
     NSUUID *uuid = [[NSUUID alloc] initWithUUIDString:uuidString];
     CXHandle *callHandle = [[CXHandle alloc] initWithType:_handleType value:handle];
