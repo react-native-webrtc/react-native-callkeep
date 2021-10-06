@@ -720,6 +720,9 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
     }
 
     private void initializeTelecomManager() {
+        if (handle != null)
+            return;
+
         Context context = this.getAppContext();
         ComponentName cName = new ComponentName(context, VoiceConnectionService.class);
         String appName = this.getApplicationName(context);
@@ -729,7 +732,7 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
     }
 
     private void registerPhoneAccount(Context appContext) {
-        if (!isConnectionServiceAvailable()) {
+        if (!isConnectionServiceAvailable() || handle != null) {
             Log.w(TAG, "[VoiceConnection] registerPhoneAccount ignored due to no ConnectionService");
             return;
         }
@@ -756,6 +759,12 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
         telephonyManager = (TelephonyManager) this.getAppContext().getSystemService(Context.TELEPHONY_SERVICE);
 
         telecomManager.registerPhoneAccount(account);
+    }
+
+    public static void phoneAccountRegistered(PhoneAccountHandle handle, TelecomManager telecomManager, TelephonyManager telephonyManager) {
+        RNCallKeepModule.handle = handle;
+        RNCallKeepModule.telecomManager = telecomManager;
+        RNCallKeepModule.telephonyManager = telephonyManager;
     }
 
     private void sendEventToJS(String eventName, @Nullable WritableMap params) {
