@@ -48,6 +48,9 @@ import android.util.Log;
 import com.facebook.react.HeadlessJsTaskService;
 import com.facebook.react.bridge.ReadableMap;
 
+import com.facebook.react.bridge.WritableMap;
+import com.facebook.react.bridge.WritableNativeArray;
+import com.facebook.react.bridge.WritableNativeMap;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -78,11 +81,29 @@ public class VoiceConnectionService extends ConnectionService {
     private static String notReachableCallUuid;
     private static ConnectionRequest currentConnectionRequest;
     private static PhoneAccountHandle phoneAccountHandle;
-    private static ReadableMap _settings;
+    private static ReadableMap _settings = getSettings();
     private static String TAG = "RNCallKeep";
     public static Map<String, VoiceConnection> currentConnections = new HashMap<>();
     public static Boolean hasOutgoingCall = false;
     public static VoiceConnectionService currentConnectionService = null;
+
+    private static ReadableMap getSettings() {
+        WritableMap settings = new WritableNativeMap();
+        settings.putString("alertTitle", "Permissions required");
+        settings.putString("alertDescription", "Brekeke Phone needs to your permission to display calls");
+        settings.putString("cancelButton", "Cancel");
+        settings.putString("okButton", "OK");
+        settings.putString("imageName", "phone_account_icon");
+        settings.putArray("additionalPermissions", new WritableNativeArray());
+        settings.putBoolean("selfManaged", true);
+        WritableMap foregroundService = new WritableNativeMap();
+        foregroundService.putString("channelId", "com.brekeke.phone");
+        foregroundService.putString("channelName", "Foreground service for Brekeke Phone");
+        foregroundService.putString("notificationTitle", "Brekeke Phone is running on background");
+        foregroundService.putString("notificationIcon", "ic_launcher");
+        settings.putMap("foregroundService", foregroundService);
+        return settings;
+    }
 
     public static Connection getConnection(String connectionId) {
         if (currentConnections.containsKey(connectionId)) {
