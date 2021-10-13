@@ -808,10 +808,6 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
         hasPhoneAccountPromise.resolve(true);
     }
 
-    private boolean isSelfManaged() {
-        return Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && _settings.hasKey("selfManaged") && _settings.getBoolean("selfManaged");
-    }
-
     private void registerPhoneAccount(Context appContext) {
         if (!isConnectionServiceAvailable()) {
             Log.w(TAG, "[VoiceConnection] registerPhoneAccount ignored due to no ConnectionService");
