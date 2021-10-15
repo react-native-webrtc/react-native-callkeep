@@ -59,6 +59,7 @@ import com.facebook.react.bridge.ReadableArray;
 import com.facebook.react.bridge.ReadableMap;
 import com.facebook.react.bridge.WritableArray;
 import com.facebook.react.bridge.WritableMap;
+import com.facebook.react.bridge.WritableNativeArray;
 import com.facebook.react.HeadlessJsTaskService;
 import com.facebook.react.modules.core.DeviceEventManagerModule.RCTDeviceEventEmitter;
 import com.facebook.react.modules.permissions.PermissionsModule;
@@ -95,6 +96,8 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
     public static final int REQUEST_READ_PHONE_STATE = 1337;
     public static final int REQUEST_REGISTER_CALL_PROVIDER = 394859;
 
+    public static RNCallKeepModule instance = null;
+
     private static final String E_ACTIVITY_DOES_NOT_EXIST = "E_ACTIVITY_DOES_NOT_EXIST";
     private static final String REACT_NATIVE_MODULE_NAME = "RNCallKeep";
     private static String[] permissions = {
@@ -112,18 +115,32 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
     private boolean isReceiverRegistered = false;
     private VoiceBroadcastReceiver voiceBroadcastReceiver;
     private ReadableMap _settings;
+    private WritableNativeArray delayedEvents;
+    private boolean hasListeners = false;
 
-    public RNCallKeepModule(ReactApplicationContext reactContext) {
+    public static RNCallKeepModule getInstance(ReactApplicationContext reactContext, boolean realContext) {
+        if (instance == null) {
+            instance = new RNCallKeepModule(reactContext);
+        }
+        if (realContext) {
+            instance.setContext(reactContext);
+        }
+        return instance;
+    }
+
+    private RNCallKeepModule(ReactApplicationContext reactContext) {
         super(reactContext);
         Log.d(TAG, "[VoiceConnection] constructor");
 
         this.reactContext = reactContext;
+        delayedEvents = new WritableNativeArray();
+        this.registerReceiver();
     }
 
     private boolean isSelfManaged() {
-        try { 
+        try {
             return Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && _settings.hasKey("selfManaged") && _settings.getBoolean("selfManaged");
-        } catch(Exception e) {
+        } catch (Exception e) {
             return false;
         }
     }
@@ -133,12 +150,56 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
         return REACT_NATIVE_MODULE_NAME;
     }
 
+    public void setContext(ReactApplicationContext reactContext) {
+        Log.d(TAG, "[VoiceConnection] updating react context");
+        this.reactContext = reactContext;
+    }
+
+    public void reportNewIncomingCall(String uuid, String number, String callerName, boolean hasVideo, String payload) {
+        Log.d(TAG, "[VoiceConnection] reportNewIncomingCall, uuid: " + uuid + ", number: " + number + ", callerName: " + callerName);
+        // @TODO: handle video
+
+        this.displayIncomingCall(uuid, number, callerName);
+
+        // Send event to JS
+        WritableMap args = Arguments.createMap();
+        args.putString("handle", number);
+        args.putString("callUUID", uuid);
+        args.putString("name", callerName);
+        if (payload != null) {
+            args.putString("payload", payload);
+        }
+        sendEventToJS("RNCallKeepDidDisplayIncomingCall", args);
+    }
+
+    public void startObserving() {
+        int count = delayedEvents.size();
+        Log.d(TAG, "[VoiceConnection] startObserving, event count: " + count);
+        if (count > 0) {
+            this.reactContext.getJSModule(RCTDeviceEventEmitter.class).emit("RNCallKeepDidLoadWithEvents", delayedEvents);
+            delayedEvents = new WritableNativeArray();
+        }
+    }
+
+    public void initializeTelecomManager() {
+        Context context = this.getAppContext();
+        ComponentName cName = new ComponentName(context, VoiceConnectionService.class);
+        String appName = this.getApplicationName(context);
+
+        handle = new PhoneAccountHandle(cName, appName);
+        telecomManager = (TelecomManager) context.getSystemService(Context.TELECOM_SERVICE);
+    }
+
+    public void setSettings(ReadableMap options) {
+        this._settings = options;
+    }
+
     @ReactMethod
     public void setup(ReadableMap options) {
         Log.d(TAG, "[VoiceConnection] setup");
         VoiceConnectionService.setAvailable(false);
         VoiceConnectionService.setInitialized(true);
-        this._settings = options;
+        this.setSettings(options);
 
         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             if (isSelfManaged()) {
@@ -156,8 +217,9 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
         }
 
         if (isConnectionServiceAvailable()) {
-            this.registerPhoneAccount();
+            this.registerPhoneAccount(options);
             this.registerEvents();
+            this.startObserving();
             VoiceConnectionService.setAvailable(true);
         }
 
@@ -165,7 +227,9 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
     }
 
     @ReactMethod
-    public void registerPhoneAccount() {
+    public void registerPhoneAccount(ReadableMap options) {
+        this._settings = options;
+
         if (!isConnectionServiceAvailable()) {
             Log.w(TAG, "[VoiceConnection] registerPhoneAccount ignored due to no ConnectionService");
             return;
@@ -185,9 +249,16 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
 
         Log.d(TAG, "[VoiceConnection] registerEvents");
 
-        voiceBroadcastReceiver = new VoiceBroadcastReceiver();
-        registerReceiver();
+        this.hasListeners = true;
+        this.startObserving();
         VoiceConnectionService.setPhoneAccountHandle(handle);
+    }
+
+    @ReactMethod
+    public void unregisterEvents() {
+        Log.d(TAG, "[RNCallKeepModule] unregisterEvents");
+
+        this.hasListeners = false;
     }
 
     @ReactMethod
@@ -406,6 +477,11 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
         boolean hasDefaultAccount = telecomManager.getDefaultOutgoingPhoneAccount("tel") != null;
 
         promise.resolve(!hasSim || hasDefaultAccount);
+    }
+
+    @ReactMethod
+    public void getInitialEvents(Promise promise) {
+        promise.resolve(delayedEvents);
     }
 
     @ReactMethod
@@ -720,13 +796,17 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
         }
     }
 
-    private void initializeTelecomManager() {
-        Context context = this.getAppContext();
-        ComponentName cName = new ComponentName(context, VoiceConnectionService.class);
-        String appName = this.getApplicationName(context);
-
-        handle = new PhoneAccountHandle(cName, appName);
-        telecomManager = (TelecomManager) context.getSystemService(Context.TELECOM_SERVICE);
+    public static void onRequestPermissionsResult(int requestCode, String[] grantedPermissions, int[] grantResults) {
+        int permissionsIndex = 0;
+        List<String> permsList = Arrays.asList(permissions);
+        for (int result : grantResults) {
+            if (permsList.contains(grantedPermissions[permissionsIndex]) && result != PackageManager.PERMISSION_GRANTED) {
+                hasPhoneAccountPromise.resolve(false);
+                return;
+            }
+            permissionsIndex++;
+        }
+        hasPhoneAccountPromise.resolve(true);
     }
 
     private void registerPhoneAccount(Context appContext) {
@@ -760,8 +840,18 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
     }
 
     private void sendEventToJS(String eventName, @Nullable WritableMap params) {
-        Log.v(TAG, "[VoiceConnection] sendEventToJS, eventName :" + eventName + ", args : " + (params != null ? params.toString() : "null"));
-        this.reactContext.getJSModule(RCTDeviceEventEmitter.class).emit(eventName, params);
+        boolean isBoundToJS = this.reactContext.hasActiveCatalystInstance();
+        Log.v(TAG, "[VoiceConnection] sendEventToJS, eventName: " + eventName + ", bound: " + isBoundToJS + ", hasListeners: " + hasListeners + " args : " + (params != null ? params.toString() : "null"));
+
+        if (isBoundToJS && hasListeners) {
+            this.reactContext.getJSModule(RCTDeviceEventEmitter.class).emit(eventName, params);
+        } else {
+            if (params == null) {
+                params = Arguments.createMap();
+            }
+            params.putString("name", eventName);
+            delayedEvents.pushMap(params);
+        }
     }
 
     private String getApplicationName(Context appContext) {
@@ -796,6 +886,7 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
 
     private void registerReceiver() {
         if (!isReceiverRegistered) {
+            voiceBroadcastReceiver = new VoiceBroadcastReceiver();
             IntentFilter intentFilter = new IntentFilter();
             intentFilter.addAction(ACTION_END_CALL);
             intentFilter.addAction(ACTION_ANSWER_CALL);
@@ -817,19 +908,6 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
 
     private Context getAppContext() {
         return this.reactContext.getApplicationContext();
-    }
-
-    public static void onRequestPermissionsResult(int requestCode, String[] grantedPermissions, int[] grantResults) {
-        int permissionsIndex = 0;
-        List<String> permsList = Arrays.asList(permissions);
-        for (int result : grantResults) {
-            if (permsList.contains(grantedPermissions[permissionsIndex]) && result != PackageManager.PERMISSION_GRANTED) {
-                hasPhoneAccountPromise.resolve(false);
-                return;
-            }
-            permissionsIndex++;
-        }
-        hasPhoneAccountPromise.resolve(true);
     }
 
     private class VoiceBroadcastReceiver extends BroadcastReceiver {

@@ -662,7 +662,7 @@ _This feature is available only on Android._
 _On iOS you still have to call `setup()`._
 
 ```js
-RNCallKeep.registerPhoneAccount();
+RNCallKeep.registerPhoneAccount(options);
 ```
 
 ### registerAndroidEvents
