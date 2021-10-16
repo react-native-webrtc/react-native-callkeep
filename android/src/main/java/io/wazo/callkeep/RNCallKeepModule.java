@@ -111,7 +111,8 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
     private boolean isReceiverRegistered = false;
     private VoiceBroadcastReceiver voiceBroadcastReceiver;
     private static ReadableMap _settings;
-    public static HashMap<String, Runnable> fcmCallbacks = new HashMap<String, Runnable>();
+    public static HashMap<String, Runnable> onShowIncomingCallUiCallbacks = new HashMap<String, Runnable>();
+    public static HashMap<String, Runnable> onRejectCallbacks = new HashMap<String, Runnable>();
 
     public RNCallKeepModule(ReactApplicationContext reactContext) {
         super(reactContext);

@@ -304,11 +304,29 @@ public class VoiceConnection extends Connection {
         }
         rejected = true;
 
+        String uuid = handle.get(EXTRA_CALL_UUID);
+        if (RNCallKeepModule.onRejectCallbacks.containsKey(uuid)) {
+            try {
+                RNCallKeepModule.onRejectCallbacks.get(uuid).run();
+            } catch (Exception ex) {
+                Log.e(TAG, "onRejectCallbacks.get(uuid).run(): " + ex.getMessage());
+                ex.printStackTrace();
+            }
+            try {
+                RNCallKeepModule.onRejectCallbacks.remove(uuid);
+            } catch (Exception ex) {}
+            try {
+                RNCallKeepModule.onShowIncomingCallUiCallbacks.remove(uuid);
+            } catch (Exception ex) {}
+        } else {
+            Log.e(TAG, "onRejectCallbacks.get(uuid).run(): runnable not found for " + uuid);
+        }
+
         setDisconnected(new DisconnectCause(DisconnectCause.REJECTED));
         sendCallRequestToActivity(ACTION_END_CALL, handle);
         Log.d(TAG, "[VoiceConnection] onReject executed");
         try {
-            ((VoiceConnectionService) context).deinitConnection(handle.get(EXTRA_CALL_UUID));
+            ((VoiceConnectionService) context).deinitConnection(uuid);
         } catch(Throwable exception) {
             Log.e(TAG, "[VoiceConnection] onReject, handle map error", exception);
         }
@@ -318,15 +336,18 @@ public class VoiceConnection extends Connection {
     @Override
     public void onShowIncomingCallUi() {
         String uuid = handle.get(EXTRA_CALL_UUID);
-        if (RNCallKeepModule.fcmCallbacks.containsKey(uuid)) {
+        if (RNCallKeepModule.onShowIncomingCallUiCallbacks.containsKey(uuid)) {
             try {
-                RNCallKeepModule.fcmCallbacks.get(uuid).run();
-            } catch(Exception ex) {
-                Log.e(TAG, "fcmCallbacks.get(uuid).run(): " + ex.getMessage());
+                RNCallKeepModule.onShowIncomingCallUiCallbacks.get(uuid).run();
+            } catch (Exception ex) {
+                Log.e(TAG, "onShowIncomingCallUiCallbacks.get(uuid).run(): " + ex.getMessage());
                 ex.printStackTrace();
             }
+            try {
+                RNCallKeepModule.onShowIncomingCallUiCallbacks.remove(uuid);
+            } catch (Exception ex) {}
         } else {
-          Log.e(TAG, "fcmCallbacks.get(uuid).run(): runnable not found for " + uuid);
+            Log.e(TAG, "onShowIncomingCallUiCallbacks.get(uuid).run(): runnable not found for " + uuid);
         }
         Log.d(TAG, "[VoiceConnection] onShowIncomingCallUi");
         sendCallRequestToActivity(ACTION_SHOW_INCOMING_CALL_UI, handle);
