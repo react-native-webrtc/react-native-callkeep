@@ -24,6 +24,7 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.content.res.Resources;
@@ -57,9 +58,12 @@ import com.facebook.react.bridge.ReactContextBaseJavaModule;
 import com.facebook.react.bridge.ReactMethod;
 import com.facebook.react.bridge.ReadableArray;
 import com.facebook.react.bridge.ReadableMap;
+import com.facebook.react.bridge.ReadableMapKeySetIterator;
 import com.facebook.react.bridge.WritableArray;
 import com.facebook.react.bridge.WritableMap;
 import com.facebook.react.bridge.WritableNativeArray;
+import com.facebook.react.bridge.WritableNativeMap;
+
 import com.facebook.react.HeadlessJsTaskService;
 import com.facebook.react.modules.core.DeviceEventManagerModule.RCTDeviceEventEmitter;
 import com.facebook.react.modules.permissions.PermissionsModule;
@@ -68,9 +72,13 @@ import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
+
+import org.json.JSONObject;
+import org.json.JSONException;
 
 import static androidx.core.app.ActivityCompat.requestPermissions;
 
@@ -114,7 +122,7 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
     public static PhoneAccountHandle handle;
     private boolean isReceiverRegistered = false;
     private VoiceBroadcastReceiver voiceBroadcastReceiver;
-    private ReadableMap _settings;
+    private WritableMap _settings;
     private WritableNativeArray delayedEvents;
     private boolean hasListeners = false;
 
@@ -126,6 +134,10 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
             instance.setContext(reactContext);
         }
         return instance;
+    }
+
+    public static WritableMap getInstanceSettings() {
+        return getInstance(null, false).getSettings();
     }
 
     private RNCallKeepModule(ReactApplicationContext reactContext) {
@@ -153,6 +165,10 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
     public void setContext(ReactApplicationContext reactContext) {
         Log.d(TAG, "[VoiceConnection] updating react context");
         this.reactContext = reactContext;
+    }
+
+    public ReactApplicationContext getContext() {
+        return this.reactContext;
     }
 
     public void reportNewIncomingCall(String uuid, String number, String callerName, boolean hasVideo, String payload) {
@@ -191,12 +207,27 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
     }
 
     public void setSettings(ReadableMap options) {
-        this._settings = options;
+        if (options == null) {
+            return;
+        }
+        storeSettings(options);
+
+        this._settings = getSettings();
+    }
+
+     public WritableMap getSettings() {
+        if (_settings == null) {
+            fetchStoredSettings();
+        }
+
+        return _settings;
     }
 
     @ReactMethod
     public void setup(ReadableMap options) {
         Log.d(TAG, "[VoiceConnection] setup");
+
+        Activity activity = getCurrentActivity();
         VoiceConnectionService.setAvailable(false);
         VoiceConnectionService.setInitialized(true);
         this.setSettings(options);
@@ -222,13 +253,11 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
             this.startObserving();
             VoiceConnectionService.setAvailable(true);
         }
-
-        VoiceConnectionService.setSettings(options);
     }
 
     @ReactMethod
     public void registerPhoneAccount(ReadableMap options) {
-        this._settings = options;
+        storeSettings(options);
 
         if (!isConnectionServiceAvailable()) {
             Log.w(TAG, "[VoiceConnection] registerPhoneAccount ignored due to no ConnectionService");
@@ -256,7 +285,7 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
 
     @ReactMethod
     public void unregisterEvents() {
-        Log.d(TAG, "[RNCallKeepModule] unregisterEvents");
+        Log.d(TAG, "[VoiceConnection] unregisterEvents");
 
         this.hasListeners = false;
     }
@@ -697,8 +726,16 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
     }
 
     @ReactMethod
-    public void setForegroundServiceSettings(ReadableMap settings) {
-        VoiceConnectionService.setSettings(settings);
+    public void setForegroundServiceSettings(ReadableMap foregroundServerSettings) {
+        if (foregroundServerSettings == null) {
+            return;
+        }
+        WritableMap settings = getSettings();
+        if (settings != null) {
+            settings.putMap("foregroundService", readableToWritableMap(foregroundServerSettings));
+        }
+
+        storeSettings(settings);
     }
 
     @ReactMethod
@@ -908,6 +945,103 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
     private Context getAppContext() {
         return this.reactContext.getApplicationContext();
     }
+
+    private void storeSettings(ReadableMap options) {
+        Context context = getInstance(null, false).getAppContext();
+        if (context == null) {
+            return;
+        }
+
+        SharedPreferences sharedPref = context.getSharedPreferences("rn-callkeep", Context.MODE_PRIVATE);
+        try {
+            JSONObject jsonObject = convertMapToJson(options);
+            String jsonString = jsonObject.toString();
+            sharedPref.edit().putString("settings", jsonString).apply();
+        } catch (JSONException e) {
+        }
+    }
+
+    private void fetchStoredSettings() {
+        Context context = getInstance(null, false).getAppContext();
+        _settings = new WritableNativeMap();
+        if (context == null) {
+            return;
+        }
+
+        SharedPreferences sharedPref = context.getSharedPreferences("rn-callkeep", Context.MODE_PRIVATE);
+        try {
+            String jsonString = sharedPref.getString("settings", (new JSONObject()).toString());
+            if (jsonString != null) {
+                JSONObject jsonObject = new JSONObject(jsonString);
+
+                _settings = convertJsonToMap(jsonObject);
+            }
+        } catch(JSONException e) {
+        }
+    }
+
+    // @see https://gist.github.com/viperwarp/2beb6bbefcc268dee7ad
+    private static WritableMap convertJsonToMap(JSONObject jsonObject) throws JSONException {
+        WritableMap map = new WritableNativeMap();
+
+        Iterator<String> iterator = jsonObject.keys();
+        while (iterator.hasNext()) {
+            String key = iterator.next();
+            Object value = jsonObject.get(key);
+            if (value instanceof JSONObject) {
+                map.putMap(key, convertJsonToMap((JSONObject) value));
+            } else if (value instanceof  Boolean) {
+                map.putBoolean(key, (Boolean) value);
+            } else if (value instanceof  Integer) {
+                map.putInt(key, (Integer) value);
+            } else if (value instanceof  Double) {
+                map.putDouble(key, (Double) value);
+            } else if (value instanceof String)  {
+                map.putString(key, (String) value);
+            } else {
+                map.putString(key, value.toString());
+            }
+        }
+        return map;
+    }
+
+    private static JSONObject convertMapToJson(ReadableMap readableMap) throws JSONException {
+        JSONObject object = new JSONObject();
+        ReadableMapKeySetIterator iterator = readableMap.keySetIterator();
+        while (iterator.hasNextKey()) {
+            String key = iterator.nextKey();
+            switch (readableMap.getType(key)) {
+                case Null:
+                    object.put(key, JSONObject.NULL);
+                    break;
+                case Boolean:
+                    object.put(key, readableMap.getBoolean(key));
+                    break;
+                case Number:
+                    object.put(key, readableMap.getDouble(key));
+                    break;
+                case String:
+                    object.put(key, readableMap.getString(key));
+                    break;
+                case Map:
+                    object.put(key, convertMapToJson(readableMap.getMap(key)));
+                    break;
+            }
+        }
+        return object;
+    }
+
+    private static WritableMap readableToWritableMap(ReadableMap readableMap) {
+        try {
+            JSONObject json = convertMapToJson(readableMap);
+
+            return convertJsonToMap(json);
+        } catch (JSONException e) {
+        }
+
+        return null;
+    }
+
 
     private class VoiceBroadcastReceiver extends BroadcastReceiver {
         @Override
