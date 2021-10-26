@@ -40,8 +40,17 @@ const didActivateAudioSession = handler =>
 const didDeactivateAudioSession = handler =>
   eventEmitter.addListener(RNCallKeepDidDeactivateAudioSession, handler);
 
-const didDisplayIncomingCall = handler =>
-  eventEmitter.addListener(RNCallKeepDidDisplayIncomingCall, (data) => handler(data));
+const didDisplayIncomingCall = handler => eventEmitter.addListener(RNCallKeepDidDisplayIncomingCall, data => {
+  // On Android the payload parameter is sent a String
+  // As it requires too much code on Android to convert it to WritableMap, let's do it here.
+  if (data.payload && typeof data.payload === 'string') {
+    try {
+      data.payload = JSON.parse(data.payload);
+    } catch (_) {
+    }
+  }
+  handler(data);
+});
 
 const didPerformSetMutedCallAction = handler =>
   eventEmitter.addListener(RNCallKeepDidPerformSetMutedCallAction, (data) => handler(data));

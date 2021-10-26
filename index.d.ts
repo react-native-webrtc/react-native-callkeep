@@ -79,9 +79,11 @@ declare module 'react-native-callkeep' {
 
     static answerIncomingCall(uuid: string): void
 
-    static registerPhoneAccount(): void
+    static registerPhoneAccount(options: IOptions): void
 
     static registerAndroidEvents(): void
+
+    static unregisterAndroidEvents(): void
 
     static displayIncomingCall(
       uuid: string,
