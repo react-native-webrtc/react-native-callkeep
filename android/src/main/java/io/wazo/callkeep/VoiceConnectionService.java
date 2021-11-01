@@ -67,6 +67,7 @@ import static io.wazo.callkeep.Constants.EXTRA_CALL_NUMBER_SCHEMA;
 import static io.wazo.callkeep.Constants.EXTRA_CALL_UUID;
 import static io.wazo.callkeep.Constants.EXTRA_DISABLE_ADD_CALL;
 import static io.wazo.callkeep.Constants.FOREGROUND_SERVICE_TYPE_MICROPHONE;
+import static io.wazo.callkeep.Constants.ACTION_ON_CREATE_CONNECTION_FAILED;
 
 // @see https://github.com/kbagchiGWC/voice-quickstart-android/blob/9a2aff7fbe0d0a5ae9457b48e9ad408740dfb968/exampleConnectionService/src/main/java/com/twilio/voice/examples/connectionservice/VoiceConnectionService.java
 @TargetApi(Build.VERSION_CODES.M)
@@ -401,6 +402,27 @@ public class VoiceConnectionService extends ConnectionService {
         connection2.onUnhold();
 
         this.addConference(voiceConference);
+    }
+
+    @Override
+    public void onCreateIncomingConnectionFailed(PhoneAccountHandle connectionManagerPhoneAccount, ConnectionRequest request) {
+        Bundle extras = request.getExtras();
+        HashMap<String, String> extrasMap = this.bundleToMap(extras);
+
+        String callerNumber = request.getAddress().toString();
+        if (callerNumber.contains(":")) {
+            //CallerNumber contains a schema which we'll separate out
+            int schemaIndex = callerNumber.indexOf(":");
+            String number = callerNumber.substring(schemaIndex + 1);
+            String schema = callerNumber.substring(0, schemaIndex);
+
+            extrasMap.put(EXTRA_CALL_NUMBER, number);
+            extrasMap.put(EXTRA_CALL_NUMBER_SCHEMA, schema);
+        } else {
+            extrasMap.put(EXTRA_CALL_NUMBER, callerNumber);
+        }
+
+        sendCallRequestToActivity(ACTION_ON_CREATE_CONNECTION_FAILED, extrasMap);
     }
 
     /*

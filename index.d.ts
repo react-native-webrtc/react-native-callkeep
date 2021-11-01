@@ -13,7 +13,8 @@ declare module 'react-native-callkeep' {
     'didPerformSetMutedCallAction' |
     'didLoadWithEvents' |
     'showIncomingCallUi' |
-    'silenceIncomingCall';
+    'silenceIncomingCall' |
+    'createIncomingConnectionFailed';
 
   type HandleType = 'generic' | 'number' | 'email';
 
