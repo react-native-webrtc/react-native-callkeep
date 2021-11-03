@@ -174,6 +174,7 @@ To implement a self managed calling app, the following steps are necessary:
 - CallKeep will then fire the `showIncomingCallUi` event.
 - When `showIncomingCallUi` is fired, you must show an incoming call UI. This would be a high priority notification ([Android: Display time-sensitive notifications](https://developer.android.com/training/notify-user/time-sensitive)).
 - If the user answers the call, you call the appropriate RNCallKeep actions such as `answerCall` or `endCall`
+- In certain cases Android will not allow you to show an incoming call notification. In that case the 'createIncomingConnectionFailed' is fired and you should reject the incoming SIP Invite.
 
 Self Managed calling apps are an advanced topic, and there are many steps involved in implementing them, but here are some things to keep in mind:
 - React Native Headless Tasks are a great way to execute React Native code. Remember to start up the headless task as a Foreground Service.
@@ -893,6 +894,26 @@ The following values will match those initially passed to `silenceIncomingCall`
 - `name` (string)
   - Caller Name.
 
+### - createIncomingConnectionFailed
+
+_Android only. Self Managed only._
+
+Corresponds to the native [onCreateIncomingConnectionFailed callback](https://developer.android.com/reference/android/telecom/ConnectionService#onCreateIncomingConnectionFailed(android.telecom.PhoneAccountHandle,%20android.telecom.ConnectionRequest)). The implementor should reject the incoming SIP INVITE with an appropriate status code, such as 483 User Busy. Android unfortunately does not provide the exact reason for refusing to let you accept an incoming call, but they do list a set of reasons [here](https://developer.android.com/guide/topics/connectivity/telecom/selfManaged#constraints)
+
+```js
+RNCallKeep.addEventListener('createIncomingConnectionFailed', ({ handle, callUUID, name }) => {
+
+});
+```
+
+The following values will match those initially passed to `silenceIncomingCall`
+
+- `handle` (string)
+  - Phone number of the incoming caller.
+- `callUUID` (string)
+  - The UUID of the call.
+- `name` (string)
+  - Caller Name.
 
 ### - checkReachability
 
