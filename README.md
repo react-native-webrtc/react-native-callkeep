@@ -198,7 +198,8 @@ Self Managed calling apps are an advanced topic, and there are many steps involv
 
 | Method                                                            | Return Type         |  iOS | Android |
 | ----------------------------------------------------------------- | ------------------- | :--: | :-----: |
-| [getInitialEvents()](#getInitialEvents)                           | `Promise<String[]>` |  ✅  |   ❌    |
+| [getInitialEvents()](#getInitialEvents)                           | `Promise<String[]>` |  ✅  |   ✅    |
+| [clearInitialEvents()](#clearInitialEvents)                       | `void>`             |  ✅  |   ✅    |
 | [setAvailable()](#setAvailable)                                   | `Promise<void>`     |  ❌  |   ✅    |
 | [setForegroundServiceSettings()](#setForegroundServiceSettings)   | `Promise<void>`     |  ❌  |   ✅    |
 | [canMakeMultipleCalls()](#canMakeMultipleCalls)                   | `Promise<void>`     |  ❌  |   ✅    |
@@ -232,12 +233,19 @@ Self Managed calling apps are an advanced topic, and there are many steps involv
 
 
 ### getInitialEvents
-_This feature is available only on iOS._
 
 If there were some actions performed by user before JS context has been created, this method would return early fired events. This is alternative to "didLoadWithEvents" event.
 
 ```js
 RNCallKeep.getInitialEvents();
+```
+
+### clearInitialEvents
+
+Clear all pending actions returned by `getInitialEvents()`.
+
+```js
+RNCallKeep.clearInitialEvents();
 ```
 
 ### setAvailable
