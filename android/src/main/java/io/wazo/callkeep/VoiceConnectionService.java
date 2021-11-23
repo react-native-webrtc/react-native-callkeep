@@ -112,8 +112,13 @@ public class VoiceConnectionService extends ConnectionService {
         isAvailable = value;
     }
 
-    public static ReadableMap getSettings() {
+    public static WritableMap getSettings() {
        WritableMap settings = RNCallKeepModule.getInstanceSettings();
+       return settings;
+    }
+
+    public static ReadableMap getForegroundSettings() {
+       WritableMap settings = VoiceConnectionService.getSettings();
        if (settings == null) {
           return null;
        }
@@ -178,17 +183,26 @@ public class VoiceConnectionService extends ConnectionService {
 
     @Override
     public Connection onCreateIncomingConnection(PhoneAccountHandle connectionManagerPhoneAccount, ConnectionRequest request) {
-        Bundle extra = request.getExtras();
+        final Bundle extra = request.getExtras();
         Uri number = request.getAddress();
         String name = extra.getString(EXTRA_CALLER_NAME);
+        String callUUID = extra.getString(EXTRA_CALL_UUID);
+        Boolean isForeground = VoiceConnectionService.isRunning(this.getApplicationContext());
+        WritableMap settings = this.getSettings();
+        Integer timeout = settings.hasKey("displayCallReachabilityTimeout") ? settings.getInt("displayCallReachabilityTimeout") : null;
 
-        Log.d(TAG, "[VoiceConnectionService] onCreateIncomingConnection, name:" + name + ", number" + number);
+        Log.d(TAG, "[VoiceConnectionService] onCreateIncomingConnection, name:" + name + ", number" + number +
+            ", isForeground: " + isForeground + ", isReachable:" + isReachable + ", timeout: " + timeout);
 
         Connection incomingCallConnection = createConnection(request);
         incomingCallConnection.setRinging();
         incomingCallConnection.setInitialized();
 
         startForegroundService();
+
+        if (timeout != null) {
+            this.checkForAppReachability(callUUID, timeout);
+        }
 
         return incomingCallConnection;
     }
@@ -270,7 +284,7 @@ public class VoiceConnectionService extends ConnectionService {
             return;
         }
         Log.d(TAG, "[VoiceConnectionService] startForegroundService");
-        ReadableMap foregroundSettings = getSettings();
+        ReadableMap foregroundSettings = getForegroundSettings();
 
         if (foregroundSettings == null || !foregroundSettings.hasKey("channelId")) {
             Log.w(TAG, "[VoiceConnectionService] Not creating foregroundService because not configured");
@@ -306,7 +320,7 @@ public class VoiceConnectionService extends ConnectionService {
 
     private void stopForegroundService() {
         Log.d(TAG, "[VoiceConnectionService] stopForegroundService");
-        ReadableMap foregroundSettings = getSettings();
+        ReadableMap foregroundSettings = getForegroundSettings();
 
         if (foregroundSettings == null || !foregroundSettings.hasKey("channelId")) {
             Log.d(TAG, "[VoiceConnectionService] Discarding stop foreground service, no service configured");
@@ -516,5 +530,26 @@ public class VoiceConnectionService extends ConnectionService {
         Log.d(TAG, "[VoiceConnectionService] isRunning: no running package found.");
 
         return false;
+    }
+
+    private void checkForAppReachability(final String callUUID, Integer timeout) {
+        final VoiceConnectionService instance = this;
+
+        new android.os.Handler().postDelayed(new Runnable() {
+            public void run() {
+                if (instance.isReachable) {
+                    return;
+                }
+                Connection conn = VoiceConnectionService.getConnection(callUUID);
+                Log.w(TAG, "[VoiceConnectionService] checkForAppReachability timeout, isReachable:" + instance.isReachable + ", uuid: " + callUUID);
+
+                if (conn == null) {
+                    Log.w(TAG, "[VoiceConnectionService] checkForAppReachability timeout, no connection to close with uuid: " + callUUID);
+
+                    return;
+                }
+                conn.onDisconnect();
+            }
+        }, timeout);
     }
 }

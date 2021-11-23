@@ -121,6 +121,9 @@ Alternative on iOS you can perform setup in `AppDelegate.m`. Doing this allows c
       If provided, the maximum number of calls in a single group, used for conferencing (Default: 1, no conferencing)
     - `supportsVideo`: boolean (optional)
       If provided, whether or not the application supports video calling (Default: true)
+    - `displayCallReachabilityTimeout`: number in ms (optional)
+      If provided, starts a timeout that check if the application is reachable and end the call if not (Default: null)
+      You'll have to call `setReachable()` as soon as your Javascript application is started.
   - `android`: object
     - `alertTitle`: string (required)
       When asking for _phone account_ permission, we need to provider a title for the `Alert` to ask the user for it
@@ -139,8 +142,13 @@ Alternative on iOS you can perform setup in `AppDelegate.m`. Doing this allows c
       multiple popups to the user at different times.
     - `selfManaged`: boolean (optional)
       When set to true, call keep will configure itself to run as a self managed connection service. This is an advanced topic, and it's best to refer to [Googles Documentation](https://developer.android.com/guide/topics/connectivity/telecom/selfManaged) on the matter.
+      - `displayCallReachabilityTimeout`: number in ms (optional)
+        If provided, starts a timeout that check if the application is reachable and end the call if not (Default: null)
+        You'll have to call `setReachable()` as soon as your Javascript application is started.
       
-`setup` calls internally `registerPhoneAccount` and `registerEvents`.
+`setup` calls internally `registerPhoneAccount`, `registerEvents` and `setSettings`.
+
+You can alternatively just call `setSettings()` with the same option as setup to define only your settings.
 
 # Constants
 
