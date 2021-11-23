@@ -156,9 +156,9 @@ RCT_EXPORT_MODULE()
         [self sendEventWithName:name body:body];
     } else {
         NSDictionary *dictionary = [NSDictionary dictionaryWithObjectsAndKeys:
-                                        name, @"name",
-                                    body, @"data",
-                                    nil
+            name, @"name",
+            body, @"data",
+            nil
         ];
         [_delayedEvents addObject:dictionary];
     }
