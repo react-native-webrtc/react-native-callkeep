@@ -532,7 +532,7 @@ public class VoiceConnectionService extends ConnectionService {
         return false;
     }
 
-    private void checkForAppReachability(final String callUUID, Integer timeout) {
+    private void checkForAppReachability(final String callUUID, final Integer timeout) {
         final VoiceConnectionService instance = this;
 
         new android.os.Handler().postDelayed(new Runnable() {
@@ -541,7 +541,7 @@ public class VoiceConnectionService extends ConnectionService {
                     return;
                 }
                 Connection conn = VoiceConnectionService.getConnection(callUUID);
-                Log.w(TAG, "[VoiceConnectionService] checkForAppReachability timeout, isReachable:" + instance.isReachable + ", uuid: " + callUUID);
+                Log.w(TAG, "[VoiceConnectionService] checkForAppReachability timeout after " + timeout + " ms, isReachable:" + instance.isReachable + ", uuid: " + callUUID);
 
                 if (conn == null) {
                     Log.w(TAG, "[VoiceConnectionService] checkForAppReachability timeout, no connection to close with uuid: " + callUUID);
