@@ -25,7 +25,7 @@ import com.facebook.react.HeadlessJsTaskService;
 import com.facebook.react.bridge.WritableMap;
 import com.facebook.react.bridge.Arguments;
 import com.facebook.react.jstasks.HeadlessJsTaskConfig;
-import com.facebook.react.jstasks.HeadlessJsRetryPolicy;
+import com.facebook.react.jstasks.HeadlessJsTaskRetryPolicy;
 import com.facebook.react.jstasks.LinearCountingRetryPolicy;
 
 import static io.wazo.callkeep.Constants.EXTRA_CALLER_NAME;
@@ -40,7 +40,7 @@ public class RNCallKeepBackgroundMessagingService extends HeadlessJsTaskService 
   HeadlessJsTaskConfig getTaskConfig(Intent intent) {
     Bundle extras = intent.getExtras();
 
-    HeadlessJsRetryPolicy retryPolicy = new LinearCountingRetryPolicy(
+    HeadlessJsTaskRetryPolicy retryPolicy = new LinearCountingRetryPolicy(
       5, // Max number of retry attempts
       500 // Delay between each retry attempt
     );
