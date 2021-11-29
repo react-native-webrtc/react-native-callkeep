@@ -121,12 +121,13 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
     public static PhoneAccountHandle handle;
     private boolean isReceiverRegistered = false;
     private VoiceBroadcastReceiver voiceBroadcastReceiver;
-    private WritableMap _settings;
+    private static WritableMap _settings;
     private WritableNativeArray delayedEvents;
     private boolean hasListeners = false;
 
     public static RNCallKeepModule getInstance(ReactApplicationContext reactContext, boolean realContext) {
         if (instance == null) {
+            Log.d(TAG, "[RNCallKeepModule] getInstance : " + (reactContext == null ? "null" : "ok"));
             instance = new RNCallKeepModule(reactContext);
         }
         if (realContext) {
@@ -135,8 +136,12 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
         return instance;
     }
 
-    public static WritableMap getInstanceSettings() {
-        return getInstance(null, false).getSettings();
+    public static WritableMap getSettings() {
+        if (_settings == null) {
+            fetchStoredSettings();
+        }
+
+        return _settings;
     }
 
     private RNCallKeepModule(ReactApplicationContext reactContext) {
@@ -198,6 +203,10 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
 
     public void initializeTelecomManager() {
         Context context = this.getAppContext();
+        if (context == null) {
+            Log.w(TAG, "[RNCallKeepModule][initializeTelecomManager] no react context found.");
+            return;
+        }
         ComponentName cName = new ComponentName(context, VoiceConnectionService.class);
         String appName = this.getApplicationName(context);
 
@@ -213,15 +222,7 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
         Log.d(TAG, "[RNCallKeepModule] setSettings: " + options);
         storeSettings(options);
 
-        this._settings = getSettings();
-    }
-
-     public WritableMap getSettings() {
-        if (_settings == null) {
-            fetchStoredSettings();
-        }
-
-        return _settings;
+        _settings = getSettings();
     }
 
     @ReactMethod
@@ -275,8 +276,13 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
         }
 
         Log.d(TAG, "[RNCallKeepModule] registerPhoneAccount");
+        Context context = this.getAppContext();
+        if (context == null) {
+            Log.w(TAG, "[RNCallKeepModule][registerPhoneAccount] no react context found.");
+            return;
+        }
 
-        this.registerPhoneAccount(this.getAppContext());
+        this.registerPhoneAccount(context);
     }
 
     @ReactMethod
@@ -666,6 +672,11 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
     public void getAudioRoutes(Promise promise){
         try {
             Context context = this.getAppContext();
+            if (context == null) {
+                Log.w(TAG, "[RNCallKeepModule][getAudioRoutes] no react context found.");
+                promise.reject("No react context found to list audio routes");
+                return;
+            }
             AudioManager audioManager = (AudioManager) context.getSystemService(context.AUDIO_SERVICE);
             WritableArray devices = Arguments.createArray();
             ArrayList<String> typeChecker = new ArrayList<>();
@@ -804,7 +815,13 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
             intent.setComponent(new ComponentName("com.android.server.telecom",
                     "com.android.server.telecom.settings.EnableAccountPreferenceActivity"));
 
-            this.getAppContext().startActivity(intent);
+            Context context = this.getAppContext();
+            if (context == null) {
+                Log.w(TAG, "[RNCallKeepModule][openPhoneAccounts] no react context found.");
+                return;
+            }
+
+            context.startActivity(intent);
             return;
         }
 
@@ -821,7 +838,12 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
 
         Intent intent = new Intent(TelecomManager.ACTION_CHANGE_PHONE_ACCOUNTS);
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_MULTIPLE_TASK);
-        this.getAppContext().startActivity(intent);
+        Context context = this.getAppContext();
+        if (context == null) {
+            Log.w(TAG, "[RNCallKeepModule][openPhoneAccountSettings] no react context found.");
+            return;
+        }
+        context.startActivity(intent);
     }
 
     public static Boolean isConnectionServiceAvailable() {
@@ -842,6 +864,10 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
     @ReactMethod
     public void backToForeground() {
         Context context = getAppContext();
+        if (context == null) {
+            Log.w(TAG, "[RNCallKeepModule][backToForeground] no react context found.");
+            return;
+        }
         String packageName = context.getApplicationContext().getPackageName();
         Intent focusIntent = context.getPackageManager().getLaunchIntentForPackage(packageName).cloneFilter();
         Activity activity = getCurrentActivity();
@@ -881,7 +907,12 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
         }
 
         this.initializeTelecomManager();
-        String appName = this.getApplicationName(this.getAppContext());
+        Context context = this.getAppContext();
+        if (context == null) {
+            Log.w(TAG, "[RNCallKeepModule][registerPhoneAccount] no react context found.");
+            return;
+        }
+        String appName = this.getApplicationName(context);
 
         PhoneAccount.Builder builder = new PhoneAccount.Builder(handle, appName);
         if (isSelfManaged()) {
@@ -899,7 +930,7 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
 
         PhoneAccount account = builder.build();
 
-        telephonyManager = (TelephonyManager) this.getAppContext().getSystemService(Context.TELEPHONY_SERVICE);
+        telephonyManager = (TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);
 
         telecomManager.registerPhoneAccount(account);
     }
@@ -971,19 +1002,27 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
             intentFilter.addAction(ACTION_ON_CREATE_CONNECTION_FAILED);
             intentFilter.addAction(ACTION_DID_CHANGE_AUDIO_ROUTE);
 
-            LocalBroadcastManager.getInstance(this.reactContext).registerReceiver(voiceBroadcastReceiver, intentFilter);
-            isReceiverRegistered = true;
+            Log.w(TAG, "[RNCallKeepModule][registerReceiver] reactContext:" + (this.reactContext == null ? "NOPE" : "OK"));
+
+
+            if (this.reactContext != null) {
+                LocalBroadcastManager.getInstance(this.reactContext).registerReceiver(voiceBroadcastReceiver, intentFilter);
+                isReceiverRegistered = true;
+
+                VoiceConnectionService.startObserving();
+            }
         }
     }
 
     private Context getAppContext() {
-        return this.reactContext.getApplicationContext();
+        return this.reactContext != null ? this.reactContext.getApplicationContext() : null;
     }
 
     // Store all callkeep settings in JSON
     private void storeSettings(ReadableMap options) {
         Context context = getInstance(null, false).getAppContext();
         if (context == null) {
+            Log.w(TAG, "[RNCallKeepModule][storeSettings] no react context found.");
             return;
         }
 
@@ -996,10 +1035,14 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
         }
     }
 
-    private void fetchStoredSettings() {
-        Context context = getInstance(null, false).getAppContext();
+    private static void fetchStoredSettings() {
+        if (instance == null) {
+            return;
+        }
+        Context context = instance.getAppContext();
         _settings = new WritableNativeMap();
         if (context == null) {
+            Log.w(TAG, "[RNCallKeepModule][fetchStoredSettings] no react context found.");
             return;
         }
 
@@ -1020,6 +1063,8 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
         public void onReceive(Context context, Intent intent) {
             WritableMap args = Arguments.createMap();
             HashMap<String, String> attributeMap = (HashMap<String, String>)intent.getSerializableExtra("attributeMap");
+
+            Log.d(TAG, "[RNCallKeepModule][onReceive] :" + intent.getAction());
 
             switch (intent.getAction()) {
                 case ACTION_END_CALL:

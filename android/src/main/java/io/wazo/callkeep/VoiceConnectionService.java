@@ -31,6 +31,7 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.Looper;
 import android.speech.tts.Voice;
 import androidx.annotation.Nullable;
 import androidx.core.app.NotificationCompat;
@@ -81,6 +82,10 @@ public class VoiceConnectionService extends ConnectionService {
     private static ConnectionRequest currentConnectionRequest;
     private static PhoneAccountHandle phoneAccountHandle;
     private static String TAG = "RNCallKeep";
+
+    // Delay events sent to RNCallKeepModule when there is no listener available
+    private static List<Bundle> delayedEvents = new ArrayList<Bundle>();
+
     public static Map<String, VoiceConnection> currentConnections = new HashMap<>();
     public static Boolean hasOutgoingCall = false;
     public static VoiceConnectionService currentConnectionService = null;
@@ -94,7 +99,7 @@ public class VoiceConnectionService extends ConnectionService {
 
     public VoiceConnectionService() {
         super();
-        Log.e(TAG, "[VoiceConnectionService] Constructor");
+        Log.d(TAG, "[VoiceConnectionService] Constructor");
         currentConnectionRequest = null;
         currentConnectionService = this;
     }
@@ -113,7 +118,7 @@ public class VoiceConnectionService extends ConnectionService {
     }
 
     public static WritableMap getSettings() {
-       WritableMap settings = RNCallKeepModule.getInstanceSettings();
+       WritableMap settings = RNCallKeepModule.getSettings();
        return settings;
     }
 
@@ -270,8 +275,8 @@ public class VoiceConnectionService extends ConnectionService {
 
         HashMap<String, String> extrasMap = this.bundleToMap(extras);
 
-        sendCallRequestToActivity(ACTION_ONGOING_CALL, extrasMap);
-        sendCallRequestToActivity(ACTION_AUDIO_SESSION, extrasMap);
+        sendCallRequestToActivity(ACTION_ONGOING_CALL, extrasMap, true);
+        sendCallRequestToActivity(ACTION_AUDIO_SESSION, extrasMap, true);
 
         Log.d(TAG, "[VoiceConnectionService] onCreateOutgoingConnection: done");
 
@@ -368,7 +373,7 @@ public class VoiceConnectionService extends ConnectionService {
         Log.d(TAG, "[VoiceConnectionService] checkReachability");
 
         final VoiceConnectionService instance = this;
-        sendCallRequestToActivity(ACTION_CHECK_REACHABILITY, null);
+        sendCallRequestToActivity(ACTION_CHECK_REACHABILITY, null, true);
 
         new android.os.Handler().postDelayed(
             new Runnable() {
@@ -474,10 +479,31 @@ public class VoiceConnectionService extends ConnectionService {
         sendCallRequestToActivity(ACTION_ON_CREATE_CONNECTION_FAILED, extrasMap);
     }
 
+    // When a listener is available for `sendCallRequestToActivity`, send delayed events.
+    public static void startObserving() {
+        new Handler(Looper.getMainLooper()).post(new Runnable() {
+            @Override
+            public void run() {
+            // Run this in a Looper to avoid : java.lang.RuntimeException: Can't create handler inside thread Thread
+                int count = delayedEvents.size();
+                Log.d(TAG, "[VoiceConnectionService] startObserving, event count: " + count);
+
+                for (Bundle event : delayedEvents) {
+                    String action = event.getString("action");
+                    HashMap attributeMap = (HashMap) event.getSerializable("attributeMap");
+
+                    currentConnectionService.sendCallRequestToActivity(action, attributeMap, false);
+                }
+
+                delayedEvents = new ArrayList<Bundle>();
+            }
+        });
+    }
+
     /*
      * Send call request to the RNCallKeepModule
      */
-    private void sendCallRequestToActivity(final String action, @Nullable final HashMap attributeMap) {
+    private void sendCallRequestToActivity(final String action, @Nullable final HashMap attributeMap, final boolean retry) {
         final VoiceConnectionService instance = this;
         final Handler handler = new Handler();
 
@@ -487,12 +513,19 @@ public class VoiceConnectionService extends ConnectionService {
             @Override
             public void run() {
                 Intent intent = new Intent(action);
+                Bundle extras = new Bundle();
+                extras.putString("action", action);
+
                 if (attributeMap != null) {
-                    Bundle extras = new Bundle();
                     extras.putSerializable("attributeMap", attributeMap);
                     intent.putExtras(extras);
                 }
-                LocalBroadcastManager.getInstance(instance).sendBroadcast(intent);
+
+                boolean result = LocalBroadcastManager.getInstance(instance).sendBroadcast(intent);
+                if (!result && retry) {
+                    // Event will be sent later when a listener will be available.
+                    delayedEvents.add(extras);
+                }
             }
         });
     }
