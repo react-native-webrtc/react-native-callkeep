@@ -405,7 +405,7 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
 
     @ReactMethod
     public void checkPhoneAccountPermission(ReadableArray optionalPermissions, Promise promise) {
-        Activity currentActivity = this.getCurrentActivity();
+        Activity currentActivity = this.getCurrentReactActivity();
 
         if (!isConnectionServiceAvailable()) {
             String error = "ConnectionService not available for this version of Android.";
@@ -870,7 +870,7 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
         }
         String packageName = context.getApplicationContext().getPackageName();
         Intent focusIntent = context.getPackageManager().getLaunchIntentForPackage(packageName).cloneFilter();
-        Activity activity = getCurrentActivity();
+        Activity activity = getCurrentReactActivity();
         boolean isOpened = activity != null;
         Log.d(TAG, "[RNCallKeepModule] backToForeground, app isOpened ?" + (isOpened ? "true" : "false"));
 
@@ -898,6 +898,10 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
             permissionsIndex++;
         }
         hasPhoneAccountPromise.resolve(true);
+    }
+
+    public Activity getCurrentReactActivity() {
+        return this.reactContext.getCurrentActivity();
     }
 
     private void registerPhoneAccount(Context appContext) {
@@ -961,7 +965,7 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
     }
 
     private Boolean hasPermissions() {
-        Activity currentActivity = this.getCurrentActivity();
+        Activity currentActivity = this.getCurrentReactActivity();
 
         if (currentActivity == null) {
             return false;
@@ -1001,9 +1005,6 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
             intentFilter.addAction(ACTION_ON_SILENCE_INCOMING_CALL);
             intentFilter.addAction(ACTION_ON_CREATE_CONNECTION_FAILED);
             intentFilter.addAction(ACTION_DID_CHANGE_AUDIO_ROUTE);
-
-            Log.w(TAG, "[RNCallKeepModule][registerReceiver] reactContext:" + (this.reactContext == null ? "NOPE" : "OK"));
-
 
             if (this.reactContext != null) {
                 LocalBroadcastManager.getInstance(this.reactContext).registerReceiver(voiceBroadcastReceiver, intentFilter);
