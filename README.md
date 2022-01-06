@@ -122,7 +122,7 @@ Alternative on iOS you can perform setup in `AppDelegate.m`. Doing this allows c
     - `supportsVideo`: boolean (optional)
       If provided, whether or not the application supports video calling (Default: true)
     - `displayCallReachabilityTimeout`: number in ms (optional)
-      If provided, starts a timeout that check if the application is reachable and end the call if not (Default: null)
+      If provided, starts a timeout that checks if the application is reachable and ends the call if not (Default: null)
       You'll have to call `setReachable()` as soon as your Javascript application is started.
   - `android`: object
     - `alertTitle`: string (required)
@@ -143,12 +143,12 @@ Alternative on iOS you can perform setup in `AppDelegate.m`. Doing this allows c
     - `selfManaged`: boolean (optional)
       When set to true, call keep will configure itself to run as a self managed connection service. This is an advanced topic, and it's best to refer to [Googles Documentation](https://developer.android.com/guide/topics/connectivity/telecom/selfManaged) on the matter.
       - `displayCallReachabilityTimeout`: number in ms (optional)
-        If provided, starts a timeout that check if the application is reachable and end the call if not (Default: null)
+        If provided, starts a timeout that checks if the application is reachable and ends the call if not (Default: null)
         You'll have to call `setReachable()` as soon as your Javascript application is started.
       
 `setup` calls internally `registerPhoneAccount`, `registerEvents` and `setSettings`.
 
-You can alternatively just call `setSettings()` with the same option as setup to define only your settings.
+You can alternatively just call `setSettings()` with the same option as `setup()` to define only your settings.
 
 # Constants
 
