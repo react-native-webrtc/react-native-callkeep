@@ -221,9 +221,7 @@ class RNCallKeep {
       return;
     }
 
-    RNCallKeepModule.setForegroundServiceSettings({
-      foregroundService: settings,
-    });
+    RNCallKeepModule.setForegroundServiceSettings(settings);
   };
 
   canMakeMultipleCalls = (state) => {

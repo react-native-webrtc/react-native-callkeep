@@ -24,6 +24,7 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.content.res.Resources;
@@ -60,6 +61,7 @@ import com.facebook.react.bridge.ReadableMap;
 import com.facebook.react.bridge.WritableArray;
 import com.facebook.react.bridge.WritableMap;
 import com.facebook.react.bridge.WritableNativeArray;
+import com.facebook.react.bridge.WritableNativeMap;
 import com.facebook.react.HeadlessJsTaskService;
 import com.facebook.react.modules.core.DeviceEventManagerModule.RCTDeviceEventEmitter;
 import com.facebook.react.modules.permissions.PermissionsModule;
@@ -71,6 +73,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
+
+import org.json.JSONObject;
+import org.json.JSONException;
 
 import static androidx.core.app.ActivityCompat.requestPermissions;
 
@@ -114,7 +119,7 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
     public static PhoneAccountHandle handle;
     private boolean isReceiverRegistered = false;
     private VoiceBroadcastReceiver voiceBroadcastReceiver;
-    private ReadableMap _settings;
+    private WritableMap _settings;
     private WritableNativeArray delayedEvents;
     private boolean hasListeners = false;
 
@@ -126,6 +131,10 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
             instance.setContext(reactContext);
         }
         return instance;
+    }
+
+    public static WritableMap getInstanceSettings() {
+        return getInstance(null, false).getSettings();
     }
 
     private RNCallKeepModule(ReactApplicationContext reactContext) {
@@ -153,6 +162,10 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
     public void setContext(ReactApplicationContext reactContext) {
         Log.d(TAG, "[VoiceConnection] updating react context");
         this.reactContext = reactContext;
+    }
+
+    public ReactApplicationContext getContext() {
+        return this.reactContext;
     }
 
     public void reportNewIncomingCall(String uuid, String number, String callerName, boolean hasVideo, String payload) {
@@ -191,12 +204,26 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
     }
 
     public void setSettings(ReadableMap options) {
-        this._settings = options;
+        if (options == null) {
+            return;
+        }
+        storeSettings(options);
+
+        this._settings = getSettings();
+    }
+
+     public WritableMap getSettings() {
+        if (_settings == null) {
+            fetchStoredSettings();
+        }
+
+        return _settings;
     }
 
     @ReactMethod
     public void setup(ReadableMap options) {
         Log.d(TAG, "[VoiceConnection] setup");
+
         VoiceConnectionService.setAvailable(false);
         VoiceConnectionService.setInitialized(true);
         this.setSettings(options);
@@ -222,13 +249,11 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
             this.startObserving();
             VoiceConnectionService.setAvailable(true);
         }
-
-        VoiceConnectionService.setSettings(options);
     }
 
     @ReactMethod
     public void registerPhoneAccount(ReadableMap options) {
-        this._settings = options;
+        storeSettings(options);
 
         if (!isConnectionServiceAvailable()) {
             Log.w(TAG, "[VoiceConnection] registerPhoneAccount ignored due to no ConnectionService");
@@ -697,8 +722,18 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
     }
 
     @ReactMethod
-    public void setForegroundServiceSettings(ReadableMap settings) {
-        VoiceConnectionService.setSettings(settings);
+    public void setForegroundServiceSettings(ReadableMap foregroundServerSettings) {
+        if (foregroundServerSettings == null) {
+            return;
+        }
+
+        // Retrieve settings and set the `foregroundService` value
+        WritableMap settings = getSettings();
+        if (settings != null) {
+            settings.putMap("foregroundService", MapUtils.readableToWritableMap(foregroundServerSettings));
+        }
+
+        storeSettings(settings);
     }
 
     @ReactMethod
@@ -907,6 +942,41 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
 
     private Context getAppContext() {
         return this.reactContext.getApplicationContext();
+    }
+
+    // Store all callkeep settings in JSON
+    private void storeSettings(ReadableMap options) {
+        Context context = getInstance(null, false).getAppContext();
+        if (context == null) {
+            return;
+        }
+
+        SharedPreferences sharedPref = context.getSharedPreferences("rn-callkeep", Context.MODE_PRIVATE);
+        try {
+            JSONObject jsonObject = MapUtils.convertMapToJson(options);
+            String jsonString = jsonObject.toString();
+            sharedPref.edit().putString("settings", jsonString).apply();
+        } catch (JSONException e) {
+        }
+    }
+
+    private void fetchStoredSettings() {
+        Context context = getInstance(null, false).getAppContext();
+        _settings = new WritableNativeMap();
+        if (context == null) {
+            return;
+        }
+
+        SharedPreferences sharedPref = context.getSharedPreferences("rn-callkeep", Context.MODE_PRIVATE);
+        try {
+            String jsonString = sharedPref.getString("settings", (new JSONObject()).toString());
+            if (jsonString != null) {
+                JSONObject jsonObject = new JSONObject(jsonString);
+
+                _settings = MapUtils.convertJsonToMap(jsonObject);
+            }
+        } catch(JSONException e) {
+        }
     }
 
     private class VoiceBroadcastReceiver extends BroadcastReceiver {
