@@ -136,9 +136,9 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
         return instance;
     }
 
-    public static WritableMap getSettings() {
+    public static WritableMap getSettings(@Nullable Context context) {
         if (_settings == null) {
-            fetchStoredSettings();
+            fetchStoredSettings(context);
         }
 
         return _settings;
@@ -222,7 +222,7 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
         Log.d(TAG, "[RNCallKeepModule] setSettings: " + options);
         storeSettings(options);
 
-        _settings = getSettings();
+        _settings = getSettings(null);
     }
 
     @ReactMethod
@@ -770,7 +770,7 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
         }
 
         // Retrieve settings and set the `foregroundService` value
-        WritableMap settings = getSettings();
+        WritableMap settings = getSettings(null);
         if (settings != null) {
             settings.putMap("foregroundService", MapUtils.readableToWritableMap(foregroundServerSettings));
         }
@@ -1036,11 +1036,12 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
         }
     }
 
-    private static void fetchStoredSettings() {
-        if (instance == null) {
+    private static void fetchStoredSettings(@Nullable Context fromContext) {
+        if (instance == null && fromContext == null) {
+            Log.w(TAG, "[RNCallKeepModule][fetchStoredSettings] no instance nor fromContext.");
             return;
         }
-        Context context = instance.getAppContext();
+        Context context = fromContext != null ? fromContext : instance.getAppContext();
         _settings = new WritableNativeMap();
         if (context == null) {
             Log.w(TAG, "[RNCallKeepModule][fetchStoredSettings] no react context found.");

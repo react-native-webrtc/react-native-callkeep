@@ -117,13 +117,13 @@ public class VoiceConnectionService extends ConnectionService {
         isAvailable = value;
     }
 
-    public static WritableMap getSettings() {
-       WritableMap settings = RNCallKeepModule.getSettings();
+    public static WritableMap getSettings(@Nullable Context context) {
+       WritableMap settings = RNCallKeepModule.getSettings(context);
        return settings;
     }
 
-    public static ReadableMap getForegroundSettings() {
-       WritableMap settings = VoiceConnectionService.getSettings();
+    public static ReadableMap getForegroundSettings(@Nullable Context context) {
+       WritableMap settings = VoiceConnectionService.getSettings(context);
        if (settings == null) {
           return null;
        }
@@ -193,7 +193,7 @@ public class VoiceConnectionService extends ConnectionService {
         String name = extra.getString(EXTRA_CALLER_NAME);
         String callUUID = extra.getString(EXTRA_CALL_UUID);
         Boolean isForeground = VoiceConnectionService.isRunning(this.getApplicationContext());
-        WritableMap settings = this.getSettings();
+        WritableMap settings = this.getSettings(this);
         Integer timeout = settings.hasKey("displayCallReachabilityTimeout") ? settings.getInt("displayCallReachabilityTimeout") : null;
 
         Log.d(TAG, "[VoiceConnectionService] onCreateIncomingConnection, name:" + name + ", number" + number +
