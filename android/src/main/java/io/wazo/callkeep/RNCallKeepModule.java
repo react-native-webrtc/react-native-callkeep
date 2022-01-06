@@ -373,8 +373,9 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
             return;
         }
 
-        Map<String, VoiceConnection> currentConnections = VoiceConnectionService.currentConnections;
-        for (Map.Entry<String, VoiceConnection> connectionEntry : currentConnections.entrySet()) {
+        ArrayList<Map.Entry<String, VoiceConnection>> connections =
+            new ArrayList<Map.Entry<String, VoiceConnection>>(VoiceConnectionService.currentConnections.entrySet());
+        for (Map.Entry<String, VoiceConnection> connectionEntry : connections) {
             Connection connectionToEnd = connectionEntry.getValue();
             connectionToEnd.onDisconnect();
         }
