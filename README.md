@@ -682,18 +682,19 @@ RNCallKeep.registerAndroidEvents();
 
 | Event                                                             |  iOS | Android |
 | ----------------------------------------------------------------- | :--: | :-----: |
-| [didReceiveStartCallAction()](#didReceiveStartCallAction)         |  ✅  |   ✅    |
-| [answerCall()](#answerCall)                                       |  ✅  |   ✅    |
-| [endCall()](#endCall)                                             |  ✅  |   ✅    |
-| [didActivateAudioSession()](#didActivateAudioSession)             |  ✅  |   ✅    |
-| [didDisplayIncomingCall()](#didDisplayIncomingCall)               |  ✅  |   ✅    |
-| [didPerformSetMutedCallAction()](#didPerformSetMutedCallAction)   |  ✅  |   ✅    |
-| [didToggleHoldCallAction()](#didToggleHoldCallAction)             |  ✅  |   ✅    |
-| [didPerformDTMFAction()](#didPerformDTMFAction)                   |  ✅  |   ✅    |
-| [didLoadWithEvents()](#didLoadWithEvents)                         |  ✅  |   ✅    |
-| [showIncomingCallUi()](#showIncomingCallUi)                       |  ❌  |   ✅    |
-| [silenceIncomingCall()](#silenceIncomingCall)                     |  ❌  |   ✅    |
-| [checkReachability()](#checkReachability)                         |  ❌  |   ✅    |
+| [didReceiveStartCallAction](#didReceiveStartCallAction)         |  ✅  |   ✅    |
+| [answerCall](#answerCall)                                       |  ✅  |   ✅    |
+| [endCall](#endCall)                                             |  ✅  |   ✅    |
+| [didActivateAudioSession](#didActivateAudioSession)             |  ✅  |   ✅    |
+| [didDisplayIncomingCall](#didDisplayIncomingCall)               |  ✅  |   ✅    |
+| [didPerformSetMutedCallAction](#didPerformSetMutedCallAction)   |  ✅  |   ✅    |
+| [didToggleHoldCallAction](#didToggleHoldCallAction)             |  ✅  |   ✅    |
+| [didPerformDTMFAction](#didPerformDTMFAction)                   |  ✅  |   ✅    |
+| [didLoadWithEvents](#didLoadWithEvents)                         |  ✅  |   ✅    |
+| [showIncomingCallUi](#showIncomingCallUi)                       |  ❌  |   ✅    |
+| [silenceIncomingCall](#silenceIncomingCall)                     |  ❌  |   ✅    |
+| [checkReachability](#checkReachability)                         |  ❌  |   ✅    |
+| [didChangeAudioRoute](#didChangeAudioRoute)                     |  ✅  |   ✅    |
 
 ### didReceiveStartCallAction
 
@@ -802,6 +803,17 @@ A call was held or unheld by the current user
 
 ```js
 RNCallKeep.addEventListener('didToggleHoldCallAction', ({ hold, callUUID }) => {
+
+});
+```
+
+### - didChangeAudioRoute
+
+Triggered when the audio route has been changed.
+⚠️ Will send `Speaker` on iOS but `SPEAKER` on Android.
+
+```js
+RNCallKeep.addEventListener('didChangeAudioRoute', ({ output }) => {
 
 });
 ```
