@@ -289,7 +289,7 @@ public class VoiceConnectionService extends ConnectionService {
             return;
         }
         Log.d(TAG, "[VoiceConnectionService] startForegroundService");
-        ReadableMap foregroundSettings = getForegroundSettings();
+        ReadableMap foregroundSettings = getForegroundSettings(null);
 
         if (foregroundSettings == null || !foregroundSettings.hasKey("channelId")) {
             Log.w(TAG, "[VoiceConnectionService] Not creating foregroundService because not configured");
@@ -325,7 +325,7 @@ public class VoiceConnectionService extends ConnectionService {
 
     private void stopForegroundService() {
         Log.d(TAG, "[VoiceConnectionService] stopForegroundService");
-        ReadableMap foregroundSettings = getForegroundSettings();
+        ReadableMap foregroundSettings = getForegroundSettings(null);
 
         if (foregroundSettings == null || !foregroundSettings.hasKey("channelId")) {
             Log.d(TAG, "[VoiceConnectionService] Discarding stop foreground service, no service configured");
@@ -476,7 +476,7 @@ public class VoiceConnectionService extends ConnectionService {
             extrasMap.put(EXTRA_CALL_NUMBER, callerNumber);
         }
 
-        sendCallRequestToActivity(ACTION_ON_CREATE_CONNECTION_FAILED, extrasMap);
+        sendCallRequestToActivity(ACTION_ON_CREATE_CONNECTION_FAILED, extrasMap, true);
     }
 
     // When a listener is available for `sendCallRequestToActivity`, send delayed events.

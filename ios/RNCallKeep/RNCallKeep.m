@@ -114,8 +114,8 @@ RCT_EXPORT_MODULE()
         RNCallKeepDidToggleHoldAction,
         RNCallKeepProviderReset,
         RNCallKeepCheckReachability,
-        RNCallKeepDidChangeAudioRoute,
-        RNCallKeepDidLoadWithEvents
+        RNCallKeepDidLoadWithEvents,
+        RNCallKeepDidChangeAudioRoute
     ];
 }
 
