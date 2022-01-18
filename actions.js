@@ -101,6 +101,6 @@ export const listeners = {
   didLoadWithEvents,
   showIncomingCallUi,
   silenceIncomingCall,
-  createIncomingConnectionFailed
+  createIncomingConnectionFailed,
   didChangeAudioRoute,
 };
