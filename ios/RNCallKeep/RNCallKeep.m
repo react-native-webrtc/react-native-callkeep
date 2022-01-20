@@ -126,7 +126,11 @@ RCT_EXPORT_MODULE()
 {
     NSDictionary *info = notification.userInfo;
     NSInteger reason = [[info valueForKey:AVAudioSessionRouteChangeReasonKey] integerValue];
-    NSString *output = [AVAudioSession sharedInstance].currentRoute.outputs.count > 0 ? [AVAudioSession sharedInstance].currentRoute.outputs[0].portType : nil;
+    NSString *output = [RNCallKeep getAudioOutput];
+
+    if (output == nil) {
+        return;
+    }
 
     [self sendEventWithName:RNCallKeepDidChangeAudioRoute body:@{
         @"output": output,
@@ -152,6 +156,10 @@ RCT_EXPORT_MODULE()
         NSDictionary *settings = [[NSUserDefaults standardUserDefaults] dictionaryForKey:@"RNCallKeepSettings"];
         sharedProvider = [[CXProvider alloc] initWithConfiguration:[RNCallKeep getProviderConfiguration:settings]];
     }
+}
+
++ (NSString *) getAudioOutput {
+    return [AVAudioSession sharedInstance].currentRoute.outputs.count > 0 ? [AVAudioSession sharedInstance].currentRoute.outputs[0].portType : nil;
 }
 
 + (void)setup:(NSDictionary *)options {
@@ -203,7 +211,7 @@ RCT_REMAP_METHOD(checkSpeaker,
 #ifdef DEBUG
     NSLog(@"[RNCallKeep][checkSpeaker]");
 #endif
-    NSString *output = [AVAudioSession sharedInstance].currentRoute.outputs.count > 0 ? [AVAudioSession sharedInstance].currentRoute.outputs[0].portType : nil;
+    NSString *output = [RNCallKeep getAudioOutput];
     resolve(@([output isEqualToString:@"Speaker"]));
 }
 
