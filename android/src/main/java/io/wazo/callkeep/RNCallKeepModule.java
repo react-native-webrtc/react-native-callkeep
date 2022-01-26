@@ -893,11 +893,14 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
         if (isBoundToJS && hasListeners) {
             this.reactContext.getJSModule(RCTDeviceEventEmitter.class).emit(eventName, params);
         } else {
+            WritableMap data = Arguments.createMap();
             if (params == null) {
                 params = Arguments.createMap();
             }
-            params.putString("name", eventName);
-            delayedEvents.pushMap(params);
+
+            data.putString("name", eventName);
+            data.putMap("data", params);
+            delayedEvents.pushMap(data);
         }
     }
 
