@@ -11,6 +11,7 @@ declare module 'react-native-callkeep' {
     'didResetProvider' |
     'checkReachability' |
     'didPerformSetMutedCallAction' |
+    'didChangeAudioRoute' |
     'didLoadWithEvents' |
     'showIncomingCallUi' |
     'silenceIncomingCall' |
