@@ -558,7 +558,7 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
     public void rejectCall(String uuid) {
         Log.d(TAG, "[VoiceConnection] rejectCall, uuid: " + uuid);
         if (!isConnectionServiceAvailable() || !hasPhoneAccount()) {
-            Log.w(TAG, "[VoiceConnection] endAllCalls ignored due to no ConnectionService or no phone account");
+            Log.w(TAG, "[RNCallKeepModule] rejectCall ignored due to no ConnectionService or no phone account");
             return;
         }
 
@@ -569,6 +569,17 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
         }
 
         conn.onReject();
+    }
+
+    @ReactMethod
+    public void setConnectionState(String uuid, int state) {
+        Log.d(TAG, "[RNCallKeepModule] setConnectionState, uuid: " + uuid + ", state :" + state);
+        if (!isConnectionServiceAvailable() || !hasPhoneAccount()) {
+            Log.w(TAG, "[RNCallKeepModule] String ignored due to no ConnectionService or no phone account");
+            return;
+        }
+
+        VoiceConnectionService.setState(uuid, state);
     }
 
     @ReactMethod

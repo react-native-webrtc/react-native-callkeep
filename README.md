@@ -207,6 +207,7 @@ Self Managed calling apps are an advanced topic, and there are many steps involv
 | [reportEndCallWithUUID()](#reportEndCallWithUUID)                 | `Promise<void>`     |  ✅  |   ✅    |
 | [setMutedCall()](#setMutedCall)                                   | `Promise<void>`     |  ✅  |   ✅    |
 | [setOnHold()](#setOnHold)                                         | `Promise<void>`     |  ✅  |   ✅    |
+| [setConnectionState()](#setConnectionState)                       | `Promise<void>`     |  ❌  |   ✅    |
 | [checkIfBusy()](#checkIfBusy)                                     | `Promise<Boolean>`  |  ✅  |   ❌    |
 | [checkSpeaker()](#checkSpeaker)                                   | `Promise<Boolean>`  |  ✅  |   ❌    |
 | [toggleAudioRouteSpeaker()](#toggleAudioRouteSpeaker)             | `Promise<void>`     |  ❌  |   ✅    |
@@ -491,6 +492,20 @@ RNCallKeep.setOnHold(uuid, true)
 - `uuid`: string
   - uuid of the current call.
 - `hold`: boolean
+
+### setConnectionState
+
+_This feature is available only on Android._
+
+Change the state of the call
+
+```js
+RNCallKeep.setConnectionState(uuid, state)
+```
+
+- `uuid`: string
+  - uuid of the current call.
+- `state`: [See Connection.STATE_*](https://developer.android.com/reference/android/telecom/Connection#STATE_ACTIVE) documentation
 
 ### checkIfBusy
 

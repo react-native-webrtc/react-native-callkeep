@@ -257,6 +257,8 @@ class RNCallKeep {
 
   setOnHold = (uuid, shouldHold) => RNCallKeepModule.setOnHold(uuid, shouldHold);
 
+  setConnectionState = (uuid, state) => isIOS ? null : RNCallKeepModule.setConnectionState(uuid, state);
+
   setReachable = () => RNCallKeepModule.setReachable();
 
   // @deprecated
