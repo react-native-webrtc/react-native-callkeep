@@ -768,6 +768,8 @@ RNCallKeep.addEventListener('didDisplayIncomingCall', ({ error, callUUID, handle
 
 - `error` (string)
   - iOS only.
+- `errorCode` (string)
+  - iOS only. Possible values: "Unentitled", "CallUUIDAlreadyExists", "FilteredByDoNotDisturb", "FilteredByBlockList", "Unknown". See https://developer.apple.com/documentation/callkit/cxerrorcodeincomingcallerror for more information.
 - `callUUID` (string)
   - The UUID of the call.
 - `handle` (string)

@@ -15,6 +15,7 @@
 #import <React/RCTLog.h>
 
 #import <AVFoundation/AVAudioSession.h>
+#import <CallKit/CallKit.h>
 
 #ifdef DEBUG
 static int const OUTGOING_CALL_WAKEUP_DELAY = 10;
@@ -682,6 +683,7 @@ RCT_EXPORT_METHOD(getAudioRoutes: (RCTPromiseResolveBlock)resolve
         RNCallKeep *callKeep = [RNCallKeep allocWithZone: nil];
         [callKeep sendEventWithNameWrapper:RNCallKeepDidDisplayIncomingCall body:@{
             @"error": error && error.localizedDescription ? error.localizedDescription : @"",
+            @"errorCode": error ? [callKeep getIncomingCallErrorCode:error] : @"",
             @"callUUID": uuidString,
             @"handle": handle,
             @"localizedCallerName": localizedCallerName ? localizedCallerName : @"",
@@ -704,6 +706,21 @@ RCT_EXPORT_METHOD(getAudioRoutes: (RCTPromiseResolveBlock)resolve
         }
     }];
 }
+
+- (NSString *)getIncomingCallErrorCode:(NSError *)error {
+    if ([error code] == CXErrorCodeIncomingCallErrorUnentitled) {
+        return @"Unentitled";
+    } else if ([error code] == CXErrorCodeIncomingCallErrorCallUUIDAlreadyExists) {
+        return @"CallUUIDAlreadyExists";
+    } else if ([error code] == CXErrorCodeIncomingCallErrorFilteredByDoNotDisturb) {
+        return @"FilteredByDoNotDisturb";
+    } else if ([error code] == CXErrorCodeIncomingCallErrorFilteredByBlockList) {
+        return @"FilteredByBlockList";
+    } else {
+        return @"Unknown";
+    }
+}
+
 
 - (BOOL)lessThanIos10_2
 {
