@@ -150,6 +150,32 @@ public class VoiceConnectionService extends ConnectionService {
         }
     }
 
+    public static void setState(String uuid, int state) {
+        Connection conn = VoiceConnectionService.getConnection(uuid);
+        if (conn == null) {
+            Log.w(TAG, "[VoiceConnectionService] setState ignored because no connection found, uuid: " + uuid);
+            return;
+        }
+
+        switch (state) {
+            case Connection.STATE_ACTIVE:
+                conn.setActive();
+                break;
+            case Connection.STATE_DIALING:
+                conn.setDialing();
+                break;
+            case Connection.STATE_HOLDING:
+                conn.setOnHold();
+                break;
+            case Connection.STATE_INITIALIZING:
+                conn.setInitializing();
+                break;
+            case Connection.STATE_RINGING:
+                conn.setRinging();
+                break;
+        }
+    }
+
     @Override
     public Connection onCreateIncomingConnection(PhoneAccountHandle connectionManagerPhoneAccount, ConnectionRequest request) {
         Bundle extra = request.getExtras();
