@@ -15,6 +15,7 @@
 #import <React/RCTLog.h>
 
 #import <AVFoundation/AVAudioSession.h>
+#import <CallKit/CallKit.h>
 
 #ifdef DEBUG
 static int const OUTGOING_CALL_WAKEUP_DELAY = 10;
@@ -34,6 +35,7 @@ static NSString *const RNCallKeepPerformPlayDTMFCallAction = @"RNCallKeepDidPerf
 static NSString *const RNCallKeepDidToggleHoldAction = @"RNCallKeepDidToggleHoldAction";
 static NSString *const RNCallKeepProviderReset = @"RNCallKeepProviderReset";
 static NSString *const RNCallKeepCheckReachability = @"RNCallKeepCheckReachability";
+static NSString *const RNCallKeepDidChangeAudioRoute = @"RNCallKeepDidChangeAudioRoute";
 static NSString *const RNCallKeepDidLoadWithEvents = @"RNCallKeepDidLoadWithEvents";
 
 @implementation RNCallKeep
@@ -42,7 +44,7 @@ static NSString *const RNCallKeepDidLoadWithEvents = @"RNCallKeepDidLoadWithEven
     BOOL _isStartCallActionEventListenerAdded;
     bool _hasListeners;
     NSMutableArray *_delayedEvents;
-} 
+}
 
 static bool isSetupNatively;
 static CXProvider* sharedProvider;
@@ -58,6 +60,11 @@ RCT_EXPORT_MODULE()
     if (self = [super init]) {
         _isStartCallActionEventListenerAdded = NO;
         if (_delayedEvents == nil) _delayedEvents = [NSMutableArray array];
+
+        [[NSNotificationCenter defaultCenter] addObserver:self
+                                                 selector:@selector(onAudioRouteChange:)
+                                                     name:AVAudioSessionRouteChangeNotification
+                                                   object:nil];
     }
     return self;
 }
@@ -99,6 +106,7 @@ RCT_EXPORT_MODULE()
         RNCallKeepDidToggleHoldAction,
         RNCallKeepProviderReset,
         RNCallKeepCheckReachability,
+        RNCallKeepDidChangeAudioRoute,
         RNCallKeepDidLoadWithEvents
     ];
 }
@@ -114,6 +122,22 @@ RCT_EXPORT_MODULE()
 - (void)stopObserving
 {
     _hasListeners = FALSE;
+}
+
+- (void)onAudioRouteChange:(NSNotification *)notification
+{
+    NSDictionary *info = notification.userInfo;
+    NSInteger reason = [[info valueForKey:AVAudioSessionRouteChangeReasonKey] integerValue];
+    NSString *output = [RNCallKeep getAudioOutput];
+
+    if (output == nil) {
+        return;
+    }
+
+    [self sendEventWithName:RNCallKeepDidChangeAudioRoute body:@{
+        @"output": output,
+        @"reason": @(reason),
+    }];
 }
 
 - (void)sendEventWithNameWrapper:(NSString *)name body:(id)body {
@@ -134,6 +158,10 @@ RCT_EXPORT_MODULE()
         NSDictionary *settings = [[NSUserDefaults standardUserDefaults] dictionaryForKey:@"RNCallKeepSettings"];
         sharedProvider = [[CXProvider alloc] initWithConfiguration:[RNCallKeep getProviderConfiguration:settings]];
     }
+}
+
++ (NSString *) getAudioOutput {
+    return [AVAudioSession sharedInstance].currentRoute.outputs.count > 0 ? [AVAudioSession sharedInstance].currentRoute.outputs[0].portType : nil;
 }
 
 + (void)setup:(NSDictionary *)options {
@@ -185,7 +213,7 @@ RCT_REMAP_METHOD(checkSpeaker,
 #ifdef DEBUG
     NSLog(@"[RNCallKeep][checkSpeaker]");
 #endif
-    NSString *output = [AVAudioSession sharedInstance].currentRoute.outputs.count > 0 ? [AVAudioSession sharedInstance].currentRoute.outputs[0].portType : nil;
+    NSString *output = [RNCallKeep getAudioOutput];
     resolve(@([output isEqualToString:@"Speaker"]));
 }
 
@@ -398,8 +426,8 @@ RCT_EXPORT_METHOD(getCalls:(RCTPromiseResolveBlock)resolve
     resolve([RNCallKeep getCalls]);
 }
 
-RCT_EXPORT_METHOD(setAudioRoute: (NSString *)uuid 
-                inputName:(NSString *)inputName 
+RCT_EXPORT_METHOD(setAudioRoute: (NSString *)uuid
+                inputName:(NSString *)inputName
                 resolver:(RCTPromiseResolveBlock)resolve
                 rejecter:(RCTPromiseRejectBlock)reject)
 {
@@ -417,7 +445,7 @@ RCT_EXPORT_METHOD(setAudioRoute: (NSString *)uuid
             resolve(@"Speaker");
             return;
         }
-        
+
         NSArray *ports = [RNCallKeep getAudioInputs];
         for (AVAudioSessionPortDescription *port in ports) {
             if ([port.portName isEqualToString:inputName]) {
@@ -456,12 +484,12 @@ RCT_EXPORT_METHOD(getAudioRoutes: (RCTPromiseResolveBlock)resolve
 + (NSMutableArray *) formatAudioInputs: (NSMutableArray *)inputs
 {
     NSMutableArray *newInputs = [NSMutableArray new];
-    
+
     NSMutableDictionary *speakerDict = [[NSMutableDictionary alloc]init];
     [speakerDict setObject:@"Speaker" forKey:@"name"];
     [speakerDict setObject:AVAudioSessionPortBuiltInSpeaker forKey:@"type"];
     [newInputs addObject:speakerDict];
-    
+
     for (AVAudioSessionPortDescription* input in inputs)
     {
         NSString *str = [NSString stringWithFormat:@"PORTS :\"%@\": UID:%@", input.portName, input.UID ];
@@ -655,6 +683,7 @@ RCT_EXPORT_METHOD(getAudioRoutes: (RCTPromiseResolveBlock)resolve
         RNCallKeep *callKeep = [RNCallKeep allocWithZone: nil];
         [callKeep sendEventWithNameWrapper:RNCallKeepDidDisplayIncomingCall body:@{
             @"error": error && error.localizedDescription ? error.localizedDescription : @"",
+            @"errorCode": error ? [callKeep getIncomingCallErrorCode:error] : @"",
             @"callUUID": uuidString,
             @"handle": handle,
             @"localizedCallerName": localizedCallerName ? localizedCallerName : @"",
@@ -677,6 +706,21 @@ RCT_EXPORT_METHOD(getAudioRoutes: (RCTPromiseResolveBlock)resolve
         }
     }];
 }
+
+- (NSString *)getIncomingCallErrorCode:(NSError *)error {
+    if ([error code] == CXErrorCodeIncomingCallErrorUnentitled) {
+        return @"Unentitled";
+    } else if ([error code] == CXErrorCodeIncomingCallErrorCallUUIDAlreadyExists) {
+        return @"CallUUIDAlreadyExists";
+    } else if ([error code] == CXErrorCodeIncomingCallErrorFilteredByDoNotDisturb) {
+        return @"FilteredByDoNotDisturb";
+    } else if ([error code] == CXErrorCodeIncomingCallErrorFilteredByBlockList) {
+        return @"FilteredByBlockList";
+    } else {
+        return @"Unknown";
+    }
+}
+
 
 - (BOOL)lessThanIos10_2
 {

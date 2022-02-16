@@ -219,9 +219,7 @@ class RNCallKeep {
       return;
     }
 
-    RNCallKeepModule.setForegroundServiceSettings({
-      foregroundService: settings,
-    });
+    RNCallKeepModule.setForegroundServiceSettings(settings);
   };
 
   canMakeMultipleCalls = (state) => {
@@ -256,6 +254,8 @@ class RNCallKeep {
   };
 
   setOnHold = (uuid, shouldHold) => RNCallKeepModule.setOnHold(uuid, shouldHold);
+
+  setConnectionState = (uuid, state) => isIOS ? null : RNCallKeepModule.setConnectionState(uuid, state);
 
   setReachable = () => RNCallKeepModule.setReachable();
 

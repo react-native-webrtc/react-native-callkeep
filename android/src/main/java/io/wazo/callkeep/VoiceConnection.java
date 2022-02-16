@@ -50,6 +50,7 @@ import static io.wazo.callkeep.Constants.EXTRA_CALL_NUMBER;
 import static io.wazo.callkeep.Constants.EXTRA_CALL_UUID;
 import static io.wazo.callkeep.Constants.ACTION_SHOW_INCOMING_CALL_UI;
 import static io.wazo.callkeep.Constants.ACTION_ON_SILENCE_INCOMING_CALL;
+import static io.wazo.callkeep.Constants.ACTION_DID_CHANGE_AUDIO_ROUTE;
 
 @TargetApi(Build.VERSION_CODES.M)
 public class VoiceConnection extends Connection {
@@ -88,6 +89,10 @@ public class VoiceConnection extends Connection {
     @Override
     public void onCallAudioStateChanged(CallAudioState state) {
         Log.d(TAG, "[VoiceConnection] onCallAudioStateChanged muted :" + (state.isMuted() ? "true" : "false"));
+
+        handle.put("output", CallAudioState.audioRouteToString(state.getRoute()));
+        sendCallRequestToActivity(ACTION_DID_CHANGE_AUDIO_ROUTE, handle);
+
         if (state.isMuted() == this.isMuted) {
             return;
         }
@@ -192,7 +197,7 @@ public class VoiceConnection extends Connection {
         sendCallRequestToActivity(ACTION_UNHOLD_CALL, handle);
         setActive();
     }
-    
+
     public void onReject(int rejectReason) {
         Log.d(TAG, "[VoiceConnection] onReject(int) executed");
 

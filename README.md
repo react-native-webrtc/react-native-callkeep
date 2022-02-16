@@ -207,6 +207,7 @@ Self Managed calling apps are an advanced topic, and there are many steps involv
 | [reportEndCallWithUUID()](#reportEndCallWithUUID)                 | `Promise<void>`     |  ✅  |   ✅    |
 | [setMutedCall()](#setMutedCall)                                   | `Promise<void>`     |  ✅  |   ✅    |
 | [setOnHold()](#setOnHold)                                         | `Promise<void>`     |  ✅  |   ✅    |
+| [setConnectionState()](#setConnectionState)                       | `Promise<void>`     |  ❌  |   ✅    |
 | [checkIfBusy()](#checkIfBusy)                                     | `Promise<Boolean>`  |  ✅  |   ❌    |
 | [checkSpeaker()](#checkSpeaker)                                   | `Promise<Boolean>`  |  ✅  |   ❌    |
 | [toggleAudioRouteSpeaker()](#toggleAudioRouteSpeaker)             | `Promise<void>`     |  ❌  |   ✅    |
@@ -492,6 +493,20 @@ RNCallKeep.setOnHold(uuid, true)
   - uuid of the current call.
 - `hold`: boolean
 
+### setConnectionState
+
+_This feature is available only on Android._
+
+Change the state of the call
+
+```js
+RNCallKeep.setConnectionState(uuid, state)
+```
+
+- `uuid`: string
+  - uuid of the current call.
+- `state`: [See Connection.STATE_*](https://developer.android.com/reference/android/telecom/Connection#STATE_ACTIVE) documentation
+
 ### checkIfBusy
 
 _This feature is available only on IOS._
@@ -682,18 +697,19 @@ RNCallKeep.registerAndroidEvents();
 
 | Event                                                             |  iOS | Android |
 | ----------------------------------------------------------------- | :--: | :-----: |
-| [didReceiveStartCallAction()](#didReceiveStartCallAction)         |  ✅  |   ✅    |
-| [answerCall()](#answerCall)                                       |  ✅  |   ✅    |
-| [endCall()](#endCall)                                             |  ✅  |   ✅    |
-| [didActivateAudioSession()](#didActivateAudioSession)             |  ✅  |   ✅    |
-| [didDisplayIncomingCall()](#didDisplayIncomingCall)               |  ✅  |   ✅    |
-| [didPerformSetMutedCallAction()](#didPerformSetMutedCallAction)   |  ✅  |   ✅    |
-| [didToggleHoldCallAction()](#didToggleHoldCallAction)             |  ✅  |   ✅    |
-| [didPerformDTMFAction()](#didPerformDTMFAction)                   |  ✅  |   ✅    |
-| [didLoadWithEvents()](#didLoadWithEvents)                         |  ✅  |   ✅    |
-| [showIncomingCallUi()](#showIncomingCallUi)                       |  ❌  |   ✅    |
-| [silenceIncomingCall()](#silenceIncomingCall)                     |  ❌  |   ✅    |
-| [checkReachability()](#checkReachability)                         |  ❌  |   ✅    |
+| [didReceiveStartCallAction](#didReceiveStartCallAction)         |  ✅  |   ✅    |
+| [answerCall](#answerCall)                                       |  ✅  |   ✅    |
+| [endCall](#endCall)                                             |  ✅  |   ✅    |
+| [didActivateAudioSession](#didActivateAudioSession)             |  ✅  |   ✅    |
+| [didDisplayIncomingCall](#didDisplayIncomingCall)               |  ✅  |   ✅    |
+| [didPerformSetMutedCallAction](#didPerformSetMutedCallAction)   |  ✅  |   ✅    |
+| [didToggleHoldCallAction](#didToggleHoldCallAction)             |  ✅  |   ✅    |
+| [didPerformDTMFAction](#didPerformDTMFAction)                   |  ✅  |   ✅    |
+| [didLoadWithEvents](#didLoadWithEvents)                         |  ✅  |   ✅    |
+| [showIncomingCallUi](#showIncomingCallUi)                       |  ❌  |   ✅    |
+| [silenceIncomingCall](#silenceIncomingCall)                     |  ❌  |   ✅    |
+| [checkReachability](#checkReachability)                         |  ❌  |   ✅    |
+| [didChangeAudioRoute](#didChangeAudioRoute)                     |  ✅  |   ✅    |
 
 ### didReceiveStartCallAction
 
@@ -767,6 +783,8 @@ RNCallKeep.addEventListener('didDisplayIncomingCall', ({ error, callUUID, handle
 
 - `error` (string)
   - iOS only.
+- `errorCode` (string)
+  - iOS only. Possible values: "Unentitled", "CallUUIDAlreadyExists", "FilteredByDoNotDisturb", "FilteredByBlockList", "Unknown". See https://developer.apple.com/documentation/callkit/cxerrorcodeincomingcallerror for more information.
 - `callUUID` (string)
   - The UUID of the call.
 - `handle` (string)
@@ -802,6 +820,17 @@ A call was held or unheld by the current user
 
 ```js
 RNCallKeep.addEventListener('didToggleHoldCallAction', ({ hold, callUUID }) => {
+
+});
+```
+
+### - didChangeAudioRoute
+
+Triggered when the audio route has been changed.
+⚠️ Will send `Speaker` on iOS but `SPEAKER` on Android.
+
+```js
+RNCallKeep.addEventListener('didChangeAudioRoute', ({ output }) => {
 
 });
 ```
