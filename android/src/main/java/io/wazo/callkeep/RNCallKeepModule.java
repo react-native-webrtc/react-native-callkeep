@@ -231,6 +231,25 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
     }
 
     @ReactMethod
+    public void getCalls(Promise promise) {
+        WritableNativeArray payload = new WritableNativeArray();
+        for (Map.Entry<String,VoiceConnection> kv : VoiceConnectionService.currentConnections.entrySet()) {
+            WritableMap con = Arguments.createMap();
+
+            String callUUID = kv.getKey();
+            VoiceConnection voiceCon = kv.getValue();
+
+            con.putString("callUUID", callUUID);
+            con.putBoolean("hasConnected", voiceCon.getState() == Connection.STATE_ACTIVE);
+            con.putBoolean("hasEnded", voiceCon.getState() == Connection.STATE_DISCONNECTED);
+            con.putBoolean("onHold", voiceCon.getState() == Connection.STATE_HOLDING);
+            payload.pushMap(con);
+        }
+
+        promise.resolve(payload);
+    }
+
+    @ReactMethod
     public void registerPhoneAccount(ReadableMap options) {
         this._settings = options;
 

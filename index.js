@@ -169,9 +169,7 @@ class RNCallKeep {
   isCallActive = async (uuid) => await RNCallKeepModule.isCallActive(uuid);
 
   getCalls = () => {
-    if (isIOS) {
-      return RNCallKeepModule.getCalls();
-    }
+    return RNCallKeepModule.getCalls();
   };
 
   endCall = (uuid) => RNCallKeepModule.endCall(uuid);
