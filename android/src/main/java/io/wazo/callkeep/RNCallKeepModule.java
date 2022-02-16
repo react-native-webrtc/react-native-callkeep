@@ -294,7 +294,7 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
             return;
         }
 
-		if (handle != null) {
+        if (handle != null) {
             Log.w(TAG, "[VoiceConnection] registerPhoneAccount ignored because it's already registered");
             return;
         }
