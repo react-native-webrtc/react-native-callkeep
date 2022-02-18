@@ -322,15 +322,17 @@ public class VoiceConnection extends Connection {
         }
         rejected = true;
 
+        int currentState = getState();
+        if (currentState == Connection.STATE_NEW) {
+            sendCallRequestToActivity(ACTION_REJECT_NEW_CALL, handle);
+        }
+        else if (currentState == Connection.STATE_RINGING) {
+            sendCallRequestToActivity(ACTION_REJECT_RINGING_CALL, handle);
+        }
+
         setDisconnected(new DisconnectCause(DisconnectCause.REJECTED));
         sendCallRequestToActivity(ACTION_END_CALL, handle);
-        if (getState() == Connection.STATE_NEW) {
-            sendCallRequestToActivity(ACTION_REJECT_NEW_CALL, handle);    
-        }
-        else if (getState() == Connection.STATE_RINGING) {
-            sendCallRequestToActivity(ACTION_REJECT_RINGING_CALL, handle);    
-        }
-        
+
         Log.d(TAG, "[VoiceConnection] onReject executed");
         try {
             ((VoiceConnectionService) context).deinitConnection(handle.get(EXTRA_CALL_UUID));
