@@ -16,7 +16,8 @@ public class Constants {
     public static final String ACTION_ON_SILENCE_INCOMING_CALL = "ACTION_ON_SILENCE_INCOMING_CALL";
     public static final String ACTION_ON_CREATE_CONNECTION_FAILED = "ACTION_ON_CREATE_CONNECTION_FAILED";
     public static final String ACTION_DID_CHANGE_AUDIO_ROUTE = "ACTION_DID_CHANGE_AUDIO_ROUTE";
-    public static final String ACTION_REJECT_CALL = "ACTION_REJECT_CALL";
+    public static final String ACTION_REJECT_NEW_CALL = "ACTION_REJECT_NEW_CALL";
+    public static final String ACTION_REJECT_RINGING_CALL = "ACTION_REJECT_RINGING_CALL";
     public static final String ACTION_END_CALL_LOCAL = "ACTION_END_CALL_LOCAL";
 
     public static final String EXTRA_CALL_NUMBER = "EXTRA_CALL_NUMBER";

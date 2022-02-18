@@ -51,7 +51,8 @@ import static io.wazo.callkeep.Constants.EXTRA_CALL_UUID;
 import static io.wazo.callkeep.Constants.ACTION_SHOW_INCOMING_CALL_UI;
 import static io.wazo.callkeep.Constants.ACTION_ON_SILENCE_INCOMING_CALL;
 import static io.wazo.callkeep.Constants.ACTION_DID_CHANGE_AUDIO_ROUTE;
-import static io.wazo.callkeep.Constants.ACTION_REJECT_CALL;
+import static io.wazo.callkeep.Constants.ACTION_REJECT_NEW_CALL;
+import static io.wazo.callkeep.Constants.ACTION_REJECT_RINGING_CALL;
 import static io.wazo.callkeep.Constants.ACTION_END_CALL_LOCAL;
 
 @TargetApi(Build.VERSION_CODES.M)
@@ -323,7 +324,13 @@ public class VoiceConnection extends Connection {
 
         setDisconnected(new DisconnectCause(DisconnectCause.REJECTED));
         sendCallRequestToActivity(ACTION_END_CALL, handle);
-        sendCallRequestToActivity(ACTION_REJECT_CALL, handle);
+        if (getState() == Connection.STATE_NEW) {
+            sendCallRequestToActivity(ACTION_REJECT_NEW_CALL, handle);    
+        }
+        else if (getState() == Connection.STATE_RINGING) {
+            sendCallRequestToActivity(ACTION_REJECT_RINGING_CALL, handle);    
+        }
+        
         Log.d(TAG, "[VoiceConnection] onReject executed");
         try {
             ((VoiceConnectionService) context).deinitConnection(handle.get(EXTRA_CALL_UUID));
