@@ -823,6 +823,9 @@ RNCallKeep.addEventListener('didToggleHoldCallAction', ({ hold, callUUID }) => {
 
 });
 ```
+- `hold` (boolean)
+- `callUUID` (string)
+  - The UUID of the call.
 
 ### - didChangeAudioRoute
 
@@ -834,10 +837,8 @@ RNCallKeep.addEventListener('didChangeAudioRoute', ({ output }) => {
 
 });
 ```
-
-- `hold` (boolean)
-- `callUUID` (string)
-  - The UUID of the call.
+- `output` (string)
+- `reason` (int)
 
 ### - didPerformDTMFAction
 
