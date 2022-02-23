@@ -47,4 +47,6 @@ continueUserActivity:(NSUserActivity *)userActivity
 
 + (void)setup:(NSDictionary *)options;
 
++ (void)setup:(NSDictionary *)options callRejectHandler: (void (^) (NSString* uuid, void (^completion)(void))) onReject;
+
 @end
