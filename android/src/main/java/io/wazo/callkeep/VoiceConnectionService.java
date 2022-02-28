@@ -112,8 +112,8 @@ public class VoiceConnectionService extends ConnectionService {
         isAvailable = value;
     }
 
-    public static ReadableMap getSettings() {
-       WritableMap settings = RNCallKeepModule.getInstanceSettings();
+    public ReadableMap getSettings() {
+       ReadableMap settings = RNCallKeepSettings.getInstance(getApplicationContext()).getSettings();
        if (settings == null) {
           return null;
        }

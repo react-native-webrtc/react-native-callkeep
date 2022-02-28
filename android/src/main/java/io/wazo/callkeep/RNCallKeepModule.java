@@ -121,27 +121,18 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
     public static PhoneAccountHandle handle;
     private boolean isReceiverRegistered = false;
     private VoiceBroadcastReceiver voiceBroadcastReceiver;
-    private WritableMap _settings;
+    private ReadableMap _settings;
     private WritableNativeArray delayedEvents;
     private boolean hasListeners = false;
 
-    public static RNCallKeepModule getInstance(ReactApplicationContext reactContext, boolean realContext) {
-        if (instance == null) {
-            instance = new RNCallKeepModule(reactContext);
-        }
-        if (realContext) {
-            instance.setContext(reactContext);
-        }
-        return instance;
-    }
+    private RNCallKeepSettings callKeepSettings;
 
-    public static WritableMap getInstanceSettings() {
-        return getInstance(null, false).getSettings();
-    }
-
-    private RNCallKeepModule(ReactApplicationContext reactContext) {
+    public RNCallKeepModule(ReactApplicationContext reactContext) {
         super(reactContext);
         Log.d(TAG, "[VoiceConnection] constructor");
+
+        callKeepSettings = RNCallKeepSettings.getInstance(reactContext);
+        _settings = callKeepSettings.getSettings();
 
         this.reactContext = reactContext;
         delayedEvents = new WritableNativeArray();
@@ -208,23 +199,6 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
         telecomManager = (TelecomManager) context.getSystemService(Context.TELECOM_SERVICE);
     }
 
-    public void setSettings(ReadableMap options) {
-        if (options == null) {
-            return;
-        }
-        storeSettings(options);
-
-        this._settings = getSettings();
-    }
-
-     public WritableMap getSettings() {
-        if (_settings == null) {
-            fetchStoredSettings();
-        }
-
-        return _settings;
-    }
-
     @ReactMethod
     public void addListener(String eventName) {
       // Keep: Required for RN built in Event Emitter Calls.
@@ -241,7 +215,7 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
 
         VoiceConnectionService.setAvailable(false);
         VoiceConnectionService.setInitialized(true);
-        this.setSettings(options);
+        callKeepSettings.setSettings(options);
 
         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             if (isSelfManaged()) {
@@ -287,7 +261,7 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
 
     @ReactMethod
     public void registerPhoneAccount(ReadableMap options) {
-        storeSettings(options);
+        callKeepSettings.storeSettings(options);
 
         if (!isConnectionServiceAvailable()) {
             Log.w(TAG, "[VoiceConnection] registerPhoneAccount ignored due to no ConnectionService");
@@ -785,12 +759,12 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
         }
 
         // Retrieve settings and set the `foregroundService` value
-        WritableMap settings = getSettings();
+        WritableMap settings = MapUtils.readableToWritableMap(callKeepSettings.getSettings());
         if (settings != null) {
             settings.putMap("foregroundService", MapUtils.readableToWritableMap(foregroundServerSettings));
         }
 
-        storeSettings(settings);
+        callKeepSettings.storeSettings(settings);
     }
 
     @ReactMethod
@@ -1004,41 +978,6 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
 
     private Context getAppContext() {
         return this.reactContext.getApplicationContext();
-    }
-
-    // Store all callkeep settings in JSON
-    private void storeSettings(ReadableMap options) {
-        Context context = getInstance(null, false).getAppContext();
-        if (context == null) {
-            return;
-        }
-
-        SharedPreferences sharedPref = context.getSharedPreferences("rn-callkeep", Context.MODE_PRIVATE);
-        try {
-            JSONObject jsonObject = MapUtils.convertMapToJson(options);
-            String jsonString = jsonObject.toString();
-            sharedPref.edit().putString("settings", jsonString).apply();
-        } catch (JSONException e) {
-        }
-    }
-
-    private void fetchStoredSettings() {
-        Context context = getInstance(null, false).getAppContext();
-        _settings = new WritableNativeMap();
-        if (context == null) {
-            return;
-        }
-
-        SharedPreferences sharedPref = context.getSharedPreferences("rn-callkeep", Context.MODE_PRIVATE);
-        try {
-            String jsonString = sharedPref.getString("settings", (new JSONObject()).toString());
-            if (jsonString != null) {
-                JSONObject jsonObject = new JSONObject(jsonString);
-
-                _settings = MapUtils.convertJsonToMap(jsonObject);
-            }
-        } catch(JSONException e) {
-        }
     }
 
     private class VoiceBroadcastReceiver extends BroadcastReceiver {
