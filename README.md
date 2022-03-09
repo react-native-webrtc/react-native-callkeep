@@ -823,6 +823,9 @@ RNCallKeep.addEventListener('didToggleHoldCallAction', ({ hold, callUUID }) => {
 
 });
 ```
+- `hold` (boolean)
+- `callUUID` (string)
+  - The UUID of the call.
 
 ### - didChangeAudioRoute
 
@@ -830,14 +833,14 @@ Triggered when the audio route has been changed.
 ⚠️ Will send `Speaker` on iOS but `SPEAKER` on Android.
 
 ```js
-RNCallKeep.addEventListener('didChangeAudioRoute', ({ output }) => {
+RNCallKeep.addEventListener('didChangeAudioRoute', ({ output,reason }) => {
 
 });
 ```
-
-- `hold` (boolean)
-- `callUUID` (string)
-  - The UUID of the call.
+- `output` (object)
+  - `name` (string)
+  - `type` (string)
+- `reason` (int)
 
 ### - didPerformDTMFAction
 

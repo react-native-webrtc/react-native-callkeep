@@ -1,11 +1,9 @@
 # CallKeep example
 
-
-
 ## How to install it
 
 ```
-# Install dependancies
+# Install dependencies
 yarn install
 
 cd ios
@@ -21,7 +19,6 @@ yarn start
 # Start the application (in another term)
 yarn android # or yarn ios
 ```
-
 
 ## How this example was setted up
 
