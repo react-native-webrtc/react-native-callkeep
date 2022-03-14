@@ -790,19 +790,39 @@ RCT_EXPORT_METHOD(getAudioRoutes: (RCTPromiseResolveBlock)resolve
     }
 }
 
++ (NSSet *) getSupportedHandleTypes:(id) handleType {
+    if(handleType){
+        if([handleType isKindOfClass:[NSArray class]]) {
+            NSSet *types = [NSSet set];
+
+            for (NSString* type in handleType) {
+                types = [types setByAddingObject:[NSNumber numberWithInteger:[RNCallKeep getHandleType:type]]];
+            }
+
+            return types;
+        } else {
+            int _handleType = [RNCallKeep getHandleType:handleType];
+
+            return [NSSet setWithObjects:[NSNumber numberWithInteger:_handleType], nil];
+        }
+    } else {
+        return [NSSet setWithObjects:[NSNumber numberWithInteger:CXHandleTypePhoneNumber], nil];
+    }
+}
+
 + (int)getHandleType:(NSString *)handleType
 {
-    int _handleType;
     if ([handleType isEqualToString:@"generic"]) {
-        _handleType = CXHandleTypeGeneric;
+        return CXHandleTypeGeneric;
     } else if ([handleType isEqualToString:@"number"]) {
-        _handleType = CXHandleTypePhoneNumber;
+        return CXHandleTypePhoneNumber;
+    } else if ([handleType isEqualToString:@"phone"]) {
+        return CXHandleTypePhoneNumber;
     } else if ([handleType isEqualToString:@"email"]) {
-        _handleType = CXHandleTypeEmailAddress;
+        return CXHandleTypeEmailAddress;
     } else {
-        _handleType = CXHandleTypeGeneric;
+        return CXHandleTypeGeneric;
     }
-    return _handleType;
 }
 
 + (CXProviderConfiguration *)getProviderConfiguration:(NSDictionary*)settings
@@ -814,12 +834,8 @@ RCT_EXPORT_METHOD(getAudioRoutes: (RCTPromiseResolveBlock)resolve
     providerConfiguration.supportsVideo = YES;
     providerConfiguration.maximumCallGroups = 3;
     providerConfiguration.maximumCallsPerCallGroup = 1;
-    if(settings[@"handleType"]){
-        int _handleType = [RNCallKeep getHandleType:settings[@"handleType"]];
-        providerConfiguration.supportedHandleTypes = [NSSet setWithObjects:[NSNumber numberWithInteger:_handleType], nil];
-    }else{
-        providerConfiguration.supportedHandleTypes = [NSSet setWithObjects:[NSNumber numberWithInteger:CXHandleTypePhoneNumber], nil];
-    }
+    providerConfiguration.supportedHandleTypes = [RNCallKeep getSupportedHandleTypes:settings[@"handleType"]];
+
     if (settings[@"supportsVideo"]) {
         providerConfiguration.supportsVideo = [settings[@"supportsVideo"] boolValue];
     }
