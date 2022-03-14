@@ -164,7 +164,7 @@ RCT_EXPORT_MODULE()
     NSArray<AVAudioSessionPortDescription *> *outputs = [AVAudioSession sharedInstance].currentRoute.outputs;
     if (outputs.count > 0) {
         NSMutableDictionary *output = [[NSMutableDictionary alloc]init];
-        NSString * type = [RNCallKeep getAudioOutputType: outputs[0].portType];
+        NSString * type = [RNCallKeep getAudioPortType: outputs[0].portType];
         [output setObject:outputs[0].portName forKey:@"name"];
         [output setObject:type forKey:@"type"];
         return output;
@@ -504,7 +504,7 @@ RCT_EXPORT_METHOD(getAudioRoutes: (RCTPromiseResolveBlock)resolve
         NSLog(@"%@",str);
         NSMutableDictionary *dict = [[NSMutableDictionary alloc]init];
         [dict setObject:input.portName forKey:@"name"];
-        NSString * type = [RNCallKeep getAudioInputType: input.portType];
+        NSString * type = [RNCallKeep getAudioPortType: input.portType];
         if(type)
         {
             [dict setObject:type forKey:@"type"];
@@ -521,7 +521,8 @@ RCT_EXPORT_METHOD(getAudioRoutes: (RCTPromiseResolveBlock)resolve
 
     AVAudioSession* myAudioSession = [AVAudioSession sharedInstance];
 
-    BOOL isCategorySetted = [myAudioSession setCategory:AVAudioSessionCategoryPlayAndRecord withOptions:AVAudioSessionCategoryOptionAllowBluetooth error:&err];
+    BOOL isCategorySetted = [myAudioSession setCategory:AVAudioSessionCategoryPlayAndRecord withOptions:AVAudioSessionCategoryOptionAllowBluetooth |
+     AVAudioSessionCategoryOptionAllowBluetoothA2DP | AVAudioSessionCategoryOptionAllowAirPlay  error:&err];
     if (!isCategorySetted)
     {
         NSLog(@"setCategory failed");
@@ -539,41 +540,22 @@ RCT_EXPORT_METHOD(getAudioRoutes: (RCTPromiseResolveBlock)resolve
     return inputs;
 }
 
-+ (NSString *) getAudioInputType: (NSString *) type
++ (NSString *) getAudioPortType: (NSString *) type
 {
+    if ([type isEqualToString:AVAudioSessionPortAirPlay]){
+        return @"AirPlay";
+    }
+    if ([type isEqualToString:AVAudioSessionPortBuiltInReceiver]){
+        return @"Phone";
+    }
     if ([type isEqualToString:AVAudioSessionPortBuiltInMic]){
         return @"Phone";
     }
     else if ([type isEqualToString:AVAudioSessionPortHeadsetMic]){
-        return @"Headset";
+        return @"Headphones";
     }
     else if ([type isEqualToString:AVAudioSessionPortHeadphones]){
-        return @"Headset";
-    }
-    else if ([type isEqualToString:AVAudioSessionPortBluetoothHFP]){
-        return @"Bluetooth";
-    }
-    else if ([type isEqualToString:AVAudioSessionPortBluetoothA2DP]){
-        return @"Bluetooth";
-    }
-    else if ([type isEqualToString:AVAudioSessionPortBuiltInSpeaker]){
-        return @"Speaker";
-    }
-    else{
-        return nil;
-    }
-}
-
-+ (NSString *) getAudioOutputType: (NSString *) type
-{
-    if ([type isEqualToString:AVAudioSessionPortBuiltInReceiver]){
-        return @"Phone";
-    }
-    else if ([type isEqualToString:AVAudioSessionPortHeadsetMic]){
-        return @"Headset";
-    }
-    else if ([type isEqualToString:AVAudioSessionPortHeadphones]){
-        return @"Headset";
+        return @"Headphones";
     }
     else if ([type isEqualToString:AVAudioSessionPortBluetoothHFP]){
         return @"Bluetooth";
@@ -591,6 +573,7 @@ RCT_EXPORT_METHOD(getAudioRoutes: (RCTPromiseResolveBlock)resolve
         return type;
     }
 }
+
 
 - (void)requestTransaction:(CXTransaction *)transaction
 {
@@ -829,7 +812,8 @@ RCT_EXPORT_METHOD(getAudioRoutes: (RCTPromiseResolveBlock)resolve
 #endif
 
     AVAudioSession* audioSession = [AVAudioSession sharedInstance];
-    [audioSession setCategory:AVAudioSessionCategoryPlayAndRecord withOptions:AVAudioSessionCategoryOptionAllowBluetooth error:nil];
+    [audioSession setCategory:AVAudioSessionCategoryPlayAndRecord withOptions:AVAudioSessionCategoryOptionAllowBluetooth |
+     AVAudioSessionCategoryOptionAllowBluetoothA2DP | AVAudioSessionCategoryOptionAllowAirPlay error:nil];
 
     [audioSession setMode:AVAudioSessionModeDefault error:nil];
 
