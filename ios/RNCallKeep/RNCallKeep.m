@@ -137,7 +137,7 @@ RCT_EXPORT_MODULE()
 {
     NSDictionary *info = notification.userInfo;
     NSInteger reason = [[info valueForKey:AVAudioSessionRouteChangeReasonKey] integerValue];
-    NSString *output = [RNCallKeep getAudioOutput];
+    NSMutableDictionary *output = [RNCallKeep getAudioOutput];
 
     if (output == nil) {
         return;
@@ -177,8 +177,16 @@ RCT_EXPORT_MODULE()
     }
 }
 
-+ (NSString *) getAudioOutput {
-    return [AVAudioSession sharedInstance].currentRoute.outputs.count > 0 ? [AVAudioSession sharedInstance].currentRoute.outputs[0].portType : nil;
++ (NSMutableDictionary *) getAudioOutput {
+    NSArray<AVAudioSessionPortDescription *> *outputs = [AVAudioSession sharedInstance].currentRoute.outputs;
+    if (outputs.count > 0) {
+        NSMutableDictionary *output = [[NSMutableDictionary alloc]init];
+        NSString * type = [RNCallKeep getAudioPortType: outputs[0].portType];
+        [output setObject:outputs[0].portName forKey:@"name"];
+        [output setObject:type forKey:@"type"];
+        return output;
+    }
+    return nil;
 }
 
 + (void)setup:(NSDictionary *)options {
@@ -248,8 +256,8 @@ RCT_REMAP_METHOD(checkSpeaker,
 #ifdef DEBUG
     NSLog(@"[RNCallKeep][checkSpeaker]");
 #endif
-    NSString *output = [RNCallKeep getAudioOutput];
-    resolve(@([output isEqualToString:@"Speaker"]));
+    NSMutableDictionary *output = [RNCallKeep getAudioOutput];
+    resolve(@([output[@"name"] isEqualToString:@"Speaker"]));
 }
 
 #pragma mark - CXCallController call actions
@@ -553,7 +561,7 @@ RCT_EXPORT_METHOD(getAudioRoutes: (RCTPromiseResolveBlock)resolve
         NSString *str = [NSString stringWithFormat:@"PORTS :\"%@\": UID:%@", input.portName, input.UID ];
         NSMutableDictionary *dict = [[NSMutableDictionary alloc]init];
         [dict setObject:input.portName forKey:@"name"];
-        NSString * type = [RNCallKeep getAudioInputType: input.portType];
+        NSString * type = [RNCallKeep getAudioPortType: input.portType];
         if(type)
         {
             [dict setObject:type forKey:@"type"];
@@ -570,7 +578,8 @@ RCT_EXPORT_METHOD(getAudioRoutes: (RCTPromiseResolveBlock)resolve
 
     AVAudioSession* myAudioSession = [AVAudioSession sharedInstance];
 
-    BOOL isCategorySetted = [myAudioSession setCategory:AVAudioSessionCategoryPlayAndRecord withOptions:AVAudioSessionCategoryOptionAllowBluetooth error:&err];
+    BOOL isCategorySetted = [myAudioSession setCategory:AVAudioSessionCategoryPlayAndRecord withOptions:AVAudioSessionCategoryOptionAllowBluetooth |
+     AVAudioSessionCategoryOptionAllowBluetoothA2DP | AVAudioSessionCategoryOptionAllowAirPlay  error:&err];
     if (!isCategorySetted)
     {
         NSLog(@"[RNCallKeep][getAudioInputs] setCategory failed");
@@ -588,16 +597,22 @@ RCT_EXPORT_METHOD(getAudioRoutes: (RCTPromiseResolveBlock)resolve
     return inputs;
 }
 
-+ (NSString *) getAudioInputType: (NSString *) type
++ (NSString *) getAudioPortType: (NSString *) type
 {
+    if ([type isEqualToString:AVAudioSessionPortAirPlay]){
+        return @"AirPlay";
+    }
+    if ([type isEqualToString:AVAudioSessionPortBuiltInReceiver]){
+        return @"Phone";
+    }
     if ([type isEqualToString:AVAudioSessionPortBuiltInMic]){
         return @"Phone";
     }
     else if ([type isEqualToString:AVAudioSessionPortHeadsetMic]){
-        return @"Headset";
+        return @"Headphones";
     }
     else if ([type isEqualToString:AVAudioSessionPortHeadphones]){
-        return @"Headset";
+        return @"Headphones";
     }
     else if ([type isEqualToString:AVAudioSessionPortBluetoothHFP]){
         return @"Bluetooth";
@@ -605,13 +620,17 @@ RCT_EXPORT_METHOD(getAudioRoutes: (RCTPromiseResolveBlock)resolve
     else if ([type isEqualToString:AVAudioSessionPortBluetoothA2DP]){
         return @"Bluetooth";
     }
+    else if ([type isEqualToString:AVAudioSessionPortBluetoothLE]){
+        return @"Bluetooth";
+    }
     else if ([type isEqualToString:AVAudioSessionPortBuiltInSpeaker]){
         return @"Speaker";
     }
     else{
-        return nil;
+        return type;
     }
 }
+
 
 - (void)requestTransaction:(CXTransaction *)transaction
 {
@@ -850,7 +869,8 @@ RCT_EXPORT_METHOD(getAudioRoutes: (RCTPromiseResolveBlock)resolve
 #endif
 
     AVAudioSession* audioSession = [AVAudioSession sharedInstance];
-    [audioSession setCategory:AVAudioSessionCategoryPlayAndRecord withOptions:AVAudioSessionCategoryOptionAllowBluetooth error:nil];
+    [audioSession setCategory:AVAudioSessionCategoryPlayAndRecord withOptions:AVAudioSessionCategoryOptionAllowBluetooth |
+     AVAudioSessionCategoryOptionAllowBluetoothA2DP | AVAudioSessionCategoryOptionAllowAirPlay error:nil];
 
     [audioSession setMode:AVAudioSessionModeDefault error:nil];
 
