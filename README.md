@@ -64,6 +64,8 @@ const options = {
     okButton: 'ok',
     imageName: 'phone_account_icon',
     additionalPermissions: [PermissionsAndroid.PERMISSIONS.example],
+    // Required for your app to work across all Android devices!
+    selfManaged: true,
     // Required to get audio in background when using Android 11
     foregroundService: {
       channelId: 'com.company.my',
@@ -141,12 +143,12 @@ Alternative on iOS you can perform setup in `AppDelegate.m`. Doing this allows c
       Any additional permissions you'd like your app to have at first launch. Can be used to simplify permission flows and avoid
       multiple popups to the user at different times.
     - `selfManaged`: boolean (optional)
-      When set to true, call keep will configure itself to run as a self managed connection service. This is an advanced topic, and it's best to refer to [Googles Documentation](https://developer.android.com/guide/topics/connectivity/telecom/selfManaged) on the matter.
+      When set to true, call keep will configure itself to run as a self managed connection service. This is an advanced topic, and it's best to refer to [Googles Documentation](https://developer.android.com/guide/topics/connectivity/telecom/selfManaged) on the matter. Note that in order to use CallKeep consistently across all Android devices you have to use self-managed mode!
       - `displayCallReachabilityTimeout`: number in ms (optional)
         If provided, starts a timeout that checks if the application is reachable and ends the call if not (Default: null)
         You'll have to call `setReachable()` as soon as your Javascript application is started.
       
-`setup` calls internally `registerPhoneAccount`, `registerEvents` and `setSettings`.
+`setup` calls internally `registerPhoneAccount`, `registerEvents` and `setSettings`. Note that `registerPhoneAccount` does not work on all Android devices, so you might want to use [self-managed mode](https://github.com/react-native-webrtc/react-native-callkeep#android-self-managed-mode).
 
 You can alternatively just call `setSettings()` with the same option as `setup()` to define only your settings.
 
@@ -174,7 +176,7 @@ console.log(CK_CONSTANTS.END_CALL_REASONS.FAILED) // outputs 1
 # Android Self Managed Mode
 _This feature is available only on Android._
 
-Android supports calling apps running in what's called "Self Managed". This means the apps are able (and required) to provide their own UI for managing calls. This includes both in call UI elements and incoming call notification UI. This method is all or nothing. You can't mix partial elements, such as having a custom in call view, but use the default incoming call UI.
+Android supports calling apps running in what's called "Self Managed". This means the apps are able (and required) to provide their own UI for managing calls. This includes both in call UI elements and incoming call notification UI. This method is all or nothing. You can't mix partial elements, such as having a custom in call view, but use the default incoming call UI. "Self Managed Mode" is obligatory if you want to use CallKeep consistently across all Android devices!
 
 To implement a self managed calling app, the following steps are necessary:
 - Set `selfManaged: true` in setup.
@@ -338,7 +340,7 @@ response:
 
 ### displayIncomingCall
 
-Display system UI for incoming calls
+Display system UI for incoming calls. Some Android devices can't display the incoming call UI unless you use [Self-Managed Mode](https://github.com/react-native-webrtc/react-native-callkeep#android-self-managed-mode).
 
 ```js
 RNCallKeep.displayIncomingCall(uid, handle, localizedCallerName = '', handleType = 'number', hasVideo = false, options = null);
@@ -367,8 +369,7 @@ RNCallKeep.displayIncomingCall(uid, handle, localizedCallerName = '', handleType
 
 ### answerIncomingCall
 
-Use this to tell the sdk a user answered a call from the app UI.
-
+Use this to tell the sdk a user answered a call from the app UI. Some Android devices can't answer the incoming call unless you use [Self-Managed Mode](https://github.com/react-native-webrtc/react-native-callkeep#android-self-managed-mode).
 ```js
 RNCallKeep.answerIncomingCall(uuid)
 ```
@@ -378,7 +379,7 @@ RNCallKeep.answerIncomingCall(uuid)
 
 ### startCall
 
-When you make an outgoing call, tell the device that a call is occurring. The argument list is slightly
+When you make an outgoing call, tell the device that a call is occurring. Some Android devices can't start a call unless you use [Self-Managed Mode](https://github.com/react-native-webrtc/react-native-callkeep#android-self-managed-mode). The argument list is slightly
 different on iOS and Android:
 
 iOS:
@@ -429,7 +430,7 @@ RNCallKeep.updateDisplay(uuid, displayName, handle)
 
 ### endCall
 
-When finish an incoming/outgoing call.  
+When finish an incoming/outgoing call. Some Android devices can't end the call unless you use [Self-Managed Mode](https://github.com/react-native-webrtc/react-native-callkeep#android-self-managed-mode).
 (When user actively chooses to end the call from your app's UI.)
 
 ```js
@@ -441,7 +442,7 @@ RNCallKeep.endCall(uuid);
 
 ### endAllCalls
 
-End all ongoing calls.
+End all ongoing calls. Some Android devices can't end all calls unless you use [Self-Managed Mode](https://github.com/react-native-webrtc/react-native-callkeep#android-self-managed-mode).
 
 ```js
 RNCallKeep.endAllCalls();
@@ -449,7 +450,7 @@ RNCallKeep.endAllCalls();
 
 ### rejectCall
 
-When you reject an incoming call.
+When you reject an incoming call. Some Android devices can't reject the call unless you use [Self-Managed Mode](https://github.com/react-native-webrtc/react-native-callkeep#android-self-managed-mode).
 
 ```js
 RNCallKeep.rejectCall(uuid);
@@ -460,7 +461,7 @@ RNCallKeep.rejectCall(uuid);
 
 ### reportEndCallWithUUID
 
-Report that the call ended without the user initiating.  
+Report that the call ended without the user initiating. Some Android devices can't report the end of the call unless you use [Self-Managed Mode](https://github.com/react-native-webrtc/react-native-callkeep#android-self-managed-mode).
 (Not ended by user, is usually due to the following reasons)
 
 
