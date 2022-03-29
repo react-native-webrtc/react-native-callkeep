@@ -249,7 +249,7 @@ public class VoiceConnectionService extends ConnectionService {
 
         // TODO: Hold all other calls
         if (extrasNumber == null || !extrasNumber.equals(number)) {
-            extras.putString(EXTRA_CALL_UUID, uuid);
+            //extras.putString(EXTRA_CALL_UUID, uuid);
             extras.putString(EXTRA_CALLER_NAME, displayName);
             extras.putString(EXTRA_CALL_NUMBER, number);
         }
