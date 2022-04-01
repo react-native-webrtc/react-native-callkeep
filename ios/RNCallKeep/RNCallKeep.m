@@ -455,6 +455,21 @@ RCT_EXPORT_METHOD(setAudioRoute: (NSString *)uuid
         }
 
         NSArray *ports = [RNCallKeep getAudioInputs];
+        
+        BOOL isCategorySetted = [myAudioSession setCategory:AVAudioSessionCategoryPlayAndRecord withOptions:AVAudioSessionCategoryOptionAllowBluetooth |
+         AVAudioSessionCategoryOptionAllowBluetoothA2DP | AVAudioSessionCategoryOptionAllowAirPlay  error:&err];
+        if (!isCategorySetted)
+        {
+            NSLog(@"setCategory failed");
+            [NSException raise:@"setCategory failed" format:@"error: %@", err];
+        }
+        BOOL isCategoryActivated = [myAudioSession setActive:YES error:&err];
+        if (!isCategoryActivated)
+        {
+            NSLog(@"setActive failed");
+            [NSException raise:@"setActive failed" format:@"error: %@", err];
+        }
+        
         for (AVAudioSessionPortDescription *port in ports) {
             if ([port.portName isEqualToString:inputName]) {
                 BOOL isSetted = [myAudioSession setPreferredInput:(AVAudioSessionPortDescription *)port error:&err];
@@ -520,14 +535,6 @@ RCT_EXPORT_METHOD(getAudioRoutes: (RCTPromiseResolveBlock)resolve
     NSString *str = nil;
 
     AVAudioSession* myAudioSession = [AVAudioSession sharedInstance];
-
-    BOOL isCategorySetted = [myAudioSession setCategory:AVAudioSessionCategoryPlayAndRecord withOptions:AVAudioSessionCategoryOptionAllowBluetooth |
-     AVAudioSessionCategoryOptionAllowBluetoothA2DP | AVAudioSessionCategoryOptionAllowAirPlay  error:&err];
-    if (!isCategorySetted)
-    {
-        NSLog(@"setCategory failed");
-        [NSException raise:@"setCategory failed" format:@"error: %@", err];
-    }
 
     BOOL isCategoryActivated = [myAudioSession setActive:YES error:&err];
     if (!isCategoryActivated)
