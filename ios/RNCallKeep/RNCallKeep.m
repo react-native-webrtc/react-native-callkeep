@@ -532,11 +532,19 @@ RCT_EXPORT_METHOD(getAudioRoutes: (RCTPromiseResolveBlock)resolve
 + (NSArray *) getAudioInputs
 {
     NSError* err = nil;
-    NSString *str = nil;
 
     AVAudioSession* myAudioSession = [AVAudioSession sharedInstance];
-
-    BOOL isCategoryActivated = [myAudioSession setActive:YES error:&err];
+    NSArray *calls = [RNCallKeep getCalls];
+    if (!calls || !calls.count){
+        BOOL isCategorySetted = [myAudioSession setCategory:AVAudioSessionCategoryPlayAndRecord withOptions:AVAudioSessionCategoryOptionAllowBluetooth |
+         AVAudioSessionCategoryOptionAllowBluetoothA2DP | AVAudioSessionCategoryOptionAllowAirPlay  error:&err];
+        if (!isCategorySetted)
+        {
+            NSLog(@"setCategory failed");
+            [NSException raise:@"setCategory failed" format:@"error: %@", err];
+        }
+    }
+    BOOL isCategoryActivated = [myAudioSession setActive:TRUE error:&err];
     if (!isCategoryActivated)
     {
         NSLog(@"setActive failed");
