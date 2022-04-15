@@ -113,6 +113,11 @@ Alternative on iOS you can perform setup in `AppDelegate.m`. Doing this allows c
       If provided, it will be displayed on system UI during the call
     - `ringtoneSound`: string (optional)
       If provided, it will be played when incoming calls received; the system will use the default ringtone if this is not provided
+    - `handleType`: string|array (optional)
+      If provided, it will tell iOS what kind of handle(s) (number) your app can handle.
+      - `generic`
+      - `number` (default)
+      - `email`
     - `includesCallsInRecents`: boolean (optional)
       If provided, calls will be shown in the recent calls when true and not when false (ios 11 and above) (Default: true)
     - `maximumCallGroups`: string (optional)
