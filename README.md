@@ -591,7 +591,7 @@ await RNCallKeep.setAudioRoute(uuid, routeName);
 - `routeName`: String
   - AudioRoute.name. 
 
-### supportConnectionService (async)
+### supportConnectionService
 
 _This feature is available only on Android._
 
