@@ -137,7 +137,7 @@ RCT_EXPORT_MODULE()
 {
     NSDictionary *info = notification.userInfo;
     NSInteger reason = [[info valueForKey:AVAudioSessionRouteChangeReasonKey] integerValue];
-    NSString *output = [RNCallKeep getAudioOutput];
+    NSMutableDictionary *output = [RNCallKeep getAudioOutput];
 
     if (output == nil) {
         return;
@@ -177,8 +177,16 @@ RCT_EXPORT_MODULE()
     }
 }
 
-+ (NSString *) getAudioOutput {
-    return [AVAudioSession sharedInstance].currentRoute.outputs.count > 0 ? [AVAudioSession sharedInstance].currentRoute.outputs[0].portType : nil;
++ (NSMutableDictionary *) getAudioOutput {
+    NSArray<AVAudioSessionPortDescription *> *outputs = [AVAudioSession sharedInstance].currentRoute.outputs;
+    if (outputs.count > 0) {
+        NSMutableDictionary *output = [[NSMutableDictionary alloc]init];
+        NSString * type = [RNCallKeep getAudioOutputType: outputs[0].portType];
+        [output setObject:outputs[0].portName forKey:@"name"];
+        [output setObject:type forKey:@"type"];
+        return output;
+    }
+    return nil;
 }
 
 + (void)setup:(NSDictionary *)options {
@@ -248,8 +256,8 @@ RCT_REMAP_METHOD(checkSpeaker,
 #ifdef DEBUG
     NSLog(@"[RNCallKeep][checkSpeaker]");
 #endif
-    NSString *output = [RNCallKeep getAudioOutput];
-    resolve(@([output isEqualToString:@"Speaker"]));
+    NSMutableDictionary *output = [RNCallKeep getAudioOutput];
+    resolve(@([output[@"name"] isEqualToString:@"Speaker"]));
 }
 
 #pragma mark - CXCallController call actions
@@ -610,6 +618,34 @@ RCT_EXPORT_METHOD(getAudioRoutes: (RCTPromiseResolveBlock)resolve
     }
     else{
         return nil;
+    }
+}
+
++ (NSString *) getAudioOutputType: (NSString *) type
+{
+    if ([type isEqualToString:AVAudioSessionPortBuiltInReceiver]){
+        return @"Phone";
+    }
+    else if ([type isEqualToString:AVAudioSessionPortHeadsetMic]){
+        return @"Headset";
+    }
+    else if ([type isEqualToString:AVAudioSessionPortHeadphones]){
+        return @"Headset";
+    }
+    else if ([type isEqualToString:AVAudioSessionPortBluetoothHFP]){
+        return @"Bluetooth";
+    }
+    else if ([type isEqualToString:AVAudioSessionPortBluetoothA2DP]){
+        return @"Bluetooth";
+    }
+    else if ([type isEqualToString:AVAudioSessionPortBluetoothLE]){
+        return @"Bluetooth";
+    }
+    else if ([type isEqualToString:AVAudioSessionPortBuiltInSpeaker]){
+        return @"Speaker";
+    }
+    else{
+        return type;
     }
 }
 
