@@ -82,6 +82,7 @@ import static androidx.core.app.ActivityCompat.requestPermissions;
 import static io.wazo.callkeep.Constants.EXTRA_CALLER_NAME;
 import static io.wazo.callkeep.Constants.EXTRA_CALL_UUID;
 import static io.wazo.callkeep.Constants.EXTRA_CALL_NUMBER;
+import static io.wazo.callkeep.Constants.EXTRA_HAS_VIDEO;
 import static io.wazo.callkeep.Constants.ACTION_END_CALL;
 import static io.wazo.callkeep.Constants.ACTION_ANSWER_CALL;
 import static io.wazo.callkeep.Constants.ACTION_MUTE_CALL;
@@ -179,7 +180,7 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
         Log.d(TAG, "[RNCallKeepModule] reportNewIncomingCall, uuid: " + uuid + ", number: " + number + ", callerName: " + callerName);
         // @TODO: handle video
 
-        this.displayIncomingCall(uuid, number, callerName);
+        this.displayIncomingCall(uuid, number, callerName, hasVideo);
 
         // Send event to JS
         WritableMap args = Arguments.createMap();
@@ -308,12 +309,17 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
 
     @ReactMethod
     public void displayIncomingCall(String uuid, String number, String callerName) {
+        this.displayIncomingCall(uuid, number, callerName, false);
+    }
+
+    @ReactMethod
+    public void displayIncomingCall(String uuid, String number, String callerName, boolean hasVideo) {
         if (!isConnectionServiceAvailable() || !hasPhoneAccount()) {
             Log.w(TAG, "[RNCallKeepModule] displayIncomingCall ignored due to no ConnectionService or no phone account");
             return;
         }
 
-        Log.d(TAG, "[RNCallKeepModule] displayIncomingCall, uuid: " + uuid + ", number: " + number + ", callerName: " + callerName);
+        Log.d(TAG, "[RNCallKeepModule] displayIncomingCall, uuid: " + uuid + ", number: " + number + ", callerName: " + callerName + ", hasVideo: " + hasVideo);
 
         Bundle extras = new Bundle();
         Uri uri = Uri.fromParts(PhoneAccount.SCHEME_TEL, number, null);
@@ -321,6 +327,7 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
         extras.putParcelable(TelecomManager.EXTRA_INCOMING_CALL_ADDRESS, uri);
         extras.putString(EXTRA_CALLER_NAME, callerName);
         extras.putString(EXTRA_CALL_UUID, uuid);
+        extras.putString(EXTRA_HAS_VIDEO, String.valueOf(hasVideo));
 
         telecomManager.addNewIncomingCall(handle, extras);
     }
@@ -344,6 +351,11 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
 
     @ReactMethod
     public void startCall(String uuid, String number, String callerName) {
+        this.startCall(uuid, number, callerName, false);
+    }
+
+    @ReactMethod
+    public void startCall(String uuid, String number, String callerName, boolean hasVideo) {
         Log.d(TAG, "[RNCallKeepModule] startCall called, uuid: " + uuid + ", number: " + number + ", callerName: " + callerName);
 
         if (!isConnectionServiceAvailable() || !hasPhoneAccount() || !hasPermissions() || number == null) {
@@ -358,6 +370,7 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
         callExtras.putString(EXTRA_CALLER_NAME, callerName);
         callExtras.putString(EXTRA_CALL_UUID, uuid);
         callExtras.putString(EXTRA_CALL_NUMBER, number);
+        callExtras.putString(EXTRA_HAS_VIDEO, String.valueOf(hasVideo));
 
         extras.putParcelable(TelecomManager.EXTRA_PHONE_ACCOUNT_HANDLE, handle);
         extras.putParcelable(TelecomManager.EXTRA_OUTGOING_CALL_EXTRAS, callExtras);
@@ -1067,7 +1080,7 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
             WritableMap args = Arguments.createMap();
             HashMap<String, String> attributeMap = (HashMap<String, String>)intent.getSerializableExtra("attributeMap");
 
-            Log.d(TAG, "[RNCallKeepModule][onReceive] :" + intent.getAction());
+            Log.d(TAG, "[RNCallKeepModule][onReceive] " + intent.getAction());
 
             switch (intent.getAction()) {
                 case ACTION_END_CALL:
@@ -1076,6 +1089,7 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
                     break;
                 case ACTION_ANSWER_CALL:
                     args.putString("callUUID", attributeMap.get(EXTRA_CALL_UUID));
+                    args.putBoolean("withVideo", Boolean.valueOf(attributeMap.get(EXTRA_HAS_VIDEO)));
                     sendEventToJS("RNCallKeepPerformAnswerCallAction", args);
                     break;
                 case ACTION_HOLD_CALL:
@@ -1119,6 +1133,7 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
                     args.putString("handle", attributeMap.get(EXTRA_CALL_NUMBER));
                     args.putString("callUUID", attributeMap.get(EXTRA_CALL_UUID));
                     args.putString("name", attributeMap.get(EXTRA_CALLER_NAME));
+                    args.putString("hasVideo", attributeMap.get(EXTRA_HAS_VIDEO));
                     sendEventToJS("RNCallKeepShowIncomingCallUi", args);
                     break;
                 case ACTION_WAKE_APP:
