@@ -460,6 +460,9 @@ public class VoiceConnectionService extends ConnectionService {
 
     @Override
     public void onCreateIncomingConnectionFailed(PhoneAccountHandle connectionManagerPhoneAccount, ConnectionRequest request) {
+        super.onCreateIncomingConnectionFailed(connectionManagerPhoneAccount, request);
+        Log.w(TAG, "[VoiceConnectionService] onCreateIncomingConnectionFailed: " + request);
+
         Bundle extras = request.getExtras();
         HashMap<String, String> extrasMap = this.bundleToMap(extras);
 
