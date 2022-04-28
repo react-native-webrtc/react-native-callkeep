@@ -152,6 +152,7 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
         this.reactContext = reactContext;
         delayedEvents = new WritableNativeArray();
         this.registerReceiver();
+        this.fetchStoredSettings(reactContext);
     }
 
     private boolean isSelfManaged() {
