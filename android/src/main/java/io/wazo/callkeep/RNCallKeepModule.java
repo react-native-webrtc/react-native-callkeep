@@ -179,7 +179,6 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
 
     public void reportNewIncomingCall(String uuid, String number, String callerName, boolean hasVideo, String payload) {
         Log.d(TAG, "[RNCallKeepModule] reportNewIncomingCall, uuid: " + uuid + ", number: " + number + ", callerName: " + callerName);
-        // @TODO: handle video
 
         this.displayIncomingCall(uuid, number, callerName, hasVideo);
 
@@ -188,6 +187,7 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
         args.putString("handle", number);
         args.putString("callUUID", uuid);
         args.putString("name", callerName);
+        args.putString("hasVideo", hasVideo);
         if (payload != null) {
             args.putString("payload", payload);
         }

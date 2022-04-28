@@ -389,6 +389,9 @@ public class VoiceConnectionService extends ConnectionService {
 
     private Connection createConnection(ConnectionRequest request) {
         Bundle extras = request.getExtras();
+        if (request.getAddress() == null) {
+            return null;
+        }
         HashMap<String, String> extrasMap = this.bundleToMap(extras);
 
         String callerNumber = request.getAddress().toString();
