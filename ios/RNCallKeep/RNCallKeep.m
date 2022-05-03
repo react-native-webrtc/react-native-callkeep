@@ -131,6 +131,17 @@ RCT_EXPORT_MODULE()
 - (void)stopObserving
 {
     _hasListeners = FALSE;
+    
+    // Fix for https://github.com/react-native-webrtc/react-native-callkeep/issues/406
+    // We use Objective-C Key Value Coding(KVC) to sync _RTCEventEmitter_ `_listenerCount`.
+    @try {
+        [self setValue:@0 forKey:@"_listenerCount"];
+    } 
+    @catch ( NSException *e ){
+        NSLog(@"[RNCallKeep][stopObserving] exception: %@",e);
+        NSLog(@"[RNCallKeep][stopObserving] RNCallKeep parent class RTCEventEmitter might have a broken state.");
+        NSLog(@"[RNCallKeep][stopObserving] Please verify that the parent RTCEventEmitter.m has iVar `_listenerCount`.");
+    }
 }
 
 - (void)onAudioRouteChange:(NSNotification *)notification
