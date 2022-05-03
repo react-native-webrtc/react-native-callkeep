@@ -42,7 +42,6 @@ static NSString *const RNCallKeepDidLoadWithEvents = @"RNCallKeepDidLoadWithEven
 {
     NSOperatingSystemVersion _version;
     BOOL _isStartCallActionEventListenerAdded;
-    bool _hasListeners;
     bool _isReachable;
     NSMutableArray *_delayedEvents;
 }
@@ -119,10 +118,17 @@ RCT_EXPORT_MODULE()
     ];
 }
 
+- (bool)hasListeners
+{
+    NSInteger _listenerCount = [[self valueForKey:@"_listenerCount"] intValue];
+
+    if (_listenerCount == 0) return NO;
+    else return YES;
+}
+
 - (void)startObserving
 {
     NSLog(@"[RNCallKeep][startObserving]");
-    _hasListeners = YES;
     if ([_delayedEvents count] > 0) {
         [self sendEventWithName:RNCallKeepDidLoadWithEvents body:_delayedEvents];
     }
@@ -130,7 +136,7 @@ RCT_EXPORT_MODULE()
 
 - (void)stopObserving
 {
-    _hasListeners = FALSE;
+    // Silence is golden.
 }
 
 - (void)onAudioRouteChange:(NSNotification *)notification
@@ -150,9 +156,9 @@ RCT_EXPORT_MODULE()
 }
 
 - (void)sendEventWithNameWrapper:(NSString *)name body:(id)body {
-    NSLog(@"[[RNCallKeep]] sendEventWithNameWrapper: %@, hasListeners : %@", name, _hasListeners ? @"YES": @"NO");
+    NSLog(@"[[RNCallKeep]] sendEventWithNameWrapper: %@, hasListeners : %@", name, [self hasListeners] ? @"YES": @"NO");
 
-    if (_hasListeners) {
+    if ([self hasListeners]) {
         [self sendEventWithName:name body:body];
     } else {
         NSDictionary *dictionary = [NSDictionary dictionaryWithObjectsAndKeys:
