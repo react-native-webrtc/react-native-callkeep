@@ -187,7 +187,7 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
         args.putString("handle", number);
         args.putString("callUUID", uuid);
         args.putString("name", callerName);
-        args.putString("hasVideo", hasVideo);
+        args.putString("hasVideo", String.valueOf(hasVideo));
         if (payload != null) {
             args.putString("payload", payload);
         }
