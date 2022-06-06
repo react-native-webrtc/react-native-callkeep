@@ -47,4 +47,6 @@ continueUserActivity:(NSUserActivity *)userActivity
 
 + (void)setup:(NSDictionary *)options;
 
++ (void)destroyProvider;
+
 @end

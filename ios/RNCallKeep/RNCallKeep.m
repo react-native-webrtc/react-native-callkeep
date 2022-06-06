@@ -187,6 +187,15 @@ RCT_EXPORT_MODULE()
     isSetupNatively = YES;
 }
 
++ (void)destroyProvider {
+    if (sharedProvider != nil) {
+        [sharedProvider invalidate];
+        sharedProvider = nil;
+    }
+
+    isSetupNatively = NO;
+}
+
 RCT_EXPORT_METHOD(setup:(NSDictionary *)options)
 {
     if (isSetupNatively) {
