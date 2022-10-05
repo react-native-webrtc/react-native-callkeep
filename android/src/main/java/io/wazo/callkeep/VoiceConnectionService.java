@@ -31,6 +31,7 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.Looper;
 import android.speech.tts.Voice;
 import androidx.annotation.Nullable;
 import androidx.core.app.NotificationCompat;
@@ -47,6 +48,7 @@ import android.util.Log;
 
 import com.facebook.react.HeadlessJsTaskService;
 import com.facebook.react.bridge.ReadableMap;
+import com.facebook.react.bridge.WritableMap;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -67,6 +69,7 @@ import static io.wazo.callkeep.Constants.EXTRA_CALL_NUMBER_SCHEMA;
 import static io.wazo.callkeep.Constants.EXTRA_CALL_UUID;
 import static io.wazo.callkeep.Constants.EXTRA_DISABLE_ADD_CALL;
 import static io.wazo.callkeep.Constants.FOREGROUND_SERVICE_TYPE_MICROPHONE;
+import static io.wazo.callkeep.Constants.ACTION_ON_CREATE_CONNECTION_FAILED;
 
 // @see https://github.com/kbagchiGWC/voice-quickstart-android/blob/9a2aff7fbe0d0a5ae9457b48e9ad408740dfb968/exampleConnectionService/src/main/java/com/twilio/voice/examples/connectionservice/VoiceConnectionService.java
 @TargetApi(Build.VERSION_CODES.M)
@@ -78,8 +81,11 @@ public class VoiceConnectionService extends ConnectionService {
     private static String notReachableCallUuid;
     private static ConnectionRequest currentConnectionRequest;
     private static PhoneAccountHandle phoneAccountHandle;
-    private static ReadableMap _settings;
-    private static String TAG = "RNCK:VoiceConnectionService";
+    private static String TAG = "RNCallKeep";
+
+    // Delay events sent to RNCallKeepModule when there is no listener available
+    private static List<Bundle> delayedEvents = new ArrayList<Bundle>();
+
     public static Map<String, VoiceConnection> currentConnections = new HashMap<>();
     public static Boolean hasOutgoingCall = false;
     public static VoiceConnectionService currentConnectionService = null;
@@ -93,7 +99,7 @@ public class VoiceConnectionService extends ConnectionService {
 
     public VoiceConnectionService() {
         super();
-        Log.e(TAG, "Constructor");
+        Log.d(TAG, "[VoiceConnectionService] Constructor");
         currentConnectionRequest = null;
         currentConnectionService = this;
     }
@@ -103,7 +109,7 @@ public class VoiceConnectionService extends ConnectionService {
     }
 
     public static void setAvailable(Boolean value) {
-        Log.d(TAG, "setAvailable: " + (value ? "true" : "false"));
+        Log.d(TAG, "[VoiceConnectionService] setAvailable: " + (value ? "true" : "false"));
         if (value) {
             setInitialized(true);
         }
@@ -111,28 +117,40 @@ public class VoiceConnectionService extends ConnectionService {
         isAvailable = value;
     }
 
-    public static void setSettings(ReadableMap settings) {
-        _settings = settings;
+    public static WritableMap getSettings(@Nullable Context context) {
+       WritableMap settings = RNCallKeepModule.getSettings(context);
+       return settings;
     }
 
-    public static void setCanMakeMultipleCalls(Boolean allow) {
-        VoiceConnectionService.canMakeMultipleCalls = allow;
+    public static ReadableMap getForegroundSettings(@Nullable Context context) {
+       WritableMap settings = VoiceConnectionService.getSettings(context);
+       if (settings == null) {
+          return null;
+       }
+
+       return settings.getMap("foregroundService");
+    }
+
+    public static void setCanMakeMultipleCalls(Boolean value) {
+        Log.d(TAG, "[VoiceConnectionService] setCanMakeMultipleCalls: " + (value ? "true" : "false"));
+
+        VoiceConnectionService.canMakeMultipleCalls = value;
     }
 
     public static void setReachable() {
-        Log.d(TAG, "setReachable");
+        Log.d(TAG, "[VoiceConnectionService] setReachable");
         isReachable = true;
         VoiceConnectionService.currentConnectionRequest = null;
     }
 
     public static void setInitialized(boolean value) {
-        Log.d(TAG, "setInitialized: " + (value ? "true" : "false"));
+        Log.d(TAG, "[VoiceConnectionService] setInitialized: " + (value ? "true" : "false"));
 
         isInitialized = value;
     }
 
     public static void deinitConnection(String connectionId) {
-        Log.d(TAG, "deinitConnection:" + connectionId);
+        Log.d(TAG, "[VoiceConnectionService] deinitConnection:" + connectionId);
         VoiceConnectionService.hasOutgoingCall = false;
 
         currentConnectionService.stopForegroundService();
@@ -142,19 +160,54 @@ public class VoiceConnectionService extends ConnectionService {
         }
     }
 
+    public static void setState(String uuid, int state) {
+        Connection conn = VoiceConnectionService.getConnection(uuid);
+        if (conn == null) {
+            Log.w(TAG, "[VoiceConnectionService] setState ignored because no connection found, uuid: " + uuid);
+            return;
+        }
+
+        switch (state) {
+            case Connection.STATE_ACTIVE:
+                conn.setActive();
+                break;
+            case Connection.STATE_DIALING:
+                conn.setDialing();
+                break;
+            case Connection.STATE_HOLDING:
+                conn.setOnHold();
+                break;
+            case Connection.STATE_INITIALIZING:
+                conn.setInitializing();
+                break;
+            case Connection.STATE_RINGING:
+                conn.setRinging();
+                break;
+        }
+    }
+
     @Override
     public Connection onCreateIncomingConnection(PhoneAccountHandle connectionManagerPhoneAccount, ConnectionRequest request) {
-        Bundle extra = request.getExtras();
+        final Bundle extra = request.getExtras();
         Uri number = request.getAddress();
         String name = extra.getString(EXTRA_CALLER_NAME);
+        String callUUID = extra.getString(EXTRA_CALL_UUID);
+        Boolean isForeground = VoiceConnectionService.isRunning(this.getApplicationContext());
+        WritableMap settings = this.getSettings(this);
+        Integer timeout = settings.hasKey("displayCallReachabilityTimeout") ? settings.getInt("displayCallReachabilityTimeout") : null;
 
-        Log.d(TAG, "onCreateIncomingConnection, name:" + name);
+        Log.d(TAG, "[VoiceConnectionService] onCreateIncomingConnection, name:" + name + ", number" + number +
+            ", isForeground: " + isForeground + ", isReachable:" + isReachable + ", timeout: " + timeout);
 
         Connection incomingCallConnection = createConnection(request);
         incomingCallConnection.setRinging();
         incomingCallConnection.setInitialized();
 
         startForegroundService();
+
+        if (timeout != null) {
+            this.checkForAppReachability(callUUID, timeout);
+        }
 
         return incomingCallConnection;
     }
@@ -164,7 +217,7 @@ public class VoiceConnectionService extends ConnectionService {
         VoiceConnectionService.hasOutgoingCall = true;
         String uuid = UUID.randomUUID().toString();
 
-        Log.d(TAG, "onCreateOutgoingConnection, uuid:" + uuid);
+        Log.d(TAG, "[VoiceConnectionService] onCreateOutgoingConnection, uuid:" + uuid);
 
         if (!isInitialized && !isReachable) {
             this.notReachableCallUuid = uuid;
@@ -183,14 +236,14 @@ public class VoiceConnectionService extends ConnectionService {
         String displayName = extras.getString(EXTRA_CALLER_NAME);
         Boolean isForeground = VoiceConnectionService.isRunning(this.getApplicationContext());
 
-        Log.d(TAG, "makeOutgoingCall, uuid:" + uuid + ", number: " + number + ", displayName:" + displayName);
+        Log.d(TAG, "[VoiceConnectionService] makeOutgoingCall, uuid:" + uuid + ", number: " + number + ", displayName:" + displayName);
 
         // Wakeup application if needed
         if (!isForeground || forceWakeUp) {
-            Log.d(TAG, "onCreateOutgoingConnection: Waking up application");
+            Log.d(TAG, "[VoiceConnectionService] onCreateOutgoingConnection: Waking up application");
             this.wakeUpApplication(uuid, number, displayName);
         } else if (!this.canMakeOutgoingCall() && isReachable) {
-            Log.d(TAG, "onCreateOutgoingConnection: not available");
+            Log.d(TAG, "[VoiceConnectionService] onCreateOutgoingConnection: not available");
             return Connection.createFailedConnection(new DisconnectCause(DisconnectCause.LOCAL));
         }
 
@@ -202,6 +255,7 @@ public class VoiceConnectionService extends ConnectionService {
         }
 
         if (!canMakeMultipleCalls) {
+            Log.d(TAG, "[VoiceConnectionService] onCreateOutgoingConnection: disabling multi calls");
             extras.putBoolean(EXTRA_DISABLE_ADD_CALL, true);
         }
 
@@ -215,15 +269,16 @@ public class VoiceConnectionService extends ConnectionService {
         // ‍️Weirdly on some Samsung phones (A50, S9...) using `setInitialized` will not display the native UI ...
         // when making a call from the native Phone application. The call will still be displayed correctly without it.
         if (!Build.MANUFACTURER.equalsIgnoreCase("Samsung")) {
+            Log.d(TAG, "[VoiceConnectionService] onCreateOutgoingConnection: initializing connection on Samsung device");
             outgoingCallConnection.setInitialized();
         }
 
         HashMap<String, String> extrasMap = this.bundleToMap(extras);
 
-        sendCallRequestToActivity(ACTION_ONGOING_CALL, extrasMap);
-        sendCallRequestToActivity(ACTION_AUDIO_SESSION, extrasMap);
+        sendCallRequestToActivity(ACTION_ONGOING_CALL, extrasMap, true);
+        sendCallRequestToActivity(ACTION_AUDIO_SESSION, extrasMap, true);
 
-        Log.d(TAG, "onCreateOutgoingConnection: calling");
+        Log.d(TAG, "[VoiceConnectionService] onCreateOutgoingConnection: done");
 
         return outgoingCallConnection;
     }
@@ -233,12 +288,14 @@ public class VoiceConnectionService extends ConnectionService {
             // Foreground services not required before SDK 28
             return;
         }
-        Log.d(TAG, "startForegroundService");
-        if (_settings == null || !_settings.hasKey("foregroundService")) {
-            Log.d(TAG, "Not creating foregroundService because not configured");
+        Log.d(TAG, "[VoiceConnectionService] startForegroundService");
+        ReadableMap foregroundSettings = getForegroundSettings(null);
+
+        if (foregroundSettings == null || !foregroundSettings.hasKey("channelId")) {
+            Log.w(TAG, "[VoiceConnectionService] Not creating foregroundService because not configured");
             return;
         }
-        ReadableMap foregroundSettings = _settings.getMap("foregroundService");
+
         String NOTIFICATION_CHANNEL_ID = foregroundSettings.getString("channelId");
         String channelName = foregroundSettings.getString("channelName");
         NotificationChannel chan = new NotificationChannel(NOTIFICATION_CHANNEL_ID, channelName, NotificationManager.IMPORTANCE_NONE);
@@ -260,21 +317,25 @@ public class VoiceConnectionService extends ConnectionService {
             notificationBuilder.setSmallIcon(res.getIdentifier(smallIcon, "mipmap", context.getPackageName()));
         }
 
+        Log.d(TAG, "[VoiceConnectionService] Starting foreground service");
+
         Notification notification = notificationBuilder.build();
         startForeground(FOREGROUND_SERVICE_TYPE_MICROPHONE, notification);
     }
 
     private void stopForegroundService() {
-        Log.d(TAG, "stopForegroundService");
-        if (_settings == null || !_settings.hasKey("foregroundService")) {
-            Log.d(TAG, "Discarding stop foreground service, no service configured");
+        Log.d(TAG, "[VoiceConnectionService] stopForegroundService");
+        ReadableMap foregroundSettings = getForegroundSettings(null);
+
+        if (foregroundSettings == null || !foregroundSettings.hasKey("channelId")) {
+            Log.d(TAG, "[VoiceConnectionService] Discarding stop foreground service, no service configured");
             return;
         }
         stopForeground(FOREGROUND_SERVICE_TYPE_MICROPHONE);
     }
 
     private void wakeUpApplication(String uuid, String number, String displayName) {
-         Log.d(TAG, "wakeUpApplication, uuid:" + uuid + ", number :" + number + ", displayName:" + displayName);
+         Log.d(TAG, "[VoiceConnectionService] wakeUpApplication, uuid:" + uuid + ", number :" + number + ", displayName:" + displayName);
 
         // Avoid to call wake up the app again in wakeUpAfterReachabilityTimeout.
         this.currentConnectionRequest = null;
@@ -286,10 +347,10 @@ public class VoiceConnectionService extends ConnectionService {
         headlessIntent.putExtra("callUUID", uuid);
         headlessIntent.putExtra("name", displayName);
         headlessIntent.putExtra("handle", number);
-        Log.d(TAG, "wakeUpApplication: " + uuid + ", number : " + number + ", displayName:" + displayName);
 
         ComponentName name = this.getApplicationContext().startService(headlessIntent);
         if (name != null) {
+          Log.d(TAG, "[VoiceConnectionService] wakeUpApplication, acquiring lock for application:" + name);
           HeadlessJsTaskService.acquireWakeLockNow(this.getApplicationContext());
         }
     }
@@ -298,20 +359,21 @@ public class VoiceConnectionService extends ConnectionService {
         if (this.currentConnectionRequest == null) {
             return;
         }
-        Log.d(TAG, "checkReachability timeout, force wakeup");
         Bundle extras = request.getExtras();
         String number = request.getAddress().getSchemeSpecificPart();
         String displayName = extras.getString(EXTRA_CALLER_NAME);
+        Log.d(TAG, "[VoiceConnectionService] checkReachability timeout, force wakeup, number :" + number + ", displayName: " + displayName);
+
         wakeUpApplication(this.notReachableCallUuid, number, displayName);
 
         VoiceConnectionService.currentConnectionRequest = null;
     }
 
     private void checkReachability() {
-        Log.d(TAG, "checkReachability");
+        Log.d(TAG, "[VoiceConnectionService] checkReachability");
 
         final VoiceConnectionService instance = this;
-        sendCallRequestToActivity(ACTION_CHECK_REACHABILITY, null);
+        sendCallRequestToActivity(ACTION_CHECK_REACHABILITY, null, true);
 
         new android.os.Handler().postDelayed(
             new Runnable() {
@@ -326,12 +388,12 @@ public class VoiceConnectionService extends ConnectionService {
     }
 
     private Connection createConnection(ConnectionRequest request) {
-        Log.d(TAG, "createConnection");
-
         Bundle extras = request.getExtras();
         HashMap<String, String> extrasMap = this.bundleToMap(extras);
 
         String callerNumber = request.getAddress().toString();
+        Log.d(TAG, "[VoiceConnectionService] createConnection, callerNumber:" + callerNumber);
+
         if (callerNumber.contains(":")) {
             //CallerNumber contains a schema which we'll separate out
             int schemaIndex = callerNumber.indexOf(":");
@@ -340,8 +402,7 @@ public class VoiceConnectionService extends ConnectionService {
 
             extrasMap.put(EXTRA_CALL_NUMBER, number);
             extrasMap.put(EXTRA_CALL_NUMBER_SCHEMA, schema);
-        }
-        else {
+        } else {
             extrasMap.put(EXTRA_CALL_NUMBER, callerNumber);
         }
 
@@ -355,11 +416,11 @@ public class VoiceConnectionService extends ConnectionService {
 
             //If the phone account is self managed, then this connection must also be self managed.
             if((phoneAccount.getCapabilities() & PhoneAccount.CAPABILITY_SELF_MANAGED) == PhoneAccount.CAPABILITY_SELF_MANAGED) {
-                Log.d(TAG, "PhoneAccount is SELF_MANAGED, so connection will be too");
+                Log.d(TAG, "[VoiceConnectionService] PhoneAccount is SELF_MANAGED, so connection will be too");
                 connection.setConnectionProperties(Connection.PROPERTY_SELF_MANAGED);
             }
             else {
-                Log.d(TAG, "PhoneAccount is not SELF_MANAGED, so connection won't be either");
+                Log.d(TAG, "[VoiceConnectionService] PhoneAccount is not SELF_MANAGED, so connection won't be either");
             }
         }
 
@@ -382,7 +443,7 @@ public class VoiceConnectionService extends ConnectionService {
 
     @Override
     public void onConference(Connection connection1, Connection connection2) {
-        Log.d(TAG, "onConference");
+        Log.d(TAG, "[VoiceConnectionService] onConference");
         super.onConference(connection1, connection2);
         VoiceConnection voiceConnection1 = (VoiceConnection) connection1;
         VoiceConnection voiceConnection2 = (VoiceConnection) connection2;
@@ -397,25 +458,74 @@ public class VoiceConnectionService extends ConnectionService {
         this.addConference(voiceConference);
     }
 
+    @Override
+    public void onCreateIncomingConnectionFailed(PhoneAccountHandle connectionManagerPhoneAccount, ConnectionRequest request) {
+        Bundle extras = request.getExtras();
+        HashMap<String, String> extrasMap = this.bundleToMap(extras);
+
+        String callerNumber = request.getAddress().toString();
+        if (callerNumber.contains(":")) {
+            //CallerNumber contains a schema which we'll separate out
+            int schemaIndex = callerNumber.indexOf(":");
+            String number = callerNumber.substring(schemaIndex + 1);
+            String schema = callerNumber.substring(0, schemaIndex);
+
+            extrasMap.put(EXTRA_CALL_NUMBER, number);
+            extrasMap.put(EXTRA_CALL_NUMBER_SCHEMA, schema);
+        } else {
+            extrasMap.put(EXTRA_CALL_NUMBER, callerNumber);
+        }
+
+        sendCallRequestToActivity(ACTION_ON_CREATE_CONNECTION_FAILED, extrasMap, true);
+    }
+
+    // When a listener is available for `sendCallRequestToActivity`, send delayed events.
+    public static void startObserving() {
+        new Handler(Looper.getMainLooper()).post(new Runnable() {
+            @Override
+            public void run() {
+            // Run this in a Looper to avoid : java.lang.RuntimeException: Can't create handler inside thread Thread
+                int count = delayedEvents.size();
+                Log.d(TAG, "[VoiceConnectionService] startObserving, event count: " + count);
+
+                for (Bundle event : delayedEvents) {
+                    String action = event.getString("action");
+                    HashMap attributeMap = (HashMap) event.getSerializable("attributeMap");
+
+                    currentConnectionService.sendCallRequestToActivity(action, attributeMap, false);
+                }
+
+                delayedEvents = new ArrayList<Bundle>();
+            }
+        });
+    }
+
     /*
      * Send call request to the RNCallKeepModule
      */
-    private void sendCallRequestToActivity(final String action, @Nullable final HashMap attributeMap) {
+    private void sendCallRequestToActivity(final String action, @Nullable final HashMap attributeMap, final boolean retry) {
         final VoiceConnectionService instance = this;
         final Handler handler = new Handler();
 
-        Log.d(TAG, "sendCallRequestToActivity, action:" + action);
+        Log.d(TAG, "[VoiceConnectionService] sendCallRequestToActivity, action:" + action);
 
         handler.post(new Runnable() {
             @Override
             public void run() {
                 Intent intent = new Intent(action);
+                Bundle extras = new Bundle();
+                extras.putString("action", action);
+
                 if (attributeMap != null) {
-                    Bundle extras = new Bundle();
                     extras.putSerializable("attributeMap", attributeMap);
                     intent.putExtras(extras);
                 }
-                LocalBroadcastManager.getInstance(instance).sendBroadcast(intent);
+
+                boolean result = LocalBroadcastManager.getInstance(instance).sendBroadcast(intent);
+                if (!result && retry) {
+                    // Event will be sent later when a listener will be available.
+                    delayedEvents.add(extras);
+                }
             }
         });
     }
@@ -450,8 +560,29 @@ public class VoiceConnectionService extends ConnectionService {
             }
         }
 
-        Log.d(TAG, "isRunning: no running package found.");
+        Log.d(TAG, "[VoiceConnectionService] isRunning: no running package found.");
 
         return false;
+    }
+
+    private void checkForAppReachability(final String callUUID, final Integer timeout) {
+        final VoiceConnectionService instance = this;
+
+        new android.os.Handler().postDelayed(new Runnable() {
+            public void run() {
+                if (instance.isReachable) {
+                    return;
+                }
+                Connection conn = VoiceConnectionService.getConnection(callUUID);
+                Log.w(TAG, "[VoiceConnectionService] checkForAppReachability timeout after " + timeout + " ms, isReachable:" + instance.isReachable + ", uuid: " + callUUID);
+
+                if (conn == null) {
+                    Log.w(TAG, "[VoiceConnectionService] checkForAppReachability timeout, no connection to close with uuid: " + callUUID);
+
+                    return;
+                }
+                conn.onDisconnect();
+            }
+        }, timeout);
     }
 }
