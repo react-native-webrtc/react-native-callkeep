@@ -545,7 +545,12 @@ RCT_EXPORT_METHOD(setAudioRoute: (NSString *)uuid
                 BOOL isSetted = [myAudioSession setPreferredInput:(AVAudioSessionPortDescription *)port error:&err];
 
                 if (isSetted) {
-                    _shouldForceBluetooth = FALSE;
+                    if ([port.portType isEqualToString:AVAudioSessionPortBluetoothHFP] ||
+                        [port.portType isEqualToString:AVAudioSessionPortBluetoothA2DP]) {
+                        _shouldForceBluetooth = TRUE;
+                    } else {
+                        _shouldForceBluetooth = FALSE;
+                    }
                 }
 
                 if(!isSetted){
