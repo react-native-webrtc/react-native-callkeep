@@ -511,7 +511,7 @@ RCT_EXPORT_METHOD(setAudioRoute: (NSString *)uuid
 
         NSArray *ports = [RNCallKeep getAudioInputs];
 
-        BOOL isCategorySetted = [myAudioSession setCategory:AVAudioSessionCategoryPlayAndRecord withOptions:AVAudioSessionCategoryOptionAllowBluetooth error:&err];
+        BOOL isCategorySetted = [myAudioSession setCategory:AVAudioSessionCategoryPlayAndRecord mode:AVAudioSessionModeVoiceChat options: AVAudioSessionCategoryOptionAllowAirPlay | AVAudioSessionCategoryOptionAllowBluetooth | AVAudioSessionCategoryOptionAllowBluetoothA2DP error:&err];
         if (!isCategorySetted)
         {
             NSLog(@"[RNCallKeep][setAudioRoute] setCategory failed");
@@ -854,18 +854,40 @@ RCT_EXPORT_METHOD(getAudioRoutes: (RCTPromiseResolveBlock)resolve
 #ifdef DEBUG
     NSLog(@"[RNCallKeep][configureAudioSession] Activating audio session");
 #endif
-
-    AVAudioSession* audioSession = [AVAudioSession sharedInstance];
-    [audioSession setCategory:AVAudioSessionCategoryPlayAndRecord withOptions:AVAudioSessionCategoryOptionAllowBluetooth error:nil];
-
-    [audioSession setMode:AVAudioSessionModeDefault error:nil];
-
-    double sampleRate = 44100.0;
-    [audioSession setPreferredSampleRate:sampleRate error:nil];
-
-    NSTimeInterval bufferDuration = .005;
-    [audioSession setPreferredIOBufferDuration:bufferDuration error:nil];
-    [audioSession setActive:TRUE error:nil];
+    @try{
+        NSError* err = nil;
+        
+        AVAudioSession* audioSession = [AVAudioSession sharedInstance];
+        BOOL isConfigured = [audioSession setCategory:AVAudioSessionCategoryPlayAndRecord mode:AVAudioSessionModeVoiceChat options:  AVAudioSessionCategoryOptionAllowAirPlay | AVAudioSessionCategoryOptionAllowBluetooth | AVAudioSessionCategoryOptionAllowBluetoothA2DP error:&err];
+        if(!isConfigured){
+            NSLog(@"[RNCallKeep][configureAudioSession][setCategory] failed");
+            [NSException raise:@"audioSession#setCategory failed" format:@"error: %@", err];
+        }
+        
+        double sampleRate = 44100.0;
+        BOOL sampleRateSetted = [audioSession setPreferredSampleRate:sampleRate error:&err];
+        if(!sampleRateSetted){
+            NSLog(@"[RNCallKeep][configureAudioSession][setPreferredSampleRate] failed");
+            [NSException raise:@"audioSession#setPreferredSampleRate failed" format:@"error: %@", err];
+        }
+        
+        NSTimeInterval bufferDuration = .005;
+        BOOL bufferSetted = [audioSession setPreferredIOBufferDuration:bufferDuration error:&err];
+        if(!bufferSetted){
+            NSLog(@"[RNCallKeep][configureAudioSession][setPreferredIOBufferDuration] failed");
+            [NSException raise:@"audioSession#setPreferredIOBufferDuration failed" format:@"error: %@", err];
+        }
+        
+        BOOL isActivated = [audioSession setActive:TRUE error:&err];
+        if(!isActivated){
+            NSLog(@"[RNCallKeep][configureAudioSession][setActive] failed");
+            [NSException raise:@"audioSession#setActive failed" format:@"error: %@", err];
+        }
+    }
+    @catch ( NSException *e ){
+        NSLog(@"[RNCallKeep][configureAudioSession] exception: %@",e);
+    }
+    
 }
 
 + (BOOL)application:(UIApplication *)application
