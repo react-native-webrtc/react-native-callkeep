@@ -11,10 +11,18 @@ declare module 'react-native-callkeep' {
     'didResetProvider' |
     'checkReachability' |
     'didPerformSetMutedCallAction' |
+    'didChangeAudioRoute' |
     'didLoadWithEvents' |
-    'showIncomingCallUi';
+    'showIncomingCallUi' |
+    'silenceIncomingCall' |
+    'createIncomingConnectionFailed';
 
   type HandleType = 'generic' | 'number' | 'email';
+
+  export type AudioRoute = {
+    name: string,
+    type: string
+  }
 
   interface IOptions {
     ios: {
@@ -61,6 +69,10 @@ declare module 'react-native-callkeep' {
   };
 
   export default class RNCallKeep {
+    static getInitialEvents(): Promise<Array<Object>>
+
+    static clearInitialEvents(): void
+
     static addEventListener(type: Events, handler: (args: any) => void): void
 
     static removeEventListener(type: Events): void
@@ -71,9 +83,11 @@ declare module 'react-native-callkeep' {
 
     static answerIncomingCall(uuid: string): void
 
-    static registerPhoneAccount(): void
+    static registerPhoneAccount(options: IOptions): void
 
     static registerAndroidEvents(): void
+
+    static unregisterAndroidEvents(): void
 
     static displayIncomingCall(
       uuid: string,
@@ -123,12 +137,18 @@ declare module 'react-native-callkeep' {
 
     static setReachable(): void
 
+    static setSettings(settings: Object): void;
+
     /**
      * @description isCallActive method is available only on iOS.
      */
     static isCallActive(uuid: string): Promise<boolean>
 
     static getCalls(): Promise<object>
+
+    static getAudioRoutes(): Promise<void>
+
+    static setAudioRoute: (uuid:string, inputName: string) => Promise<void>
 
     /**
      * @description supportConnectionService method is available only on Android.
@@ -146,14 +166,17 @@ declare module 'react-native-callkeep' {
      * @description setMutedCall method is available only on iOS.
      */
     static setMutedCall(uuid: string, muted: boolean): void
-  
+
     /**
      * @description toggleAudioRouteSpeaker method is available only on Android.
-     * @param uuid 
-     * @param routeSpeaker 
+     * @param uuid
+     * @param routeSpeaker
      */
     static toggleAudioRouteSpeaker(uuid: string, routeSpeaker: boolean): void
+
     static setOnHold(uuid: string, held: boolean): void
+
+    static setConnectionState(uuid: string, state: number): void
 
     /**
      * @descriptions sendDTMF is used to send DTMF tones to the PBX.
