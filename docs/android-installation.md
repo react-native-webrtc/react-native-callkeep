@@ -65,6 +65,7 @@ public class MainActivity extends ReactActivity {
 <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
 <uses-permission android:name="android.permission.READ_PHONE_STATE" />
 <uses-permission android:name="android.permission.CALL_PHONE" />
+<uses-permission android:name="android.permission.RECORD_AUDIO" />
 
 <application>
     // ...
