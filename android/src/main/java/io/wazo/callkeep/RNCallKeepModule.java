@@ -392,6 +392,9 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
             Log.w(TAG, "[RNCallKeepModule] endCall ignored because no connection found, uuid: " + uuid);
             return;
         }
+        Context context = this.getAppContext();
+        AudioManager audioManager = (AudioManager) context.getSystemService(context.AUDIO_SERVICE);
+        audioManager.setMode(0);
         conn.onDisconnect();
 
         Log.d(TAG, "[RNCallKeepModule] endCall executed, uuid: " + uuid);
