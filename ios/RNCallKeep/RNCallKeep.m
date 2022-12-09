@@ -33,6 +33,7 @@ static NSString *const RNCallKeepDidDisplayIncomingCall = @"RNCallKeepDidDisplay
 static NSString *const RNCallKeepDidPerformSetMutedCallAction = @"RNCallKeepDidPerformSetMutedCallAction";
 static NSString *const RNCallKeepPerformPlayDTMFCallAction = @"RNCallKeepDidPerformDTMFAction";
 static NSString *const RNCallKeepDidToggleHoldAction = @"RNCallKeepDidToggleHoldAction";
+static NSString *const RNCallKeepPerformGroupCallAction = @"RNCallKeepPerformGroupCallAction";
 static NSString *const RNCallKeepProviderReset = @"RNCallKeepProviderReset";
 static NSString *const RNCallKeepCheckReachability = @"RNCallKeepCheckReachability";
 static NSString *const RNCallKeepDidChangeAudioRoute = @"RNCallKeepDidChangeAudioRoute";
@@ -112,6 +113,7 @@ RCT_EXPORT_MODULE()
         RNCallKeepDidPerformSetMutedCallAction,
         RNCallKeepPerformPlayDTMFCallAction,
         RNCallKeepDidToggleHoldAction,
+        RNCallKeepPerformGroupCallAction,
         RNCallKeepProviderReset,
         RNCallKeepCheckReachability,
         RNCallKeepDidLoadWithEvents,
@@ -383,6 +385,20 @@ RCT_EXPORT_METHOD(setOnHold:(NSString *)uuidString :(BOOL)shouldHold)
     CXSetHeldCallAction *setHeldCallAction = [[CXSetHeldCallAction alloc] initWithCallUUID:uuid onHold:shouldHold];
     CXTransaction *transaction = [[CXTransaction alloc] init];
     [transaction addAction:setHeldCallAction];
+
+    [self requestTransaction:transaction];
+}
+
+RCT_EXPORT_METHOD(setGroupCall:(NSString *)activeUuidString :(NSString *)heldUuidString)
+{
+#ifdef DEBUG
+    NSLog(@"[RNCallKeep][setGroupCall] activeUuidString = %@, heldUuidString = %d", activeUuidString, heldUuidString);
+#endif
+    NSUUID *activeUuid = [[NSUUID alloc] initWithUUIDString:activeUuidString];
+    NSUUID *heldUuid = [[NSUUID alloc] initWithUUIDString:heldUuidString];
+    CXSetGroupCallAction *setGroupCallAction = [[CXSetGroupCallAction alloc] initWithCallUUID:heldUuid callUUIDToGroupWith:activeUuid];
+    CXTransaction *transaction = [[CXTransaction alloc] init];
+    [transaction addAction:setGroupCallAction];
 
     [self requestTransaction:transaction];
 }
@@ -1049,6 +1065,16 @@ RCT_EXPORT_METHOD(reportUpdatedCall:(NSString *)uuidString contactIdentifier:(NS
 #endif
 
     [self sendEventWithNameWrapper:RNCallKeepDidToggleHoldAction body:@{ @"hold": @(action.onHold), @"callUUID": [action.callUUID.UUIDString lowercaseString] }];
+    [action fulfill];
+}
+
+-(void)provider:(CXProvider *)provider performSetGroupCallAction:(CXSetGroupCallAction *)action
+{
+#ifdef DEBUG
+    NSLog(@"[RNCallKeep][CXProviderDelegate][provider:performSetGroupCallAction]");
+#endif
+
+    [self sendEventWithNameWrapper:RNCallKeepPerformGroupCallAction body:@{ @"activeCallUUID": [action.callUUID.UUIDString lowercaseString], @"heldCallUUID": [action.callUUIDToGroupWith.UUIDString lowercaseString] }];
     [action fulfill];
 }
 

@@ -258,6 +258,8 @@ class RNCallKeep {
   };
 
   setOnHold = (uuid, shouldHold) => RNCallKeepModule.setOnHold(uuid, shouldHold);
+  
+  setGroupCall = (activeUuid, heldUuid) => RNCallKeepModule.setGroupCall(activeUuid, heldUuid);
 
   setConnectionState = (uuid, state) => isIOS ? null : RNCallKeepModule.setConnectionState(uuid, state);
 
