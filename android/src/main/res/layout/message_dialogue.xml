@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@color/transparent"
+    android:id="@+id/call_linear_layout"
+    >
+  <LinearLayout
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:orientation="vertical"
+      android:background="@drawable/border_radius"
+      android:layout_marginTop="180dp"
+    >
+  <androidx.appcompat.widget.AppCompatButton
+      android:id="@+id/rej1"
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:text="I'm in a meeting"
+      android:textColor="#FFFFFF"
+      android:background="@color/transparent"
+      android:textAlignment="center"
+      android:gravity="center"
+      android:layout_gravity="center"
+      android:paddingVertical="5dp"
+      />
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="#FFFFFF"
+        android:alpha="0.5"
+        />
+
+    <androidx.appcompat.widget.AppCompatButton
+        android:id="@+id/rej2"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="I'll call you later"
+        android:textColor="#FFFFFF"
+        android:background="@color/transparent"
+        android:textAlignment="center"
+        android:gravity="center"
+        android:layout_gravity="center"
+
+        android:paddingVertical="5dp"
+        />
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="#FFFFFF"
+        android:alpha="0.5"
+        />
+
+    <androidx.appcompat.widget.AppCompatButton
+        android:id="@+id/rej3"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+
+        android:text="Can't talk now. Call me later?"
+        android:textColor="#FFFFFF"
+        android:background="@color/transparent"
+        android:textAlignment="center"
+        android:gravity="center"
+        android:layout_gravity="center"
+
+        android:paddingVertical="5dp"
+        />
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="#FFFFFF"
+        android:alpha="0.5"
+        />
+    <androidx.appcompat.widget.AppCompatButton
+        android:id="@+id/rej4"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+
+        android:text="I'll call you back"
+        android:textColor="#FFFFFF"
+        android:background="@color/transparent"
+        android:textAlignment="center"
+        android:gravity="center"
+        android:layout_gravity="center"
+
+        android:paddingVertical="5dp"
+        />
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="#FFFFFF"
+        android:alpha="0.5"
+        />
+    <androidx.appcompat.widget.AppCompatButton
+        android:id="@+id/rej5"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="I'll call you right back"
+        android:textColor="#FFFFFF"
+        android:background="@color/transparent"
+        android:textAlignment="center"
+        android:gravity="center"
+        android:layout_gravity="center"
+        android:paddingVertical="5dp"
+        />
+    <androidx.appcompat.widget.AppCompatButton
+        android:id="@+id/rej6"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Custom Message"
+        android:textColor="#FFFFFF"
+        android:background="@color/transparent"
+        android:textAlignment="center"
+        android:gravity="center"
+        android:layout_gravity="center"
+        android:paddingVertical="5dp"
+        />
+  </LinearLayout>
+
+  <RelativeLayout
+      android:layout_width="match_parent"
+      android:layout_height="20dp"
+      android:background="@color/transparent">
+
+    <ImageView
+        android:layout_width="20dp"
+        android:layout_height="20dp"
+        android:layout_centerHorizontal="true"
+        android:alpha="0.5"
+        android:rotation="180"
+        android:src="@drawable/triangle" />
+  </RelativeLayout>
+</LinearLayout>

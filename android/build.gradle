@@ -33,4 +33,5 @@ repositories {
 dependencies {
     implementation 'com.facebook.react:react-native:+'
     implementation "androidx.localbroadcastmanager:localbroadcastmanager:1.1.0"
+     implementation 'com.squareup.picasso:picasso:2.71828'
 }

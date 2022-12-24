@@ -1,4 +1,4 @@
-declare module 'react-native-callkeep' {
+declare module 'react-native-callkeep-incoming' {
   export type Events =
     'didReceiveStartCallAction' |
     'answerCall' |
