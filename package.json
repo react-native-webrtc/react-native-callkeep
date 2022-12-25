@@ -1,6 +1,6 @@
 {
   "name": "react-native-callkeep-incoming",
-  "version": "0.0.27-snapshot",
+  "version": "0.0.36-snapshot",
   "description": "iOS 10 CallKit and Android ConnectionService Framework For React Native",
   "main": "index.js",
   "scripts": {},

@@ -3,9 +3,11 @@ package io.wazo.callkeep;
 import android.app.Dialog;
 import android.app.KeyguardManager;
 import android.content.Intent;
+import android.content.ComponentName;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.WindowManager;
@@ -21,6 +23,14 @@ import android.media.MediaPlayer;
 import android.provider.Settings;
 import java.util.List;
 import android.app.Activity;
+import androidx.localbroadcastmanager.content.LocalBroadcastManager;
+
+import com.facebook.react.HeadlessJsTaskService;
+
+
+import java.util.HashMap;
+
+import androidx.annotation.Nullable;
 
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
@@ -33,11 +43,41 @@ import com.facebook.react.bridge.Arguments;
 import com.facebook.react.bridge.ReactContext;
 import com.facebook.react.bridge.ReadableMap;
 import com.facebook.react.bridge.WritableMap;
+import com.facebook.react.bridge.ReadableArray;
+import com.facebook.react.bridge.WritableArray;
+import com.facebook.react.bridge.WritableNativeArray;
+
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.modules.core.DeviceEventManagerModule;
 import io.wazo.callkeep.R;
 
 import com.squareup.picasso.Picasso;
+import static io.wazo.callkeep.Constants.ACTION_ANSWER_CALL;
+import static io.wazo.callkeep.Constants.ACTION_AUDIO_SESSION;
+import static io.wazo.callkeep.Constants.ACTION_DTMF_TONE;
+import static io.wazo.callkeep.Constants.ACTION_END_CALL;
+import static io.wazo.callkeep.Constants.ACTION_HOLD_CALL;
+import static io.wazo.callkeep.Constants.ACTION_MUTE_CALL;
+import static io.wazo.callkeep.Constants.ACTION_UNHOLD_CALL;
+import static io.wazo.callkeep.Constants.ACTION_UNMUTE_CALL;
+import static io.wazo.callkeep.Constants.EXTRA_CALLER_NAME;
+import static io.wazo.callkeep.Constants.EXTRA_CALL_NUMBER;
+import static io.wazo.callkeep.Constants.EXTRA_CALL_UUID;
+import static io.wazo.callkeep.Constants.EXTRA_HAS_VIDEO;
+
+import static io.wazo.callkeep.Constants.ACTION_SHOW_INCOMING_CALL_UI;
+import static io.wazo.callkeep.Constants.ACTION_ON_SILENCE_INCOMING_CALL;
+
+import static io.wazo.callkeep.Constants.ACTION_DID_CHANGE_AUDIO_ROUTE;
+
+import static io.wazo.callkeep.Constants.ACTION_ONGOING_CALL;
+import static io.wazo.callkeep.Constants.ACTION_CHECK_REACHABILITY;
+import static io.wazo.callkeep.Constants.ACTION_WAKE_APP;
+import static io.wazo.callkeep.Constants.EXTRA_CALL_NUMBER_SCHEMA;
+import static io.wazo.callkeep.Constants.EXTRA_DISABLE_ADD_CALL;
+import static io.wazo.callkeep.Constants.FOREGROUND_SERVICE_TYPE_MICROPHONE;
+import static io.wazo.callkeep.Constants.ACTION_ON_CREATE_CONNECTION_FAILED;
+
 
 public class UnlockScreenActivity extends AppCompatActivity implements UnlockScreenActivityInterface {
     private static final String TAG = "MessagingService";
@@ -53,6 +93,10 @@ public class UnlockScreenActivity extends AppCompatActivity implements UnlockScr
     Dialog dialog;
     LinearLayout linearLayout;
     KeyguardManager keyguardManager;
+
+    private HashMap<String, String> handle = new HashMap<String, String>();;
+    public static VoiceConnection  currentConnection;
+
 
     @Override
     public void onStart() {
@@ -77,16 +121,18 @@ public class UnlockScreenActivity extends AppCompatActivity implements UnlockScr
         callerAvatar = findViewById(R.id.callerAvatar);
         linearLayout=(LinearLayout) findViewById(R.id.call_linear_layout);
         Bundle bundle = getIntent().getExtras();
+        String name =""; 
+        String info ="";
         if (bundle != null) {
             if (bundle.containsKey("uuid")) {
                 uuid = bundle.getString("uuid");
             }
             if (bundle.containsKey("name")) {
-                String name = bundle.getString("name");
+                name = bundle.getString("name");
                 callerName.setText(name);
             }
             if (bundle.containsKey("info")) {
-                String info = bundle.getString("info");
+                info = bundle.getString("info");
                 callerInfo.setText(info);
             }
             if (bundle.containsKey("avatar")) {
@@ -96,6 +142,11 @@ public class UnlockScreenActivity extends AppCompatActivity implements UnlockScr
                 }
             }
         }
+
+        handle.put(EXTRA_CALL_UUID, uuid);
+        handle.put(EXTRA_CALLER_NAME, name);
+        handle.put(EXTRA_CALL_NUMBER, info);
+        handle.put(EXTRA_HAS_VIDEO, "true");
 
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN | WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON | WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON
                 | WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED | WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD);
@@ -148,12 +199,17 @@ public class UnlockScreenActivity extends AppCompatActivity implements UnlockScr
         WritableMap params = Arguments.createMap();
         params.putBoolean("accept", true);
         params.putString("uuid", uuid);
+
         if (!RNCallKeepModule.reactContext.hasCurrentActivity()) {
             params.putBoolean("isHeadless", true);
         }
         Log.d(TAG, "acceptDialing: "+keyguardManager.isDeviceLocked());
-        sendEvent("RNCallKeepPerformAnswerCallAction", params);
+        // sendEvent("RNCallKeepPerformAnswerCallAction", params);
         // sendEvent("answerCall", params);
+
+        sendCallRequestToActivity(ACTION_ANSWER_CALL, handle);
+        sendCallRequestToActivity(ACTION_AUDIO_SESSION, handle);
+
         if(keyguardManager.isDeviceLocked())
         {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -187,7 +243,12 @@ public class UnlockScreenActivity extends AppCompatActivity implements UnlockScr
             params.putBoolean("isHeadless", true);
         }
        
-        sendEvent("endCall", params);
+        // sendEvent("endCall", params);
+
+        sendCallRequestToActivity(ACTION_END_CALL, handle);
+
+        //reset
+        handle = new HashMap();
 
         finish();
     }
@@ -225,4 +286,118 @@ public class UnlockScreenActivity extends AppCompatActivity implements UnlockScr
                 .getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
                 .emit(eventName, params);
     }
+
+
+    public void sendBroadcastEvent(Intent intent) {
+            WritableMap args = Arguments.createMap();
+            HashMap<String, String> attributeMap = (HashMap<String, String>)intent.getSerializableExtra("attributeMap");
+
+            Log.d(TAG, "[RNCallKeepModule][onReceive] " + intent.getAction());
+            Log.d(TAG, "[RNCallKeepModule][onReceive][args] " + args);
+
+            switch (intent.getAction()) {
+                case ACTION_END_CALL:
+                    args.putString("callUUID", attributeMap.get(EXTRA_CALL_UUID));
+                    sendEvent("RNCallKeepPerformEndCallAction", args);
+                    break;
+                case ACTION_ANSWER_CALL:
+                    args.putString("callUUID", attributeMap.get(EXTRA_CALL_UUID));
+                    args.putBoolean("withVideo", Boolean.valueOf(attributeMap.get(EXTRA_HAS_VIDEO)));
+                    sendEvent("RNCallKeepPerformAnswerCallAction", args);
+                    break;
+                case ACTION_HOLD_CALL:
+                    args.putBoolean("hold", true);
+                    args.putString("callUUID", attributeMap.get(EXTRA_CALL_UUID));
+                    sendEvent("RNCallKeepDidToggleHoldAction", args);
+                    break;
+                case ACTION_UNHOLD_CALL:
+                    args.putBoolean("hold", false);
+                    args.putString("callUUID", attributeMap.get(EXTRA_CALL_UUID));
+                    sendEvent("RNCallKeepDidToggleHoldAction", args);
+                    break;
+                case ACTION_MUTE_CALL:
+                    args.putBoolean("muted", true);
+                    args.putString("callUUID", attributeMap.get(EXTRA_CALL_UUID));
+                    sendEvent("RNCallKeepDidPerformSetMutedCallAction", args);
+                    break;
+                case ACTION_UNMUTE_CALL:
+                    args.putBoolean("muted", false);
+                    args.putString("callUUID", attributeMap.get(EXTRA_CALL_UUID));
+                    sendEvent("RNCallKeepDidPerformSetMutedCallAction", args);
+                    break;
+                case ACTION_DTMF_TONE:
+                    args.putString("digits", attributeMap.get("DTMF"));
+                    args.putString("callUUID", attributeMap.get(EXTRA_CALL_UUID));
+                    sendEvent("RNCallKeepDidPerformDTMFAction", args);
+                    break;
+                case ACTION_ONGOING_CALL:
+                    args.putString("handle", attributeMap.get(EXTRA_CALL_NUMBER));
+                    args.putString("callUUID", attributeMap.get(EXTRA_CALL_UUID));
+                    args.putString("name", attributeMap.get(EXTRA_CALLER_NAME));
+                    sendEvent("RNCallKeepDidReceiveStartCallAction", args);
+                    break;
+                case ACTION_AUDIO_SESSION:
+                    sendEvent("RNCallKeepDidActivateAudioSession", null);
+                    break;
+                case ACTION_CHECK_REACHABILITY:
+                    sendEvent("RNCallKeepCheckReachability", null);
+                    break;
+                case ACTION_SHOW_INCOMING_CALL_UI:
+                    args.putString("handle", attributeMap.get(EXTRA_CALL_NUMBER));
+                    args.putString("callUUID", attributeMap.get(EXTRA_CALL_UUID));
+                    args.putString("name", attributeMap.get(EXTRA_CALLER_NAME));
+                    args.putString("hasVideo", attributeMap.get(EXTRA_HAS_VIDEO));
+                    sendEvent("RNCallKeepShowIncomingCallUi", args);
+                    break;
+                case ACTION_WAKE_APP:
+                    Intent headlessIntent = new Intent(RNCallKeepModule.reactContext, RNCallKeepBackgroundMessagingService.class);
+                    headlessIntent.putExtra("callUUID", attributeMap.get(EXTRA_CALL_UUID));
+                    headlessIntent.putExtra("name", attributeMap.get(EXTRA_CALLER_NAME));
+                    headlessIntent.putExtra("handle", attributeMap.get(EXTRA_CALL_NUMBER));
+                    Log.d(TAG, "[RNCallKeepModule] wakeUpApplication: " + attributeMap.get(EXTRA_CALL_UUID) + ", number : " + attributeMap.get(EXTRA_CALL_NUMBER) + ", displayName:" + attributeMap.get(EXTRA_CALLER_NAME));
+
+                    ComponentName name = RNCallKeepModule.reactContext.startService(headlessIntent);
+                    if (name != null) {
+                        HeadlessJsTaskService.acquireWakeLockNow(RNCallKeepModule.reactContext);
+                    }
+                    break;
+                case ACTION_ON_SILENCE_INCOMING_CALL:
+                    args.putString("handle", attributeMap.get(EXTRA_CALL_NUMBER));
+                    args.putString("callUUID", attributeMap.get(EXTRA_CALL_UUID));
+                    args.putString("name", attributeMap.get(EXTRA_CALLER_NAME));
+                    sendEvent("RNCallKeepOnSilenceIncomingCall", args);
+                    break;
+                case ACTION_ON_CREATE_CONNECTION_FAILED:
+                    args.putString("handle", attributeMap.get(EXTRA_CALL_NUMBER));
+                    args.putString("callUUID", attributeMap.get(EXTRA_CALL_UUID));
+                    args.putString("name", attributeMap.get(EXTRA_CALLER_NAME));
+                    sendEvent("RNCallKeepOnIncomingConnectionFailed", args);
+                    break;
+                case ACTION_DID_CHANGE_AUDIO_ROUTE:
+                    args.putString("handle", attributeMap.get(EXTRA_CALL_NUMBER));
+                    args.putString("callUUID", attributeMap.get(EXTRA_CALL_UUID));
+                    args.putString("output", attributeMap.get("output"));
+                    sendEvent("RNCallKeepDidChangeAudioRoute", args);
+                    break;
+            }
+        }
+
+
+    private void sendCallRequestToActivity(final String action, @Nullable final HashMap attributeMap) {
+        final Handler handler = new Handler();
+
+        handler.post(new Runnable() {
+            @Override
+            public void run() {
+                Intent intent = new Intent(action);
+                if (attributeMap != null) {
+                    Bundle extras = new Bundle();
+                    extras.putSerializable("attributeMap", attributeMap);
+                    intent.putExtras(extras);
+                }
+                sendBroadcastEvent(intent);
+            }
+        });
+    }
+
 }
