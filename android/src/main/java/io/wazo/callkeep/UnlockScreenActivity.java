@@ -41,20 +41,19 @@ import com.squareup.picasso.Picasso;
 
 public class UnlockScreenActivity extends AppCompatActivity implements UnlockScreenActivityInterface {
     private static final String TAG = "MessagingService";
-    private TextView tvName;
-    private TextView tvInfo;
-    private ImageView ivAvatar;
+    private TextView callerName;
+    private TextView callerInfo;
+    private ImageView callerAvatar;
     private String uuid = "";
     static boolean active = false;
     private static Vibrator v = (Vibrator) RNCallKeepModule.reactContext.getSystemService(Context.VIBRATOR_SERVICE);
     private long[] pattern = {0, 1000, 800};
     private static MediaPlayer player = MediaPlayer.create(RNCallKeepModule.reactContext, Settings.System.DEFAULT_RINGTONE_URI);
     private static Activity fa;
-    private Button messageBtn;
     Dialog dialog;
     LinearLayout linearLayout;
     KeyguardManager keyguardManager;
-    private Button rejbtn1,rejbtn2,rejbtn3,rejbtn4,rejbtn5,rejbtn6;
+
     @Override
     public void onStart() {
         super.onStart();
@@ -72,13 +71,10 @@ public class UnlockScreenActivity extends AppCompatActivity implements UnlockScr
         super.onCreate(savedInstanceState);
         fa = this;
 
-
-
         setContentView(R.layout.activity_call_incoming);
-        tvName = findViewById(R.id.tvName);
-        tvInfo = findViewById(R.id.tvInfo);
-        ivAvatar = findViewById(R.id.ivAvatar);
-        messageBtn = findViewById(R.id.messageBtn);
+        callerName = findViewById(R.id.callerName);
+        callerInfo = findViewById(R.id.callerInfo);
+        callerAvatar = findViewById(R.id.callerAvatar);
         linearLayout=(LinearLayout) findViewById(R.id.call_linear_layout);
         Bundle bundle = getIntent().getExtras();
         if (bundle != null) {
@@ -87,16 +83,16 @@ public class UnlockScreenActivity extends AppCompatActivity implements UnlockScr
             }
             if (bundle.containsKey("name")) {
                 String name = bundle.getString("name");
-                tvName.setText(name);
+                callerName.setText(name);
             }
             if (bundle.containsKey("info")) {
                 String info = bundle.getString("info");
-                tvInfo.setText(info);
+                callerInfo.setText(info);
             }
             if (bundle.containsKey("avatar")) {
                 String avatar = bundle.getString("avatar");
                 if (avatar != null) {
-                    Picasso.get().load(avatar).transform(new CircleTransform()).into(ivAvatar);
+                    Picasso.get().load(avatar).transform(new CircleTransform()).into(callerAvatar);
                 }
             }
         }
@@ -132,95 +128,7 @@ public class UnlockScreenActivity extends AppCompatActivity implements UnlockScr
                 dismissDialing(null);
             }
         });
-        messageBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                showDialogueBox();
-            }
-        });
-
-
-
-
-
-
     }
-
-    public void showDialogueBox(){
-        dialog = new Dialog(this);
-        dialog.setContentView(R.layout.message_dialogue);
-        dialog.getWindow().setBackgroundDrawable(new ColorDrawable(android.graphics.Color.TRANSPARENT));
-        dialog.show();
-        rejbtn1= dialog.findViewById(R.id.rej1);
-        rejbtn2= dialog.findViewById(R.id.rej2);
-        rejbtn3= dialog.findViewById(R.id.rej3);
-        rejbtn4= dialog.findViewById(R.id.rej4);
-        rejbtn5= dialog.findViewById(R.id.rej5);
-        rejbtn6= dialog.findViewById(R.id.rej6);
-        linearLayout=dialog.findViewById(R.id.call_linear_layout);
-        linearLayout.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                dialog.dismiss();
-            }
-        });
-        rejbtn1.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                v.cancel();
-                player.stop();
-                dismissDialing(1);
-                dialog.dismiss();
-            }
-        });
-        rejbtn2.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                v.cancel();
-                player.stop();
-                dismissDialing(2);
-                dialog.dismiss();
-            }
-        });
-        rejbtn3.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                v.cancel();
-                player.stop();
-                dismissDialing(3);
-                dialog.dismiss();
-            }
-        });
-        rejbtn4.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                v.cancel();
-                player.stop();
-                dismissDialing(4);
-                dialog.dismiss();
-            }
-        });
-        rejbtn5.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                v.cancel();
-                player.stop();
-                dismissDialing(5);
-                dialog.dismiss();
-            }
-        });
-        rejbtn6.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                v.cancel();
-                player.stop();
-                dismissDialing(6);
-                dialog.dismiss();
-            }
-        });
-
-    }
-
 
     @Override
     public void onBackPressed() {
@@ -244,7 +152,8 @@ public class UnlockScreenActivity extends AppCompatActivity implements UnlockScr
             params.putBoolean("isHeadless", true);
         }
         Log.d(TAG, "acceptDialing: "+keyguardManager.isDeviceLocked());
-        sendEvent("answerCall", params);
+        sendEvent("RNCallKeepPerformAnswerCallAction", params);
+        // sendEvent("answerCall", params);
         if(keyguardManager.isDeviceLocked())
         {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -277,17 +186,8 @@ public class UnlockScreenActivity extends AppCompatActivity implements UnlockScr
         if (!RNCallKeepModule.reactContext.hasCurrentActivity()) {
             params.putBoolean("isHeadless", true);
         }
-        if(message!=null)
-        {
-            params.putInt("msg",message);
-            sendEvent("rejectMessage", params);
-        }
-        else
-        {
-            sendEvent("endCall", params);
-        }
-
-
+       
+        sendEvent("endCall", params);
 
         finish();
     }

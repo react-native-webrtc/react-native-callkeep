@@ -39,7 +39,7 @@
             android:layout_marginTop="80dp"
             >
             <ImageView
-                android:id="@+id/ivAvatar"
+                android:id="@+id/callerAvatar"
                 android:layout_width="110dp"
                 android:layout_height="110dp"
                 android:scaleType="fitXY"
@@ -71,7 +71,7 @@
         </RelativeLayout>
 
         <TextView
-            android:id="@+id/tvName"
+            android:id="@+id/callerName"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="10dp"
@@ -81,7 +81,7 @@
             />
 
         <TextView
-            android:id="@+id/tvInfo"
+            android:id="@+id/callerInfo"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="0dp"
