@@ -1,85 +1,65 @@
 package io.wazo.callkeep;
 
-import android.app.Dialog;
-import android.app.KeyguardManager;
-import android.content.Intent;
-import android.content.ComponentName;
-import android.graphics.drawable.ColorDrawable;
-import android.os.Build;
-import android.os.Bundle;
-import android.os.Handler;
-import android.util.Log;
-import android.view.Gravity;
-import android.view.WindowManager;
-import android.widget.Button;
-import android.widget.ImageView;
-import android.widget.LinearLayout;
-import android.widget.TextView;
-import android.view.View;
-import android.net.Uri;
-import android.os.Vibrator;
-import android.content.Context;
-import android.media.MediaPlayer;
-import android.provider.Settings;
-import java.util.List;
-import android.app.Activity;
-import androidx.localbroadcastmanager.content.LocalBroadcastManager;
-
-import com.facebook.react.HeadlessJsTaskService;
-
-
-import java.util.HashMap;
-
-import androidx.annotation.Nullable;
-
-import androidx.annotation.RequiresApi;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.AppCompatButton;
-
-import android.app.ActivityManager;
-import android.app.ActivityManager.RunningAppProcessInfo;
-
-import com.facebook.react.bridge.Arguments;
-import com.facebook.react.bridge.ReactContext;
-import com.facebook.react.bridge.ReadableMap;
-import com.facebook.react.bridge.WritableMap;
-import com.facebook.react.bridge.ReadableArray;
-import com.facebook.react.bridge.WritableArray;
-import com.facebook.react.bridge.WritableNativeArray;
-
-import com.facebook.react.bridge.ReactApplicationContext;
-import com.facebook.react.modules.core.DeviceEventManagerModule;
-import io.wazo.callkeep.R;
-
-import com.squareup.picasso.Picasso;
 import static io.wazo.callkeep.Constants.ACTION_ANSWER_CALL;
 import static io.wazo.callkeep.Constants.ACTION_AUDIO_SESSION;
+import static io.wazo.callkeep.Constants.ACTION_CHECK_REACHABILITY;
+import static io.wazo.callkeep.Constants.ACTION_DID_CHANGE_AUDIO_ROUTE;
 import static io.wazo.callkeep.Constants.ACTION_DTMF_TONE;
 import static io.wazo.callkeep.Constants.ACTION_END_CALL;
 import static io.wazo.callkeep.Constants.ACTION_HOLD_CALL;
 import static io.wazo.callkeep.Constants.ACTION_MUTE_CALL;
+import static io.wazo.callkeep.Constants.ACTION_ONGOING_CALL;
+import static io.wazo.callkeep.Constants.ACTION_ON_CREATE_CONNECTION_FAILED;
+import static io.wazo.callkeep.Constants.ACTION_ON_SILENCE_INCOMING_CALL;
+import static io.wazo.callkeep.Constants.ACTION_SHOW_INCOMING_CALL_UI;
 import static io.wazo.callkeep.Constants.ACTION_UNHOLD_CALL;
 import static io.wazo.callkeep.Constants.ACTION_UNMUTE_CALL;
+import static io.wazo.callkeep.Constants.ACTION_WAKE_APP;
 import static io.wazo.callkeep.Constants.EXTRA_CALLER_NAME;
 import static io.wazo.callkeep.Constants.EXTRA_CALL_NUMBER;
 import static io.wazo.callkeep.Constants.EXTRA_CALL_UUID;
 import static io.wazo.callkeep.Constants.EXTRA_HAS_VIDEO;
 
-import static io.wazo.callkeep.Constants.ACTION_SHOW_INCOMING_CALL_UI;
-import static io.wazo.callkeep.Constants.ACTION_ON_SILENCE_INCOMING_CALL;
+import android.app.Activity;
+import android.app.Dialog;
+import android.app.KeyguardManager;
+import android.content.ComponentName;
+import android.content.Context;
+import android.content.Intent;
+import android.media.AudioManager;
+import android.media.MediaPlayer;
+import android.os.Build;
+import android.os.Bundle;
+import android.os.Handler;
+import android.os.Vibrator;
+import android.provider.Settings;
+import android.telephony.TelephonyManager;
+import android.util.Log;
+import android.view.View;
+import android.view.WindowManager;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.TextView;
 
-import static io.wazo.callkeep.Constants.ACTION_DID_CHANGE_AUDIO_ROUTE;
+import androidx.appcompat.app.AppCompatActivity;
 
-import static io.wazo.callkeep.Constants.ACTION_ONGOING_CALL;
-import static io.wazo.callkeep.Constants.ACTION_CHECK_REACHABILITY;
-import static io.wazo.callkeep.Constants.ACTION_WAKE_APP;
-import static io.wazo.callkeep.Constants.EXTRA_CALL_NUMBER_SCHEMA;
-import static io.wazo.callkeep.Constants.EXTRA_DISABLE_ADD_CALL;
-import static io.wazo.callkeep.Constants.FOREGROUND_SERVICE_TYPE_MICROPHONE;
-import static io.wazo.callkeep.Constants.ACTION_ON_CREATE_CONNECTION_FAILED;
+import com.android.internal.telephony.ITelephony;
+import com.facebook.react.HeadlessJsTaskService;
+import com.facebook.react.bridge.Arguments;
+import com.facebook.react.bridge.ReactApplicationContext;
+import com.facebook.react.bridge.ReadableMap;
+import com.facebook.react.bridge.WritableMap;
+import com.facebook.react.modules.core.DeviceEventManagerModule;
+import com.squareup.picasso.Picasso;
+
+import java.lang.reflect.Method;
+import java.util.HashMap;
+
+import javax.annotation.Nullable;
 
 
 public class UnlockScreenActivity extends AppCompatActivity implements UnlockScreenActivityInterface {
+     
     private static final String TAG = "MessagingService";
     private TextView callerName;
     private TextView callerInfo;
@@ -155,7 +135,7 @@ public class UnlockScreenActivity extends AppCompatActivity implements UnlockScr
         player.start();
         AnimateImage acceptCallBtn = findViewById(R.id.ivAcceptCall);
         acceptCallBtn.setOnClickListener(new View.OnClickListener() {
-            @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP_MR1)
+//            @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP_MR1)
             @Override
             public void onClick(View view) {
                 try {
@@ -192,9 +172,42 @@ public class UnlockScreenActivity extends AppCompatActivity implements UnlockScr
         fa.finish();
     }
 
-    @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP_MR1)
+     public boolean isCallActive(ReactApplicationContext context){
+        AudioManager manager = (AudioManager)context.getSystemService(Context.AUDIO_SERVICE);
+        Log.d(TAG,"isCallActive: manager.getMode() : "+ manager.getMode());
+        return manager.getMode() == AudioManager.MODE_IN_CALL;
+    }
+
+    private void disconnectActiveCall(ReactApplicationContext context){
+      TelephonyManager tm = (TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);
+        try {
+            Class c = Class.forName(tm.getClass().getName());
+            Method m = c.getDeclaredMethod("getITelephony");
+            m.setAccessible(true);
+            ITelephony telephonyService = (ITelephony) m.invoke(tm);
+            Bundle bundle = getIntent().getExtras();
+            String phoneNumber = bundle.getString("incoming_number");
+            Log.d(TAG,"disconnectActiveCall: INCOMING NUMBER : "+ phoneNumber);
+            Log.d(TAG,"disconnectActiveCall: telephonyService : "+ telephonyService);
+            // if ((phoneNumber != null)) { 
+                telephonyService.endCall();
+                Log.d(TAG,"disconnectActiveCall: HANG UP : " +  phoneNumber);
+            // }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+//    @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP_MR1)
     private void acceptDialing() {
          keyguardManager = (KeyguardManager) RNCallKeepModule.reactContext.getSystemService(Context.KEYGUARD_SERVICE);
+
+        if(isCallActive(RNCallKeepModule.reactContext)) {
+           Log.d(TAG,"acceptDialing: An active call detected!!");
+
+           disconnectActiveCall(RNCallKeepModule.reactContext);
+        }
 
         WritableMap params = Arguments.createMap();
         params.putBoolean("accept", true);
@@ -302,7 +315,7 @@ public class UnlockScreenActivity extends AppCompatActivity implements UnlockScr
                     break;
                 case ACTION_ANSWER_CALL:
                     args.putString("callUUID", attributeMap.get(EXTRA_CALL_UUID));
-                    args.putBoolean("withVideo", Boolean.valueOf(attributeMap.get(EXTRA_HAS_VIDEO)));
+                    args.putBoolean("withVideo", Boolean.parseBoolean(attributeMap.get(EXTRA_HAS_VIDEO)));
                     sendEvent("RNCallKeepPerformAnswerCallAction", args);
                     break;
                 case ACTION_HOLD_CALL:

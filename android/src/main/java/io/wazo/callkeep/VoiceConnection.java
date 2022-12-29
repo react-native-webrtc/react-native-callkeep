@@ -336,7 +336,6 @@ public class VoiceConnection extends Connection {
      * Send call request to the RNCallKeepModule
      */
     private void sendCallRequestToActivity(final String action, @Nullable final HashMap attributeMap) {
-        final VoiceConnection instance = this;
         final Handler handler = new Handler();
 
         handler.post(new Runnable() {
