@@ -333,12 +333,19 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
         Log.d(TAG, "[RNCallKeepModule] endCall called, uuid: " + uuid);
 
         activeCallUUID = null;
+        try {
+            UnlockScreenActivity.dismissIncoming();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
         Connection conn = VoiceConnectionService.getConnection(uuid);
         if (conn == null) {
             Log.w(TAG, "[RNCallKeepModule] endCall ignored because no connection found, uuid: " + uuid);
             return;
         }
         conn.onDisconnect();
+
 
         Log.d(TAG, "[RNCallKeepModule] endCall executed, uuid: " + uuid);
     }
@@ -348,6 +355,13 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
         Log.d(TAG, "[RNCallKeepModule] endAllCalls called");
 
         activeCallUUID = null;
+
+        try {
+            UnlockScreenActivity.dismissIncoming();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
         ArrayList<Map.Entry<String, VoiceConnection>> connections =
                 new ArrayList<Map.Entry<String, VoiceConnection>>(VoiceConnectionService.currentConnections.entrySet());
         for (Map.Entry<String, VoiceConnection> connectionEntry : connections) {
@@ -498,6 +512,13 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
         Log.d(TAG, "[RNCallKeepModule] reportEndCallWithUUID, uuid: " + uuid + ", reason: " + reason);
 
         activeCallUUID = null;
+        
+        try {
+            UnlockScreenActivity.dismissIncoming();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
         VoiceConnection conn = (VoiceConnection) VoiceConnectionService.getConnection(uuid);
         if (conn == null) {
             Log.w(TAG, "[RNCallKeepModule] reportEndCallWithUUID ignored because no connection found, uuid: " + uuid);
@@ -510,6 +531,12 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
     public void rejectCall(String uuid) {
         Log.d(TAG, "[RNCallKeepModule] rejectCall, uuid: " + uuid);
         activeCallUUID = null;
+
+        try {
+            UnlockScreenActivity.dismissIncoming();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
         Connection conn = VoiceConnectionService.getConnection(uuid);
         if (conn == null) {
