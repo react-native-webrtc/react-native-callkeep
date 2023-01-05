@@ -164,8 +164,8 @@ public class VoiceConnection extends Connection {
             default:
                 break;
         }
-        ((VoiceConnectionService)context).deinitConnection(handle.get(EXTRA_CALL_UUID));
-        destroy();
+//        ((VoiceConnectionService)context).deinitConnection(handle.get(EXTRA_CALL_UUID));
+//        destroy();
     }
 
     @Override

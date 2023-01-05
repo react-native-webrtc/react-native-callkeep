@@ -17,6 +17,7 @@
 
 package io.wazo.callkeep;
 
+import static android.provider.Settings.System.getString;
 import static io.wazo.callkeep.Constants.ACTION_ANSWER_CALL;
 import static io.wazo.callkeep.Constants.ACTION_AUDIO_SESSION;
 import static io.wazo.callkeep.Constants.ACTION_CHECK_REACHABILITY;
@@ -39,6 +40,10 @@ import static io.wazo.callkeep.Constants.EXTRA_HAS_VIDEO;
 
 import android.Manifest;
 import android.app.Activity;
+import android.app.Notification;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
@@ -47,6 +52,7 @@ import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
+import android.graphics.Color;
 import android.media.AudioDeviceInfo;
 import android.media.AudioManager;
 import android.net.Uri;
@@ -54,6 +60,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.telecom.CallAudioState;
 import android.telecom.Connection;
+import android.telecom.ConnectionRequest;
 import android.telecom.PhoneAccountHandle;
 import android.telecom.TelecomManager;
 import android.util.Log;
@@ -61,6 +68,7 @@ import android.view.WindowManager;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.annotation.RequiresApi;
 import androidx.core.content.ContextCompat;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
@@ -85,8 +93,10 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 
 // @see https://github.com/kbagchiGWC/voice-quickstart-android/blob/9a2aff7fbe0d0a5ae9457b48e9ad408740dfb968/exampleConnectionService/src/main/java/com/twilio/voice/examples/connectionservice/VoiceConnectionServiceActivity.java
@@ -277,6 +287,11 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
     @ReactMethod
     public void displayIncomingCall(String uuid, String number, String callerName, boolean hasVideo) {
         System.out.println("Here ----displayIncomingCall ->>>" + RNCallKeepModule.reactContext);
+
+        if (activeCallUUID != null) {
+            System.out.println("SPS =>>>>> DETECTED ACTIVE PeditoH CALL");
+            return;
+        }
 
         if (isCallActive(RNCallKeepModule.reactContext)) {
             System.out.println("SPS =>>>>> DETECTED ACTIVE CALL");
@@ -507,25 +522,75 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
         }
     }
 
+
+    @RequiresApi(api = Build.VERSION_CODES.O)
     @ReactMethod
     public void reportEndCallWithUUID(String uuid, int reason) {
         Log.d(TAG, "[RNCallKeepModule] reportEndCallWithUUID, uuid: " + uuid + ", reason: " + reason);
 
         activeCallUUID = null;
-        
+
         try {
             UnlockScreenActivity.dismissIncoming();
         } catch (Exception e) {
             e.printStackTrace();
         }
+        Context context = this.getAppContext();
 
-        VoiceConnection conn = (VoiceConnection) VoiceConnectionService.getConnection(uuid);
-        if (conn == null) {
-            Log.w(TAG, "[RNCallKeepModule] reportEndCallWithUUID ignored because no connection found, uuid: " + uuid);
-            return;
+        try {
+            NotificationManager nManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+
+            String id = "voip_channel_01";
+            CharSequence name = "incoming call channel";
+            String description = "Incoming call channel.";
+
+            int importance = NotificationManager.IMPORTANCE_LOW;
+
+            NotificationChannel mChannel = new NotificationChannel(id, name, importance);
+            mChannel.setDescription(description);
+
+            mChannel.enableLights(true);
+            mChannel.setLightColor(Color.RED);
+
+            mChannel.enableVibration(true);
+
+            nManager.createNotificationChannel(mChannel);
+
+            PackageManager pm = context.getPackageManager();
+            Intent intent = pm.getLaunchIntentForPackage(context.getPackageName());
+
+            intent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
+
+            PendingIntent pIntent = PendingIntent.getActivity(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+
+            Notification notification = new Notification.Builder(context)
+                    .setContentTitle("Missed Call!")
+                    .setContentText("You missed a call from PeditoH")
+                    .setSmallIcon(R.drawable.ic_avatar_small)
+                    .setContentIntent(pIntent)
+                    .setChannelId(id)
+                    .setAutoCancel(true).build();
+            nManager.notify(0, notification);
+        } catch (Exception e) {
+            e.printStackTrace();
         }
-        conn.reportDisconnect(reason);
+
     }
+
+    private HashMap<String, String> bundleToMap(Bundle extras) {
+        HashMap<String, String> extrasMap = new HashMap<>();
+        Set<String> keySet = extras.keySet();
+        Iterator<String> iterator = keySet.iterator();
+
+        while (iterator.hasNext()) {
+            String key = iterator.next();
+            if (extras.get(key) != null) {
+                extrasMap.put(key, extras.get(key).toString());
+            }
+        }
+        return extrasMap;
+    }
+
 
     @ReactMethod
     public void rejectCall(String uuid) {

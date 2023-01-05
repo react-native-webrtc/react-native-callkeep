@@ -15,6 +15,7 @@ import static io.wazo.callkeep.Constants.ACTION_SHOW_INCOMING_CALL_UI;
 import static io.wazo.callkeep.Constants.ACTION_UNHOLD_CALL;
 import static io.wazo.callkeep.Constants.ACTION_UNMUTE_CALL;
 import static io.wazo.callkeep.Constants.ACTION_WAKE_APP;
+import static io.wazo.callkeep.Constants.EXTRA_CALLER_APPOINTMENT_ID;
 import static io.wazo.callkeep.Constants.EXTRA_CALLER_NAME;
 import static io.wazo.callkeep.Constants.EXTRA_CALL_NUMBER;
 import static io.wazo.callkeep.Constants.EXTRA_CALL_UUID;
@@ -26,6 +27,7 @@ import android.app.KeyguardManager;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.os.Build;
@@ -59,12 +61,13 @@ import javax.annotation.Nullable;
 
 
 public class UnlockScreenActivity extends AppCompatActivity implements UnlockScreenActivityInterface {
-     
     private static final String TAG = "MessagingService";
     private TextView callerName;
     private TextView callerInfo;
     private ImageView callerAvatar;
     private String uuid = "";
+    private String name = "";
+    private String appointmentId = "";
     static boolean active = false;
     private static Vibrator v = (Vibrator) RNCallKeepModule.reactContext.getSystemService(Context.VIBRATOR_SERVICE);
     private long[] pattern = {0, 1000, 800};
@@ -101,7 +104,6 @@ public class UnlockScreenActivity extends AppCompatActivity implements UnlockScr
         callerAvatar = findViewById(R.id.callerAvatar);
         linearLayout=(LinearLayout) findViewById(R.id.call_linear_layout);
         Bundle bundle = getIntent().getExtras();
-        String name =""; 
         String info ="";
         if (bundle != null) {
             if (bundle.containsKey("uuid")) {
@@ -109,7 +111,10 @@ public class UnlockScreenActivity extends AppCompatActivity implements UnlockScr
             }
             if (bundle.containsKey("name")) {
                 name = bundle.getString("name");
-                callerName.setText(name);
+                callerName.setText("");
+            }
+            if (bundle.containsKey("appointmentId")) {
+                appointmentId = bundle.getString("appointmentId");
             }
             if (bundle.containsKey("info")) {
                 info = bundle.getString("info");
@@ -125,6 +130,7 @@ public class UnlockScreenActivity extends AppCompatActivity implements UnlockScr
 
         handle.put(EXTRA_CALL_UUID, uuid);
         handle.put(EXTRA_CALLER_NAME, name);
+        handle.put(EXTRA_CALLER_APPOINTMENT_ID, appointmentId);
         handle.put(EXTRA_CALL_NUMBER, info);
         handle.put(EXTRA_HAS_VIDEO, "true");
 
@@ -209,12 +215,21 @@ public class UnlockScreenActivity extends AppCompatActivity implements UnlockScr
            disconnectActiveCall(RNCallKeepModule.reactContext);
         }
 
-        WritableMap params = Arguments.createMap();
-        params.putBoolean("accept", true);
-        params.putString("uuid", uuid);
+        if (RNCallKeepModule.isCallFromBackground) {
+            try {
+                startMainActivity(RNCallKeepModule.reactContext);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+
+        handle.put(EXTRA_CALL_UUID, uuid);
+        handle.put(EXTRA_CALLER_NAME, name);
+        handle.put(EXTRA_CALLER_APPOINTMENT_ID, appointmentId);
+        handle.put("accept", "true");
 
         if (!RNCallKeepModule.reactContext.hasCurrentActivity()) {
-            params.putBoolean("isHeadless", true);
+            handle.put("isHeadless", "true");
         }
         Log.d(TAG, "acceptDialing: "+keyguardManager.isDeviceLocked());
         // sendEvent("RNCallKeepPerformAnswerCallAction", params);
@@ -249,13 +264,13 @@ public class UnlockScreenActivity extends AppCompatActivity implements UnlockScr
 
     private void dismissDialing(Integer message) {
         Log.d(TAG, "dismissDialing: "+message);
-        WritableMap params = Arguments.createMap();
-        params.putBoolean("accept", false);
-        params.putString("uuid", uuid);
+
+        handle.put("accept", "false");
+        handle.put("uuid", uuid);
         if (!RNCallKeepModule.reactContext.hasCurrentActivity()) {
-            params.putBoolean("isHeadless", true);
+            handle.put("isHeadless", "true");
         }
-       
+
         // sendEvent("endCall", params);
 
         sendCallRequestToActivity(ACTION_END_CALL, handle);
@@ -301,6 +316,20 @@ public class UnlockScreenActivity extends AppCompatActivity implements UnlockScr
     }
 
 
+    private void startMainActivity(Context context) throws PackageManager.NameNotFoundException {
+        PackageManager pm = context.getPackageManager();
+        Intent intent = pm.getLaunchIntentForPackage(context.getPackageName());
+
+        intent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
+//        intent.addFlags(Intent.FLAG_FROM_BACKGROUND);
+//        intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
+        // intent.putExtra("INITIAL_PARAMS", "set");
+     
+    
+
+        context.startActivity(intent);
+    }
+
     public void sendBroadcastEvent(Intent intent) {
             WritableMap args = Arguments.createMap();
             HashMap<String, String> attributeMap = (HashMap<String, String>)intent.getSerializableExtra("attributeMap");
@@ -315,6 +344,7 @@ public class UnlockScreenActivity extends AppCompatActivity implements UnlockScr
                     break;
                 case ACTION_ANSWER_CALL:
                     args.putString("callUUID", attributeMap.get(EXTRA_CALL_UUID));
+                    args.putString("appointmentId", attributeMap.get(EXTRA_CALLER_NAME));
                     args.putBoolean("withVideo", Boolean.parseBoolean(attributeMap.get(EXTRA_HAS_VIDEO)));
                     sendEvent("RNCallKeepPerformAnswerCallAction", args);
                     break;

@@ -24,6 +24,7 @@ import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.telephony.TelephonyManager;
 import android.util.Log;
 
@@ -38,6 +39,11 @@ public class VoiceBroadcastReceiver extends BroadcastReceiver {
 
     @Override
     public void onReceive(Context context, Intent intent) {
+        if(RNCallKeepModule.activeCallUUID ==null) {
+              System.out.println("No active PeditoH call is present!!");
+            return;
+        }
+
         WritableMap args = Arguments.createMap();
         HashMap<String, String> attributeMap = (HashMap<String, String>) intent.getSerializableExtra("attributeMap");
 
@@ -146,6 +152,7 @@ public class VoiceBroadcastReceiver extends BroadcastReceiver {
                 RNCallKeepModule.sendEventToJS("RNCallKeepDidChangeAudioRoute", args);
                 break;
         }
+
 
         if( state==TelephonyManager.CALL_STATE_OFFHOOK ) {
             System.out.println("Answered the incoming call!!");
