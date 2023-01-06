@@ -79,6 +79,14 @@ class RNCallKeep {
     return;
   };
 
+  cancelNotification = (notificationId) => {
+    if (isIOS) {
+      return;
+    }
+    RNCallKeepModule.cancelNotification(notificationId);
+  };
+
+
   displayIncomingCall = (
     uuid,
     handle,

@@ -58,6 +58,7 @@ import android.media.AudioManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.service.notification.StatusBarNotification;
 import android.telecom.CallAudioState;
 import android.telecom.Connection;
 import android.telecom.ConnectionRequest;
@@ -196,6 +197,22 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
         if (count > 0) {
             RNCallKeepModule.reactContext.getJSModule(RCTDeviceEventEmitter.class).emit("RNCallKeepDidLoadWithEvents", delayedEvents);
             delayedEvents = new WritableNativeArray();
+        }
+    }
+
+    @ReactMethod
+    public static void cancelNotification(int notifyId) {
+        try {
+            Context ctx = RNCallKeepModule.reactContext;
+            String ns = Context.NOTIFICATION_SERVICE;
+            NotificationManager nMgr = (NotificationManager) ctx.getSystemService(ns);
+            for (StatusBarNotification activeNotification : nMgr.getActiveNotifications()) {
+                if (activeNotification.getId() == notifyId && activeNotification.getKey().contains("com.netstaminds.peditoh")) {
+                    nMgr.cancel(activeNotification.getTag(), activeNotification.getId());
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
@@ -540,13 +557,13 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
         try {
             NotificationManager nManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
 
-            String id = "voip_channel_01";
+            String channelId = "voip_channel_01";
             CharSequence name = "incoming call channel";
             String description = "Incoming call channel.";
 
             int importance = NotificationManager.IMPORTANCE_LOW;
 
-            NotificationChannel mChannel = new NotificationChannel(id, name, importance);
+            NotificationChannel mChannel = new NotificationChannel(channelId, name, importance);
             mChannel.setDescription(description);
 
             mChannel.enableLights(true);
@@ -568,7 +585,9 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
                     .setContentText("You missed a call from PeditoH")
                     .setSmallIcon(R.drawable.ic_avatar_small)
                     .setContentIntent(pIntent)
-                    .setChannelId(id)
+                    .setChannelId(channelId)
+                    .setShowWhen(true)
+                    .setCategory(Notification.CATEGORY_CALL)
                     .setAutoCancel(true).build();
             nManager.notify(0, notification);
         } catch (Exception e) {

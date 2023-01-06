@@ -215,7 +215,7 @@ public class UnlockScreenActivity extends AppCompatActivity implements UnlockScr
            disconnectActiveCall(RNCallKeepModule.reactContext);
         }
 
-        if (RNCallKeepModule.isCallFromBackground) {
+        if (!RNCallKeepModule.reactContext.hasCurrentActivity()) {
             try {
                 startMainActivity(RNCallKeepModule.reactContext);
             } catch (Exception e) {
@@ -259,7 +259,13 @@ public class UnlockScreenActivity extends AppCompatActivity implements UnlockScr
                 });
             }
         }
-        finish();
+
+        try {
+            Thread.sleep(2000);
+        } finally {
+            finish();
+        }
+
     }
 
     private void dismissDialing(Integer message) {
@@ -267,6 +273,7 @@ public class UnlockScreenActivity extends AppCompatActivity implements UnlockScr
 
         handle.put("accept", "false");
         handle.put("uuid", uuid);
+
         if (!RNCallKeepModule.reactContext.hasCurrentActivity()) {
             handle.put("isHeadless", "true");
         }
@@ -317,6 +324,8 @@ public class UnlockScreenActivity extends AppCompatActivity implements UnlockScr
 
 
     private void startMainActivity(Context context) throws PackageManager.NameNotFoundException {
+        Log.d(TAG, "[RNCallKeepModule][startMainActivity] ");
+
         PackageManager pm = context.getPackageManager();
         Intent intent = pm.getLaunchIntentForPackage(context.getPackageName());
 
@@ -340,12 +349,16 @@ public class UnlockScreenActivity extends AppCompatActivity implements UnlockScr
             switch (intent.getAction()) {
                 case ACTION_END_CALL:
                     args.putString("callUUID", attributeMap.get(EXTRA_CALL_UUID));
+                    args.putString("isHeadless", attributeMap.get("isHeadless"));
+
                     sendEvent("RNCallKeepPerformEndCallAction", args);
                     break;
                 case ACTION_ANSWER_CALL:
                     args.putString("callUUID", attributeMap.get(EXTRA_CALL_UUID));
                     args.putString("appointmentId", attributeMap.get(EXTRA_CALLER_NAME));
+                    args.putString("isHeadless", attributeMap.get("isHeadless"));
                     args.putBoolean("withVideo", Boolean.parseBoolean(attributeMap.get(EXTRA_HAS_VIDEO)));
+
                     sendEvent("RNCallKeepPerformAnswerCallAction", args);
                     break;
                 case ACTION_HOLD_CALL:

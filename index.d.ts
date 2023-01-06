@@ -99,6 +99,8 @@ declare module 'react-native-callkeep-incoming' {
       options?: object,
     ): void
 
+    static cancelNotification(notificationId: int): void
+
     static startCall(
       uuid: string,
       handle: string,
