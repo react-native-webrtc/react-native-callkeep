@@ -269,7 +269,7 @@ public class VoiceConnectionService extends ConnectionService {
         // ‍️Weirdly on some Samsung phones (A50, S9...) using `setInitialized` will not display the native UI ...
         // when making a call from the native Phone application. The call will still be displayed correctly without it.
         if (!Build.MANUFACTURER.equalsIgnoreCase("Samsung")) {
-            Log.d(TAG, "[VoiceConnectionService] onCreateOutgoingConnection: initializing connection on Samsung device");
+            Log.d(TAG, "[VoiceConnectionService] onCreateOutgoingConnection: initializing connection on non-Samsung device");
             outgoingCallConnection.setInitialized();
         }
 

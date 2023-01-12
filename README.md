@@ -726,7 +726,7 @@ RNCallKeep.registerAndroidEvents();
 | [didPerformSetMutedCallAction](#didPerformSetMutedCallAction)   |  ✅  |   ✅    |
 | [didToggleHoldCallAction](#didToggleHoldCallAction)             |  ✅  |   ✅    |
 | [didPerformDTMFAction](#didPerformDTMFAction)                   |  ✅  |   ✅    |
-| [didLoadWithEvents](#didLoadWithEvents)                         |  ✅  |   ✅    |
+| [didLoadWithEvents](#didLoadWithEvents)                         |  ✅  |   ❌    |
 | [showIncomingCallUi](#showIncomingCallUi)                       |  ❌  |   ✅    |
 | [silenceIncomingCall](#silenceIncomingCall)                     |  ❌  |   ✅    |
 | [checkReachability](#checkReachability)                         |  ❌  |   ✅    |
@@ -754,7 +754,7 @@ RNCallKeep.addEventListener('didReceiveStartCallAction', ({ handle, callUUID, na
 - `name` (string)
   - Name of the callee
 
-### - answerCall
+### answerCall
 
 User answer the incoming call
 
@@ -767,7 +767,7 @@ RNCallKeep.addEventListener('answerCall', ({ callUUID }) => {
 - `callUUID` (string)
   - The UUID of the call that is to be answered.
 
-### - endCall
+### endCall
 
 User finish the call.
 
@@ -780,7 +780,7 @@ RNCallKeep.addEventListener('endCall', ({ callUUID }) => {
 - `callUUID` (string)
   - The UUID of the call that is to be ended.
 
-### - didActivateAudioSession
+### didActivateAudioSession
 
 The `AudioSession` has been activated by **RNCallKeep**.
 
@@ -791,7 +791,7 @@ RNCallKeep.addEventListener('didActivateAudioSession', () => {
 });
 ```
 
-### - didDisplayIncomingCall
+### didDisplayIncomingCall
 
 Callback for `RNCallKeep.displayIncomingCall`
 
@@ -821,7 +821,7 @@ RNCallKeep.addEventListener('didDisplayIncomingCall', ({ error, callUUID, handle
 - `payload` (object)
   - VOIP push payload.
 
-### - didPerformSetMutedCallAction
+### didPerformSetMutedCallAction
 
 A call was muted by the system or the user:
 
@@ -835,7 +835,7 @@ RNCallKeep.addEventListener('didPerformSetMutedCallAction', ({ muted, callUUID }
 - `callUUID` (string)
   - The UUID of the call.
 
-### - didToggleHoldCallAction
+### didToggleHoldCallAction
 
 A call was held or unheld by the current user
 
@@ -849,7 +849,7 @@ RNCallKeep.addEventListener('didToggleHoldCallAction', ({ hold, callUUID }) => {
 - `callUUID` (string)
   - The UUID of the call.
 
-### - didChangeAudioRoute
+### didChangeAudioRoute
 
 Triggered when the audio route has been changed.
 
@@ -864,7 +864,7 @@ RNCallKeep.addEventListener('didChangeAudioRoute', ({ output }) => {
 - `handle` (string, Android only) Phone number of the incoming caller
 - `callUUID` (string, Android only) The UUID of the call
 
-### - didPerformDTMFAction
+### didPerformDTMFAction
 
 Used type a number on his dialer
 
@@ -879,7 +879,7 @@ RNCallKeep.addEventListener('didPerformDTMFAction', ({ digits, callUUID }) => {
 - `callUUID` (string)
   - The UUID of the call.
 
-### - didLoadWithEvents
+### didLoadWithEvents
 
 iOS only.
 
@@ -906,7 +906,7 @@ RNCallKeep.addEventListener('didLoadWithEvents', (events) => {
   - `data`: object
     Object with data passed together with specific event so it can be handled in the same way like original event, for example `({ callUUID })` for `answerCall` event if `name` is `RNCallKeepPerformAnswerCallAction`
 
-### - showIncomingCallUi
+### showIncomingCallUi
 
 _Android only. Self Managed only._
 
@@ -927,7 +927,7 @@ The following values will match those initially passed to `displayIncomingCall`
 - `name` (string)
   - Caller Name.
 
-### - silenceIncomingCall
+### silenceIncomingCall
 
 _Android only. Self Managed only._
 
@@ -948,7 +948,7 @@ The following values will match those initially passed to `silenceIncomingCall`
 - `name` (string)
   - Caller Name.
 
-### - createIncomingConnectionFailed
+### createIncomingConnectionFailed
 
 _Android only. Self Managed only._
 
@@ -969,7 +969,7 @@ The following values will match those initially passed to `silenceIncomingCall`
 - `name` (string)
   - Caller Name.
 
-### - checkReachability
+### checkReachability
 
 _Android only._
 
