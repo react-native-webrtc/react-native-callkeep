@@ -968,7 +968,7 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
         telecomManager.registerPhoneAccount(account);
     }
 
-    private void sendEventToJS(String eventName, @Nullable WritableMap params) {
+    public void sendEventToJS(String eventName, @Nullable WritableMap params) {
         boolean isBoundToJS = this.reactContext.hasActiveCatalystInstance();
         Log.v(TAG, "[RNCallKeepModule] sendEventToJS, eventName: " + eventName + ", bound: " + isBoundToJS + ", hasListeners: " + hasListeners + " args : " + (params != null ? params.toString() : "null"));
 
