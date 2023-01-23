@@ -178,6 +178,7 @@ declare module 'react-native-callkeep' {
     static setOnHold(uuid: string, held: boolean): void
     
     static setGroupCall(activeUuid: string, heldUuid: string): void
+    static setGroupCallFulfilled(): void
 
     static setConnectionState(uuid: string, state: number): void
 

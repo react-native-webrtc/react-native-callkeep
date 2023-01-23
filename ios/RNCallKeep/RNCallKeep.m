@@ -403,6 +403,16 @@ RCT_EXPORT_METHOD(setGroupCall:(NSString *)activeUuidString :(NSString *)heldUui
     [self requestTransaction:transaction];
 }
 
+RCT_EXPORT_METHOD(setGroupCallFulfilled)
+{
+#ifdef DEBUG
+    NSLog(@"[RNCallKeep][setGroupCallFulfilled]");
+#endif
+    if (self.callKeepGroupCallAction != nil) {
+        [self.callKeepGroupCallAction fulfill];
+    }
+}
+
 RCT_EXPORT_METHOD(_startCallActionEventListenerAdded)
 {
     _isStartCallActionEventListenerAdded = YES;
@@ -1075,7 +1085,8 @@ RCT_EXPORT_METHOD(reportUpdatedCall:(NSString *)uuidString contactIdentifier:(NS
 #endif
 
     [self sendEventWithNameWrapper:RNCallKeepPerformGroupCallAction body:@{ @"activeCallUUID": [action.callUUID.UUIDString lowercaseString], @"heldCallUUID": [action.callUUIDToGroupWith.UUIDString lowercaseString] }];
-    [action fulfill];
+    
+    self.callKeepGroupCallAction = action;
 }
 
 - (void)provider:(CXProvider *)provider performPlayDTMFCallAction:(CXPlayDTMFCallAction *)action {
