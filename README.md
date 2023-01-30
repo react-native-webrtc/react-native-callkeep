@@ -845,10 +845,13 @@ RNCallKeep.addEventListener('didToggleHoldCallAction', ({ hold, callUUID }) => {
 });
 ```
 
+- `hold` (boolean)
+- `callUUID` (string)
+  - The UUID of the call.
+
 ### didChangeAudioRoute
 
 Triggered when the audio route has been changed.
-⚠️ Will send `Speaker` on iOS but `SPEAKER` on Android.
 
 ```js
 RNCallKeep.addEventListener('didChangeAudioRoute', ({ output }) => {
@@ -856,9 +859,10 @@ RNCallKeep.addEventListener('didChangeAudioRoute', ({ output }) => {
 });
 ```
 
-- `hold` (boolean)
-- `callUUID` (string)
-  - The UUID of the call.
+- `output` (string) ⚠️ Will send `Speaker` on iOS but `SPEAKER` on Android.
+- `reason` (number, iOS only) See case's in https://developer.apple.com/documentation/avfaudio/avaudiosession/routechangereason
+- `handle` (string, Android only) Phone number of the incoming caller
+- `callUUID` (string, Android only) The UUID of the call
 
 ### didPerformDTMFAction
 
