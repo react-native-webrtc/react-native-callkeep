@@ -271,6 +271,11 @@ public class VoiceConnection extends Connection {
 
     @Override
     public void onSilence() {
+        // onSilence was added on API level 29
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
+            return;
+        }
+
         super.onSilence();
 
         sendCallRequestToActivity(ACTION_ON_SILENCE_INCOMING_CALL, handle);
