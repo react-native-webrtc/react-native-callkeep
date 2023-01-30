@@ -96,7 +96,7 @@ Add it before the `@end` tag.
 ```diff
 + - (BOOL)application:(UIApplication *)application
 + continueUserActivity:(NSUserActivity *)userActivity
-+   restorationHandler:(void(^)(NSArray * __nullable restorableObjects))restorationHandler
++   restorationHandler:(void(^)(NSArray<id<UIUserActivityRestoring>> * __nullable restorableObjects))restorationHandler
 + {
 +   return [RNCallKeep application:application
 +            continueUserActivity:userActivity
