@@ -307,20 +307,23 @@ public class VoiceConnectionService extends ConnectionService {
         assert manager != null;
         manager.createNotificationChannel(chan);
 
-        Activity currentActivity = RNCallKeepModule.instance.getCurrentReactActivity();
-        Intent notificationIntent = new Intent(this, currentActivity.getClass());
-        notificationIntent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
-
-        final int flag =  Build.VERSION.SDK_INT >= Build.VERSION_CODES.M ? PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE : PendingIntent.FLAG_UPDATE_CURRENT;
-
-        PendingIntent pendingIntent = PendingIntent.getActivity(this, NOTIFICATION_ID, notificationIntent, flag);
-
         NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID);
         notificationBuilder.setOngoing(true)
             .setContentTitle(foregroundSettings.getString("notificationTitle"))
-            .setContentIntent(pendingIntent)
             .setPriority(NotificationManager.IMPORTANCE_MIN)
             .setCategory(Notification.CATEGORY_SERVICE);
+
+        Activity currentActivity = RNCallKeepModule.instance.getCurrentReactActivity();
+        if (currentActivity != null) {
+            Intent notificationIntent = new Intent(this, currentActivity.getClass());
+            notificationIntent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
+
+            final int flag =  Build.VERSION.SDK_INT >= Build.VERSION_CODES.M ? PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE : PendingIntent.FLAG_UPDATE_CURRENT;
+
+            PendingIntent pendingIntent = PendingIntent.getActivity(this, NOTIFICATION_ID, notificationIntent, flag);
+
+            notificationBuilder.setContentIntent(pendingIntent);
+        }
 
         if (foregroundSettings.hasKey("notificationIcon")) {
             Context context = this.getApplicationContext();
