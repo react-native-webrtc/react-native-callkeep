@@ -42,6 +42,8 @@ import android.view.WindowManager;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.view.Window;
+import com.facebook.react.ReactActivity;
 
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -96,6 +98,7 @@ public class UnlockScreenActivity extends AppCompatActivity implements UnlockScr
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         fa = this;
 
         setContentView(R.layout.activity_call_incoming);
