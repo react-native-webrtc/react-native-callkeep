@@ -335,7 +335,12 @@ public class VoiceConnectionService extends ConnectionService {
         Log.d(TAG, "[VoiceConnectionService] Starting foreground service");
 
         Notification notification = notificationBuilder.build();
-        startForeground(FOREGROUND_SERVICE_TYPE_MICROPHONE, notification);
+
+        try {
+            startForeground(FOREGROUND_SERVICE_TYPE_MICROPHONE, notification);
+        } catch (Exception e) {
+            Log.w(TAG, "[VoiceConnectionService] Can't start foreground service : " + e.toString());
+        }
     }
 
     private void stopForegroundService() {
@@ -347,7 +352,11 @@ public class VoiceConnectionService extends ConnectionService {
             return;
         }
 
-        stopForeground(FOREGROUND_SERVICE_TYPE_MICROPHONE);
+        try {
+            stopForeground(FOREGROUND_SERVICE_TYPE_MICROPHONE);
+        } catch (Exception e) {
+            Log.w(TAG, "[VoiceConnectionService] can't stop foreground service :" + e.toString());
+        }
     }
 
     private boolean isForegroundServiceConfigured() {
