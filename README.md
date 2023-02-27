@@ -798,7 +798,8 @@ Callback for `RNCallKeep.displayIncomingCall`
 ```js
 RNCallKeep.addEventListener('didDisplayIncomingCall', ({ error, callUUID, handle, localizedCallerName, hasVideo, fromPushKit, payload }) => {
   // you might want to do following things when receiving this event:
-  // - Start playing ringback if it is an outgoing call
+  // - Navigate to your incoming call screen
+  // - Handle errors on iOS
 });
 ```
 
@@ -816,9 +817,11 @@ RNCallKeep.addEventListener('didDisplayIncomingCall', ({ error, callUUID, handle
   - `1` (video enabled)
   - `0` (video not enabled)
 - `fromPushKit` (string)
+  - iOS only.
   - `1` (call triggered from PushKit)
   - `0` (call not triggered from PushKit)
 - `payload` (object)
+  - iOS only.
   - VOIP push payload.
 
 ### didPerformSetMutedCallAction
