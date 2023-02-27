@@ -181,17 +181,6 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
         Log.d(TAG, "[RNCallKeepModule] reportNewIncomingCall, uuid: " + uuid + ", number: " + number + ", callerName: " + callerName);
 
         this.displayIncomingCall(uuid, number, callerName, hasVideo);
-
-        // Send event to JS
-        WritableMap args = Arguments.createMap();
-        args.putString("handle", number);
-        args.putString("callUUID", uuid);
-        args.putString("name", callerName);
-        args.putString("hasVideo", String.valueOf(hasVideo));
-        if (payload != null) {
-            args.putString("payload", payload);
-        }
-        sendEventToJS("RNCallKeepDidDisplayIncomingCall", args);
     }
 
     public void startObserving() {
@@ -329,6 +318,15 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
         extras.putString(EXTRA_HAS_VIDEO, String.valueOf(hasVideo));
 
         telecomManager.addNewIncomingCall(handle, extras);
+
+        // Send event to JS
+        WritableMap args = Arguments.createMap();
+        args.putString("handle", number);
+        args.putString("callUUID", uuid);
+        args.putString("localizedCallerName", callerName);
+        args.putString("hasVideo", hasVideo ? "1" : "0");
+
+        sendEventToJS("RNCallKeepDidDisplayIncomingCall", args);
     }
 
     @ReactMethod
