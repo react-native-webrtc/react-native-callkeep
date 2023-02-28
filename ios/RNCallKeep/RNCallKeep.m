@@ -621,6 +621,9 @@ RCT_EXPORT_METHOD(getAudioRoutes: (RCTPromiseResolveBlock)resolve
     else if ([type isEqualToString:AVAudioSessionPortBuiltInSpeaker]){
         return @"Speaker";
     }
+    else if ([type isEqualToString:AVAudioSessionPortCarAudio]) {
+        return @"CarAudio";
+    }
     else{
         return nil;
     }
