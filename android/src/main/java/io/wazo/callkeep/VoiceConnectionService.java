@@ -294,7 +294,7 @@ public class VoiceConnectionService extends ConnectionService {
         Log.d(TAG, "[VoiceConnectionService] startForegroundService");
         ReadableMap foregroundSettings = getForegroundSettings(null);
 
-        if (foregroundSettings == null || !foregroundSettings.hasKey("channelId")) {
+        if (!this.isForegroundServiceConfigured()) {
             Log.w(TAG, "[VoiceConnectionService] Not creating foregroundService because not configured");
             return;
         }
@@ -335,18 +335,39 @@ public class VoiceConnectionService extends ConnectionService {
         Log.d(TAG, "[VoiceConnectionService] Starting foreground service");
 
         Notification notification = notificationBuilder.build();
-        startForeground(FOREGROUND_SERVICE_TYPE_MICROPHONE, notification);
+
+        try {
+            startForeground(FOREGROUND_SERVICE_TYPE_MICROPHONE, notification);
+        } catch (Exception e) {
+            Log.w(TAG, "[VoiceConnectionService] Can't start foreground service : " + e.toString());
+        }
     }
 
     private void stopForegroundService() {
         Log.d(TAG, "[VoiceConnectionService] stopForegroundService");
         ReadableMap foregroundSettings = getForegroundSettings(null);
 
-        if (foregroundSettings == null || !foregroundSettings.hasKey("channelId")) {
-            Log.d(TAG, "[VoiceConnectionService] Discarding stop foreground service, no service configured");
+        if (!this.isForegroundServiceConfigured()) {
+            Log.w(TAG, "[VoiceConnectionService] Not creating foregroundService because not configured");
             return;
         }
-        stopForeground(FOREGROUND_SERVICE_TYPE_MICROPHONE);
+
+        try {
+            stopForeground(FOREGROUND_SERVICE_TYPE_MICROPHONE);
+        } catch (Exception e) {
+            Log.w(TAG, "[VoiceConnectionService] can't stop foreground service :" + e.toString());
+        }
+    }
+
+    private boolean isForegroundServiceConfigured() {
+        ReadableMap foregroundSettings = getForegroundSettings(null);
+        try {
+            return foregroundSettings != null && foregroundSettings.hasKey("channelId");
+        } catch (Exception e) {
+            // Fix ArrayIndexOutOfBoundsException thrown by ReadableNativeMap.hasKey
+            Log.w(TAG, "[VoiceConnectionService] Not creating foregroundService due to configuration retrieval error" + e.toString());
+            return false;
+        }
     }
 
     private void wakeUpApplication(String uuid, String number, String displayName) {
