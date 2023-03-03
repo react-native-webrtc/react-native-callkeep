@@ -130,6 +130,8 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
         if (instance == null) {
             Log.d(TAG, "[RNCallKeepModule] getInstance : " + (reactContext == null ? "null" : "ok"));
             instance = new RNCallKeepModule(reactContext);
+            instance.registerReceiver();
+            instance.fetchStoredSettings(reactContext);
         }
         if (realContext) {
             instance.setContext(reactContext);
@@ -151,8 +153,6 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
 
         this.reactContext = reactContext;
         delayedEvents = new WritableNativeArray();
-        this.registerReceiver();
-        this.fetchStoredSettings(reactContext);
     }
 
     private boolean isSelfManaged() {
@@ -1024,7 +1024,7 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
             telecomManager.getPhoneAccount(handle).isEnabled();
     }
 
-    private void registerReceiver() {
+    protected void registerReceiver() {
         if (!isReceiverRegistered) {
             voiceBroadcastReceiver = new VoiceBroadcastReceiver();
             IntentFilter intentFilter = new IntentFilter();
@@ -1075,7 +1075,7 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
         return MapUtils.readableToWritableMap(options);
     }
 
-    private static void fetchStoredSettings(@Nullable Context fromContext) {
+    protected static void fetchStoredSettings(@Nullable Context fromContext) {
         Context context = fromContext != null ? fromContext : instance.getAppContext();
         if (instance == null && context == null) {
             Log.w(TAG, "[RNCallKeepModule][fetchStoredSettings] no instance nor fromContext.");
