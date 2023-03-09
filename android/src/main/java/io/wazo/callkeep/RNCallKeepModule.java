@@ -1026,6 +1026,7 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
 
     private void registerReceiver() {
         if (!isReceiverRegistered) {
+            isReceiverRegistered = true;
             voiceBroadcastReceiver = new VoiceBroadcastReceiver();
             IntentFilter intentFilter = new IntentFilter();
             intentFilter.addAction(ACTION_END_CALL);
@@ -1045,9 +1046,11 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
 
             if (this.reactContext != null) {
                 LocalBroadcastManager.getInstance(this.reactContext).registerReceiver(voiceBroadcastReceiver, intentFilter);
-                isReceiverRegistered = true;
+
 
                 VoiceConnectionService.startObserving();
+            } else {
+                isReceiverRegistered = false;
             }
         }
     }
