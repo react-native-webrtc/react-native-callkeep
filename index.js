@@ -27,17 +27,32 @@ class RNCallKeep {
   addEventListener = (type, handler) => {
     const listener = listeners[type](handler);
 
-    this._callkeepEventHandlers.set(type, listener);
+    const listenerSet = this._callkeepEventHandlers.get(type) ?? new Set();
+    listenerSet.add(listener);
+
+    this._callkeepEventHandlers.set(type, listenerSet);
+
+    return listener;
   };
 
-  removeEventListener = (type) => {
-    const listener = this._callkeepEventHandlers.get(type);
-    if (!listener) {
+  removeEventListener = (type, listener = undefined) => {
+    const listenerSet = this._callkeepEventHandlers.get(type);
+    if (!listenerSet) {
       return;
     }
 
-    listener.remove();
-    this._callkeepEventHandlers.delete(type);
+    if (listener) {
+      listenerSet.delete(listener);
+      listener.remove();
+      if (listenerSet.size <= 0) {
+        this._callkeepEventHandlers.delete(type);
+      }
+    } else {
+      listenerSet.forEach((listener) => {
+        listener.remove();
+      });
+      this._callkeepEventHandlers.delete(type);
+    }
   };
 
   setup = async (options) => {
