@@ -75,7 +75,6 @@ declare module 'react-native-callkeep' {
   }
 
   type HandleType = 'generic' | 'number' | 'email';
-  type EventListener = {};
 
   export type AudioRoute = {
     name: string,
@@ -127,6 +126,10 @@ declare module 'react-native-callkeep' {
     }
   };
 
+  export class EventListener {
+    remove(): void
+  }
+
   export default class RNCallKeep {
     static getInitialEvents(): Promise<InitialEvents>
 
@@ -137,12 +140,7 @@ declare module 'react-native-callkeep' {
       handler: EventHandlers[Event],
     ): EventListener
 
-    /**
-     * @description Remove specific event listener if given, otherwise remove all belonging to the given event type.
-     * @param type 
-     * @param listener 
-     */
-    static removeEventListener(type: Events, listener?: EventListener): void
+    static removeEventListener(type: Events): void
 
     static setup(options: IOptions): Promise<boolean>
 

@@ -19,6 +19,17 @@ const CONSTANTS = {
 
 export { emit, CONSTANTS };
 
+class EventListener {
+  constructor(type, listener) {
+    this._type = type;
+    this._listener = listener;
+  }
+
+  remove = () => {
+    RNCallKeep.removeEventListener(this._type, this._listener);
+  };
+}
+
 class RNCallKeep {
   constructor() {
     this._callkeepEventHandlers = new Map();
@@ -32,7 +43,7 @@ class RNCallKeep {
 
     this._callkeepEventHandlers.set(type, listenerSet);
 
-    return listener;
+    return new EventListener(type, listener);
   };
 
   removeEventListener = (type, listener = undefined) => {
