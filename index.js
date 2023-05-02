@@ -26,7 +26,7 @@ class EventListener {
   }
 
   remove = () => {
-    RNCallKeep.removeEventListener(this._type, this._listener);
+    callKeep.removeEventListener(this._type, this._listener);
   };
 }
 
@@ -375,4 +375,6 @@ class RNCallKeep {
   }
 }
 
-export default new RNCallKeep();
+const callKeep = new RNCallKeep();
+
+export default callKeep;
