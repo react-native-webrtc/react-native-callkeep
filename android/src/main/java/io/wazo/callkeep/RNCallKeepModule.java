@@ -1079,11 +1079,11 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
     }
 
     protected static void fetchStoredSettings(@Nullable Context fromContext) {
-        Context context = fromContext != null ? fromContext : instance.getAppContext();
-        if (instance == null && context == null) {
+        if (instance == null && fromContext == null) {
             Log.w(TAG, "[RNCallKeepModule][fetchStoredSettings] no instance nor fromContext.");
             return;
         }
+        Context context = fromContext != null ? fromContext : instance.getAppContext();
         _settings = new WritableNativeMap();
         if (context == null) {
             Log.w(TAG, "[RNCallKeepModule][fetchStoredSettings] no react context found.");
