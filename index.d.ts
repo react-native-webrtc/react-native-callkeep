@@ -102,6 +102,10 @@ declare module 'react-native-callkeep' {
     }
   };
 
+  export class EventListener {
+    remove(): void
+  }
+
   export default class RNCallKeep {
     static getInitialEvents(): Promise<InitialEvents>
 
@@ -110,7 +114,7 @@ declare module 'react-native-callkeep' {
     static addEventListener<Event extends Events>(
       type: Event,
       handler: (args: EventsPayload[Event]) => void,
-    ): void
+    ): EventListener
 
     static removeEventListener(type: Events): void
 
