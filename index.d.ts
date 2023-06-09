@@ -1,28 +1,4 @@
 declare module 'react-native-callkeep' {
-  export type Events =
-    'didReceiveStartCallAction' |
-    'answerCall' |
-    'endCall' |
-    'didActivateAudioSession' |
-    'didDeactivateAudioSession' |
-    'didDisplayIncomingCall' |
-    'didToggleHoldCallAction' |
-    'didPerformDTMFAction' |
-    'didResetProvider' |
-    'checkReachability' |
-    'didPerformSetMutedCallAction' |
-    'didChangeAudioRoute' |
-    'didLoadWithEvents' |
-    'showIncomingCallUi' |
-    'silenceIncomingCall' |
-    'createIncomingConnectionFailed';
-
-  export type InitialEvent<Event extends Events> = {
-    name: NativeEvents[Event],
-    data: EventHandlers[Event]
-  }
-  export type InitialEvents = Array<InitialEvent<Events>>;
-
   export type NativeEvents = {
     didReceiveStartCallAction: 'RNCallKeepDidReceiveStartCallAction';
     answerCall: 'RNCallKeepPerformAnswerCallAction';
@@ -34,44 +10,50 @@ declare module 'react-native-callkeep' {
     didToggleHoldCallAction: 'RNCallKeepDidToggleHoldAction';
     didChangeAudioRoute: 'RNCallKeepDidChangeAudioRoute';
     didPerformDTMFAction: 'RNCallKeepDidPerformDTMFAction';
-    didLoadWithEvents: 'RNCallKeepDidLoadWithEvents';
     showIncomingCallUi: 'RNCallKeepShowIncomingCallUi';
     silenceIncomingCall: 'RNCallKeepOnSilenceIncomingCall';
     createIncomingConnectionFailed: 'RNCallKeepOnIncomingConnectionFailed';
     checkReachability: 'RNCallKeepCheckReachability';
     didResetProvider: 'RNCallKeepProviderReset';
+    didLoadWithEvents: 'RNCallKeepDidLoadWithEvents';
   }
-  export type EventHandlers = {
-    didReceiveStartCallAction: (args: { handle: string, callUUID: string, name: string }) => void;
-    answerCall: (args: { callUUID: string }) => void;
-    endCall: (args: { callUUID: string }) => void;
-    didActivateAudioSession: () => void;
-    didDeactivateAudioSession: () => void;
-    didDisplayIncomingCall: (args: {
-        error?: string,
-        errorCode?: 'Unentitled' | 'CallUUIDAlreadyExists' | 'FilteredByDoNotDisturb' | 'FilteredByBlockList' | 'Unknown',
-        callUUID: string,
-        handle: string,
-        localizedCallerName: string,
-        hasVideo: '1' | '0',
-        fromPushKit: '1' | '0',
-        payload: object,
-    }) => void;
-    didPerformSetMutedCallAction: (args: { muted: boolean, callUUID: string }) => void;
-    didToggleHoldCallAction: (args: { hold: boolean, callUUID: string }) => void;
-    didChangeAudioRoute: (args: {
+
+  export type InitialEvents = Array<{
+    [Event in Events]: { name: NativeEvents[Event], data: EventsPayload[Event] }
+  }[Events]>
+
+  export type Events = keyof NativeEvents;
+  export type EventsPayload = {
+    didReceiveStartCallAction: { handle: string, callUUID?: string, name?: string };
+    answerCall: { callUUID: string };
+    endCall: { callUUID: string };
+    didActivateAudioSession: undefined;
+    didDeactivateAudioSession: undefined;
+    didDisplayIncomingCall: {
+      error?: string,
+      errorCode?: 'Unentitled' | 'CallUUIDAlreadyExists' | 'FilteredByDoNotDisturb' | 'FilteredByBlockList' | 'Unknown',
+      callUUID: string,
+      handle: string,
+      localizedCallerName: string,
+      hasVideo: '1' | '0',
+      fromPushKit: '1' | '0',
+      payload: object,
+    };
+    didPerformSetMutedCallAction: { muted: boolean, callUUID: string };
+    didToggleHoldCallAction: { hold: boolean, callUUID: string };
+    didChangeAudioRoute: {
       output: string,
       reason?: number,
       handle?: string,
       callUUID?: string,
-    }) => void;
-    didPerformDTMFAction: (args: { digits: string, callUUID: string }) => void;
-    didLoadWithEvents: (args: { events: InitialEvents }) => void;
-    showIncomingCallUi: (args: { handle: string, callUUID: string, name: string}) => void;
-    silenceIncomingCall: (args: { handle: string, callUUID: string, name: string}) => void;
-    createIncomingConnectionFailed: (args: { handle: string, callUUID: string, name: string}) => void;
-    checkReachability: () => void;
-    didResetProvider: () => void;
+    };
+    didPerformDTMFAction: { digits: string, callUUID: string };
+    showIncomingCallUi: { handle: string, callUUID: string, name: string };
+    silenceIncomingCall: { handle: string, callUUID: string, name: string };
+    createIncomingConnectionFailed: { handle: string, callUUID: string, name: string };
+    checkReachability: undefined;
+    didResetProvider: undefined;
+    didLoadWithEvents: InitialEvents;
   }
 
   type HandleType = 'generic' | 'number' | 'email';
@@ -109,12 +91,6 @@ declare module 'react-native-callkeep' {
     }
   }
 
-  export type DidReceiveStartCallActionPayload = { handle: string };
-  export type AnswerCallPayload = { callUUID: string };
-  export type EndCallPayload = AnswerCallPayload;
-  export type DidDisplayIncomingCallPayload = string | undefined;
-  export type DidPerformSetMutedCallActionPayload = boolean;
-
   export const CONSTANTS: {
     END_CALL_REASONS: {
       FAILED: 1,
@@ -133,7 +109,7 @@ declare module 'react-native-callkeep' {
 
     static addEventListener<Event extends Events>(
       type: Event,
-      handler: EventHandlers[Event],
+      handler: (args: EventsPayload[Event]) => void,
     ): void
 
     static removeEventListener(type: Events): void
@@ -198,18 +174,24 @@ declare module 'react-native-callkeep' {
 
     static setReachable(): void
 
-    static setSettings(settings: Object): void;
+    static setSettings(settings: IOptions): void;
 
     /**
      * @description isCallActive method is available only on iOS.
      */
     static isCallActive(uuid: string): Promise<boolean>
 
-    static getCalls(): Promise<object>
+    static getCalls(): Promise<{
+      callUUID: string,
+      hasConnected: boolean,
+      hasEnded: boolean,
+      onHold: boolean,
+      outgoing: boolean
+    }[] | void>
 
     static getAudioRoutes(): Promise<void>
 
-    static setAudioRoute: (uuid:string, inputName: string) => Promise<void>
+    static setAudioRoute: (uuid: string, inputName: string) => Promise<void>
 
     /**
      * @description supportConnectionService method is available only on Android.
@@ -253,7 +235,7 @@ declare module 'react-native-callkeep' {
      */
     static setAvailable(active: boolean): void
 
-    static setForegroundServiceSettings(settings: Object): void
+    static setForegroundServiceSettings(settings: NonNullable<IOptions['android']['foregroundService']>): void
 
     static canMakeMultipleCalls(allow: boolean): void
 
