@@ -130,6 +130,11 @@ Alternative on iOS you can perform setup in `AppDelegate.m`. Doing this allows c
     - `displayCallReachabilityTimeout`: number in ms (optional)
       If provided, starts a timeout that checks if the application is reachable and ends the call if not (Default: null)
       You'll have to call `setReachable()` as soon as your Javascript application is started.
+    - `audioSession`: object
+      - `categoryOptions`: AudioSessionCategoryOption|number (optional)
+        If provided, it will override the default AVAudioSession setCategory options.
+      - `mode`: AudioSessionMode|string (optional)
+        If provided, it will override the default AVAudioSession setMode mode.
   - `android`: object
     - `alertTitle`: string (required)
       When asking for _phone account_ permission, we need to provider a title for the `Alert` to ask the user for it

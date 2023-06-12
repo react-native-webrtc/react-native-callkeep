@@ -1,6 +1,6 @@
 {
   "name": "react-native-callkeep",
-  "version": "4.3.8",
+  "version": "4.3.9",
   "description": "iOS 10 CallKit and Android ConnectionService Framework For React Native",
   "main": "index.js",
   "scripts": {},
