@@ -1,4 +1,4 @@
-declare module 'react-native-callkeep' {
+declare module 'react-native-callkeep-devbase' {
   export type NativeEvents = {
     didReceiveStartCallAction: 'RNCallKeepDidReceiveStartCallAction';
     answerCall: 'RNCallKeepPerformAnswerCallAction';
