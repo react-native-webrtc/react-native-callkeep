@@ -669,7 +669,7 @@ RCT_EXPORT_METHOD(getAudioRoutes: (RCTPromiseResolveBlock)resolve
                 callUpdate.supportsHolding = YES;
                 callUpdate.supportsGrouping = YES;
                 callUpdate.supportsUngrouping = YES;
-                [self.callKeepProvider reportCallWithUUID:startCallAction.callUUID updated:callUpdate];
+                // [self.callKeepProvider reportCallWithUUID:startCallAction.callUUID updated:callUpdate];
             }
         }
     }];

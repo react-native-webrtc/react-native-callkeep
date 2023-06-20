@@ -1,6 +1,6 @@
 {
-  "name": "react-native-callkeep",
-  "version": "4.3.9",
+  "name": "react-native-callkeep-devbase",
+  "version": "4.4.0",
   "description": "iOS 10 CallKit and Android ConnectionService Framework For React Native",
   "main": "index.js",
   "scripts": {},
@@ -23,5 +23,8 @@
   "devDependencies": {
     "react-native": ">=0.40.0"
   },
-  "dependencies": {}
+  "dependencies": {},
+  "publishConfig": {
+    "registry": "https://registry.npmjs.org/"
+  }
 }
