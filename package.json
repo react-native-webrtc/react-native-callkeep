@@ -6,16 +6,16 @@
   "scripts": {},
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/react-native-webrtc/react-native-callkeep.git"
+    "url": "git+https://github.com/bionatus/react-native-callkeep.git"
   },
   "author": "See AUTHORS file",
   "maintainers": ["See AUTHORS file"],
   "contributors": ["See AUTHORS file"],
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/react-native-webrtc/react-native-callkeep/issues"
+    "url": "https://github.com/bionatus/react-native-callkeep.git/issues"
   },
-  "homepage": "https://github.com/react-native-webrtc/react-native-callkeep#readme",
+  "homepage": "https://github.com/bionatus/react-native-callkeep.git#readme",
   "typings": "./index.d.ts",
   "peerDependencies": {
     "react-native": ">=0.40.0"
