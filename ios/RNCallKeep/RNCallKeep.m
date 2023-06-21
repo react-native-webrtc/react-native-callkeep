@@ -16,6 +16,7 @@
 
 #import <AVFoundation/AVAudioSession.h>
 #import <CallKit/CallKit.h>
+#import <Foundation/Foundation.h>
 
 #ifdef DEBUG
 static int const OUTGOING_CALL_WAKEUP_DELAY = 10;
@@ -659,18 +660,18 @@ RCT_EXPORT_METHOD(getAudioRoutes: (RCTPromiseResolveBlock)resolve
             NSLog(@"[RNCallKeep][requestTransaction] Requested transaction successfully");
 
             // CXStartCallAction
-            if ([[transaction.actions firstObject] isKindOfClass:[CXStartCallAction class]]) {
-                CXStartCallAction *startCallAction = [transaction.actions firstObject];
-                CXCallUpdate *callUpdate = [[CXCallUpdate alloc] init];
-                callUpdate.remoteHandle = startCallAction.handle;
-                callUpdate.hasVideo = startCallAction.video;
-                callUpdate.localizedCallerName = startCallAction.contactIdentifier;
-                callUpdate.supportsDTMF = YES;
-                callUpdate.supportsHolding = YES;
-                callUpdate.supportsGrouping = YES;
-                callUpdate.supportsUngrouping = YES;
+            // if ([[transaction.actions firstObject] isKindOfClass:[CXStartCallAction class]]) {
+                // CXStartCallAction *startCallAction = [transaction.actions firstObject];
+                // CXCallUpdate *callUpdate = [[CXCallUpdate alloc] init];
+                // callUpdate.remoteHandle = startCallAction.handle;
+                // callUpdate.hasVideo = startCallAction.video;
+                // callUpdate.localizedCallerName = startCallAction.contactIdentifier;
+                // callUpdate.supportsDTMF = YES;
+                // callUpdate.supportsHolding = YES;
+                // callUpdate.supportsGrouping = YES;
+                // callUpdate.supportsUngrouping = YES;
                 // [self.callKeepProvider reportCallWithUUID:startCallAction.callUUID updated:callUpdate];
-            }
+            // }
         }
     }];
 }
@@ -1019,11 +1020,11 @@ continueUserActivity:(NSUserActivity *)userActivity
 #ifdef DEBUG
     NSLog(@"[RNCallKeep][CXProviderDelegate][provider:performStartCallAction]");
 #endif
-    //do this first, audio sessions are flakey
-    [self configureAudioSession];
-    //tell the JS to actually make the call
-    [self sendEventWithNameWrapper:RNCallKeepDidReceiveStartCallAction body:@{ @"callUUID": [action.callUUID.UUIDString lowercaseString], @"handle": action.handle.value }];
-    [action fulfill];
+    // //do this first, audio sessions are flakey
+    // [self configureAudioSession];
+    // //tell the JS to actually make the call
+    // [self sendEventWithNameWrapper:RNCallKeepDidReceiveStartCallAction body:@{ @"callUUID": [action.callUUID.UUIDString lowercaseString], @"handle": action.handle.value }];
+    // [action fulfill];
 }
 
 // Update call contact info
