@@ -73,6 +73,10 @@ RCT_EXPORT_MODULE()
 
         self.callKeepProvider = sharedProvider;
         [self.callKeepProvider setDelegate:self queue:nil];
+        [[NSNotificationCenter defaultCenter] addObserver:self
+                                                 selector:@selector(screenWillLock)
+                                                     name:UIApplicationProtectedDataWillBecomeUnavailable
+                                                   object:nil];
     }
     return self;
 }
@@ -98,6 +102,22 @@ RCT_EXPORT_MODULE()
     }
     sharedProvider = nil;
     _isReachable = NO;
+}
+
+- (void)screenWillLock {
+    [self endCallScreenLock]; // End the call when the screen is about to lock
+}
+
+- (void)endCallScreenLock {
+    #ifdef DEBUG
+     NSLog(@"[RNCallKeep][endCall]: Lock screen");
+    #endif
+    
+    for (CXCall *call in self.callKeepCallController.callObserver.calls) {
+        CXEndCallAction *endCallAction = [[CXEndCallAction alloc] initWithCallUUID:call.UUID];
+        CXTransaction *transaction = [[CXTransaction alloc] initWithAction:endCallAction];
+        [self requestTransaction:transaction];
+    }
 }
 
 // Override method of RCTEventEmitter

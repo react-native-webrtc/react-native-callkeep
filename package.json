@@ -1,6 +1,6 @@
 {
   "name": "react-native-callkeep-devbase",
-  "version": "4.4.2",
+  "version": "4.4.3",
   "description": "iOS 10 CallKit and Android ConnectionService Framework For React Native",
   "main": "index.js",
   "scripts": {},
@@ -9,8 +9,12 @@
     "url": "git+https://github.com/bionatus/react-native-callkeep.git"
   },
   "author": "See AUTHORS file",
-  "maintainers": ["See AUTHORS file"],
-  "contributors": ["See AUTHORS file"],
+  "maintainers": [
+    "See AUTHORS file"
+  ],
+  "contributors": [
+    "See AUTHORS file"
+  ],
   "license": "ISC",
   "bugs": {
     "url": "https://github.com/bionatus/react-native-callkeep.git/issues"
