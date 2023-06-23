@@ -16,7 +16,6 @@
 
 #import <AVFoundation/AVAudioSession.h>
 #import <CallKit/CallKit.h>
-#import <Foundation/Foundation.h>
 
 #ifdef DEBUG
 static int const OUTGOING_CALL_WAKEUP_DELAY = 10;
@@ -45,6 +44,7 @@ static NSString *const RNCallKeepDidLoadWithEvents = @"RNCallKeepDidLoadWithEven
     BOOL _isStartCallActionEventListenerAdded;
     bool _hasListeners;
     bool _isReachable;
+    NSString* _currentUUID;
     NSMutableArray *_delayedEvents;
 }
 
@@ -62,6 +62,7 @@ RCT_EXPORT_MODULE()
     if (self = [super init]) {
         _isStartCallActionEventListenerAdded = NO;
         _isReachable = NO;
+        _currentUUID = nil;
         if (_delayedEvents == nil) _delayedEvents = [NSMutableArray array];
 
         [[NSNotificationCenter defaultCenter] addObserver:self
@@ -73,6 +74,7 @@ RCT_EXPORT_MODULE()
 
         self.callKeepProvider = sharedProvider;
         [self.callKeepProvider setDelegate:self queue:nil];
+        
         [[NSNotificationCenter defaultCenter] addObserver:self
                                                  selector:@selector(screenWillLock)
                                                      name:UIApplicationProtectedDataWillBecomeUnavailable
@@ -110,13 +112,13 @@ RCT_EXPORT_MODULE()
 
 - (void)endCallScreenLock {
     #ifdef DEBUG
-     NSLog(@"[RNCallKeep][endCall]: Lock screen");
+     NSLog(@"[RNCallKeep][endCall]: Lock screen", _currentUUID);
     #endif
-    
-    for (CXCall *call in self.callKeepCallController.callObserver.calls) {
-        CXEndCallAction *endCallAction = [[CXEndCallAction alloc] initWithCallUUID:call.UUID];
-        CXTransaction *transaction = [[CXTransaction alloc] initWithAction:endCallAction];
-        [self requestTransaction:transaction];
+    if(_currentUUID != nil){
+        NSUUID *uuid = [[NSUUID alloc] initWithUUIDString:_currentUUID];
+        [RNCallKeep endCallWithUUID: _currentUUID reason: 6];
+        [self sendEventWithNameWrapper:RNCallKeepPerformEndCallAction body:@{ @"callUUID": uuid }];
+        _currentUUID = nil;
     }
 }
 
@@ -347,10 +349,12 @@ RCT_EXPORT_METHOD(startCall:(NSString *)uuidString
     CXStartCallAction *startCallAction = [[CXStartCallAction alloc] initWithCallUUID:uuid handle:callHandle];
     [startCallAction setVideo:video];
     [startCallAction setContactIdentifier:contactIdentifier];
-
+    _currentUUID = uuidString;
+    
     CXTransaction *transaction = [[CXTransaction alloc] initWithAction:startCallAction];
 
     [self requestTransaction:transaction];
+
 }
 
 RCT_EXPORT_METHOD(answerIncomingCall:(NSString *)uuidString)
@@ -681,15 +685,15 @@ RCT_EXPORT_METHOD(getAudioRoutes: (RCTPromiseResolveBlock)resolve
 
             // CXStartCallAction
             // if ([[transaction.actions firstObject] isKindOfClass:[CXStartCallAction class]]) {
-                // CXStartCallAction *startCallAction = [transaction.actions firstObject];
-                // CXCallUpdate *callUpdate = [[CXCallUpdate alloc] init];
-                // callUpdate.remoteHandle = startCallAction.handle;
-                // callUpdate.hasVideo = startCallAction.video;
-                // callUpdate.localizedCallerName = startCallAction.contactIdentifier;
-                // callUpdate.supportsDTMF = YES;
-                // callUpdate.supportsHolding = YES;
-                // callUpdate.supportsGrouping = YES;
-                // callUpdate.supportsUngrouping = YES;
+            //     CXStartCallAction *startCallAction = [transaction.actions firstObject];
+            //     CXCallUpdate *callUpdate = [[CXCallUpdate alloc] init];
+            //     callUpdate.remoteHandle = startCallAction.handle;
+            //     callUpdate.hasVideo = startCallAction.video;
+            //     callUpdate.localizedCallerName = startCallAction.contactIdentifier;
+            //     callUpdate.supportsDTMF = YES;
+            //     callUpdate.supportsHolding = YES;
+            //     callUpdate.supportsGrouping = YES;
+            //     callUpdate.supportsUngrouping = YES;
                 // [self.callKeepProvider reportCallWithUUID:startCallAction.callUUID updated:callUpdate];
             // }
         }
@@ -1040,11 +1044,11 @@ continueUserActivity:(NSUserActivity *)userActivity
 #ifdef DEBUG
     NSLog(@"[RNCallKeep][CXProviderDelegate][provider:performStartCallAction]");
 #endif
-    // //do this first, audio sessions are flakey
-    // [self configureAudioSession];
-    // //tell the JS to actually make the call
-    // [self sendEventWithNameWrapper:RNCallKeepDidReceiveStartCallAction body:@{ @"callUUID": [action.callUUID.UUIDString lowercaseString], @"handle": action.handle.value }];
-    // [action fulfill];
+    //do this first, audio sessions are flakey
+    [self configureAudioSession];
+    //tell the JS to actually make the call
+    [self sendEventWithNameWrapper:RNCallKeepDidReceiveStartCallAction body:@{ @"callUUID": [action.callUUID.UUIDString lowercaseString], @"handle": action.handle.value }];
+    [action fulfill];
 }
 
 // Update call contact info
