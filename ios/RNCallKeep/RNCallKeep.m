@@ -44,7 +44,7 @@ static NSString *const RNCallKeepDidLoadWithEvents = @"RNCallKeepDidLoadWithEven
     BOOL _isStartCallActionEventListenerAdded;
     bool _hasListeners;
     bool _isReachable;
-    NSString* _currentUUID;
+    // NSString* _currentUUID;
     NSMutableArray *_delayedEvents;
 }
 
@@ -62,7 +62,7 @@ RCT_EXPORT_MODULE()
     if (self = [super init]) {
         _isStartCallActionEventListenerAdded = NO;
         _isReachable = NO;
-        _currentUUID = nil;
+        // _currentUUID = nil;
         if (_delayedEvents == nil) _delayedEvents = [NSMutableArray array];
 
         [[NSNotificationCenter defaultCenter] addObserver:self
@@ -75,10 +75,10 @@ RCT_EXPORT_MODULE()
         self.callKeepProvider = sharedProvider;
         [self.callKeepProvider setDelegate:self queue:nil];
         
-        [[NSNotificationCenter defaultCenter] addObserver:self
-                                                 selector:@selector(screenWillLock)
-                                                     name:UIApplicationProtectedDataWillBecomeUnavailable
-                                                   object:nil];
+//        [[NSNotificationCenter defaultCenter] addObserver:self
+//                                                 selector:@selector(screenWillLock)
+//                                                     name:UIApplicationProtectedDataWillBecomeUnavailable
+//                                                   object:nil];
     }
     return self;
 }
@@ -110,17 +110,17 @@ RCT_EXPORT_MODULE()
     [self endCallScreenLock]; // End the call when the screen is about to lock
 }
 
-- (void)endCallScreenLock {
-    #ifdef DEBUG
-     NSLog(@"[RNCallKeep][endCall]: Lock screen", _currentUUID);
-    #endif
-    if(_currentUUID != nil){
-        NSUUID *uuid = [[NSUUID alloc] initWithUUIDString:_currentUUID];
-        [RNCallKeep endCallWithUUID: _currentUUID reason: 6];
-        [self sendEventWithNameWrapper:RNCallKeepPerformEndCallAction body:@{ @"callUUID": uuid }];
-        _currentUUID = nil;
-    }
-}
+// - (void)endCallScreenLock {
+//     #ifdef DEBUG
+//      NSLog(@"[RNCallKeep][endCall]: Lock screen", _currentUUID);
+//     #endif
+//     if(_currentUUID != nil){
+//         NSUUID *uuid = [[NSUUID alloc] initWithUUIDString:_currentUUID];
+//         [RNCallKeep endCallWithUUID: _currentUUID reason: 6];
+//         [self sendEventWithNameWrapper:RNCallKeepPerformEndCallAction body:@{ @"callUUID": uuid }];
+//         _currentUUID = nil;
+//     }
+// }
 
 // Override method of RCTEventEmitter
 - (NSArray<NSString *> *)supportedEvents
@@ -349,7 +349,7 @@ RCT_EXPORT_METHOD(startCall:(NSString *)uuidString
     CXStartCallAction *startCallAction = [[CXStartCallAction alloc] initWithCallUUID:uuid handle:callHandle];
     [startCallAction setVideo:video];
     [startCallAction setContactIdentifier:contactIdentifier];
-    _currentUUID = uuidString;
+    // _currentUUID = uuidString;
     
     CXTransaction *transaction = [[CXTransaction alloc] initWithAction:startCallAction];
 
@@ -1016,10 +1016,28 @@ continueUserActivity:(NSUserActivity *)userActivity
         };
 
         RNCallKeep *callKeep = [RNCallKeep allocWithZone: nil];
-        [callKeep sendEventWithNameWrapper:RNCallKeepDidReceiveStartCallAction body:userInfo];
+        [callKeep handleStartCallNotification: userInfo];
         return YES;
     }
     return NO;
+}
+
+- (void)handleStartCallNotification:(NSDictionary *)userInfo
+{
+#ifdef DEBUG
+    NSLog(@"[RNCallKeep][handleStartCallNotification] userInfo = %@", userInfo);
+#endif
+    int delayInSeconds;
+    if (!_isStartCallActionEventListenerAdded) {
+        // Workaround for when app is just launched and JS side hasn't registered to the event properly
+        delayInSeconds = OUTGOING_CALL_WAKEUP_DELAY;
+    } else {
+        delayInSeconds = 0;
+    }
+    dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, (int64_t)(delayInSeconds * NSEC_PER_SEC));
+    dispatch_after(popTime, dispatch_get_main_queue(), ^{
+        [self sendEventWithNameWrapper:RNCallKeepDidReceiveStartCallAction body:userInfo];
+    });
 }
 
 + (BOOL)requiresMainQueueSetup
