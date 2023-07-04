@@ -6,6 +6,29 @@ const RNCallKeepModule = NativeModules.RNCallKeep;
 const isIOS = Platform.OS === 'ios';
 const supportConnectionService = !isIOS && Platform.Version >= 23;
 
+const AudioSessionCategoryOption = {
+  mixWithOthers: 0x1,
+  duckOthers: 0x2,
+  interruptSpokenAudioAndMixWithOthers: 0x11,
+  allowBluetooth: 0x4,
+  allowBluetoothA2DP: 0x20,
+  allowAirPlay: 0x40,
+  defaultToSpeaker: 0x8,
+  overrideMutedMicrophoneInterruption: 0x80,
+}
+
+const AudioSessionMode = {
+  default: 'AVAudioSessionModeDefault',
+  gameChat: 'AVAudioSessionModeGameChat',
+  measurement: 'AVAudioSessionModeMeasurement',
+  moviePlayback: 'AVAudioSessionModeMoviePlayback',
+  spokenAudio: 'AVAudioSessionModeSpokenAudio',
+  videoChat: 'AVAudioSessionModeVideoChat',
+  videoRecording: 'AVAudioSessionModeVideoRecording',
+  voiceChat: 'AVAudioSessionModeVoiceChat',
+  voicePrompt: 'AVAudioSessionModeVoicePrompt',
+}
+
 const CONSTANTS = {
   END_CALL_REASONS: {
     FAILED: 1,
@@ -17,7 +40,7 @@ const CONSTANTS = {
   },
 };
 
-export { emit, CONSTANTS };
+export { emit, CONSTANTS, AudioSessionCategoryOption, AudioSessionMode };
 
 class EventListener {
   constructor(type, listener, callkeep) {
