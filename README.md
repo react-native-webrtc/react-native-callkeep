@@ -19,7 +19,7 @@ For more information about **ConnectionService** on Android, please see [Android
   - [Constants](#Constants)
   - [Android Self Managed](#Android-Self-Managed-Mode)
   - [API](#Api)
-  - [Example](##Example)
+  - [Example](#Example)
 - [PushKit](#PushKit)
 - [Android 11](#Android-11)
 - [Debug](#Debug)
