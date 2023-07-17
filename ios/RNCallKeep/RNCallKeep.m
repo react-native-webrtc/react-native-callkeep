@@ -150,7 +150,7 @@ RCT_EXPORT_MODULE()
 }
 
 - (void)sendEventWithNameWrapper:(NSString *)name body:(id)body {
-    NSLog(@"[[RNCallKeep]] sendEventWithNameWrapper: %@, hasListeners : %@", name, _hasListeners ? @"YES": @"NO");
+    NSLog(@"[RNCallKeep] sendEventWithNameWrapper: %@, hasListeners : %@", name, _hasListeners ? @"YES": @"NO");
 
     if (_hasListeners) {
         [self sendEventWithName:name body:body];
