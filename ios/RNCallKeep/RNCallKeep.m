@@ -187,6 +187,15 @@ RCT_EXPORT_MODULE()
     isSetupNatively = YES;
 }
 
++ (void)destroyProvider {
+    if (sharedProvider != nil) {
+        [sharedProvider invalidate];
+        sharedProvider = nil;
+    }
+
+    isSetupNatively = NO;
+}
+
 RCT_EXPORT_METHOD(setup:(NSDictionary *)options)
 {
     if (isSetupNatively) {
@@ -543,7 +552,7 @@ RCT_EXPORT_METHOD(getAudioRoutes: (RCTPromiseResolveBlock)resolve
 {
     NSMutableArray *newInputs = [NSMutableArray new];
     NSString * selected = [RNCallKeep getSelectedAudioRoute];
-    
+
     NSMutableDictionary *speakerDict = [[NSMutableDictionary alloc]init];
     [speakerDict setObject:@"Speaker" forKey:@"name"];
     [speakerDict setObject:AVAudioSessionPortBuiltInSpeaker forKey:@"type"];
@@ -634,13 +643,13 @@ RCT_EXPORT_METHOD(getAudioRoutes: (RCTPromiseResolveBlock)resolve
     AVAudioSession* myAudioSession = [AVAudioSession sharedInstance];
     AVAudioSessionRouteDescription *currentRoute = [myAudioSession currentRoute];
     NSArray *selectedOutputs = currentRoute.outputs;
-    
+
     AVAudioSessionPortDescription *selectedOutput = selectedOutputs[0];
-    
+
     if(selectedOutput && [selectedOutput.portType isEqualToString:AVAudioSessionPortBuiltInReceiver]) {
         return @"Phone";
     }
-    
+
     return [RNCallKeep getAudioInputType: selectedOutput.portType];
 }
 
@@ -899,7 +908,7 @@ RCT_EXPORT_METHOD(getAudioRoutes: (RCTPromiseResolveBlock)resolve
     AVAudioSession* audioSession = [AVAudioSession sharedInstance];
     [audioSession setCategory:AVAudioSessionCategoryPlayAndRecord withOptions:AVAudioSessionCategoryOptionAllowBluetooth | AVAudioSessionCategoryOptionAllowBluetoothA2DP error:nil];
 
-    [audioSession setMode:AVAudioSessionModeDefault error:nil];
+    [audioSession setMode:AVAudioSessionModeVoiceChat error:nil];
 
     double sampleRate = 44100.0;
     [audioSession setPreferredSampleRate:sampleRate error:nil];
@@ -1108,7 +1117,6 @@ RCT_EXPORT_METHOD(reportUpdatedCall:(NSString *)uuidString contactIdentifier:(NS
     };
     [[NSNotificationCenter defaultCenter] postNotificationName:AVAudioSessionInterruptionNotification object:nil userInfo:userInfo];
 
-    [self configureAudioSession];
     [self sendEventWithNameWrapper:RNCallKeepDidActivateAudioSession body:nil];
 }
 
