@@ -364,7 +364,7 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
 
     @ReactMethod
     public void startCall(String uuid, String number, String callerName, boolean hasVideo) {
-        this.startCall(uuid, number, callerName, hasVideo);
+        this.startCall(uuid, number, callerName, hasVideo, null);
     }
 
     @ReactMethod
