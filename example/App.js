@@ -77,7 +77,7 @@ export default function App() {
     const { [callUUID]: __, ...updatedHeldCalls } = heldCalls;
 
     setCalls(updated);
-    setCalls(updatedHeldCalls);
+    setHeldCalls(updatedHeldCalls);
   };
 
   const setCallHeld = (callUUID, held) => {
