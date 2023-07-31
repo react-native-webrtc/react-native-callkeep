@@ -317,7 +317,6 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
         this.displayIncomingCall(uuid, number, callerName, hasVideo, null);
     }
 
-    @ReactMethod
     public void displayIncomingCall(String uuid, String number, String callerName, boolean hasVideo, @Nullable Bundle payload) {
         if (!isConnectionServiceAvailable() || !hasPhoneAccount()) {
             Log.w(TAG, "[RNCallKeepModule] displayIncomingCall ignored due to no ConnectionService or no phone account");
@@ -367,7 +366,6 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
         this.startCall(uuid, number, callerName, hasVideo, null);
     }
 
-    @ReactMethod
     public void startCall(String uuid, String number, String callerName, boolean hasVideo, @Nullable Bundle payload) {
         Log.d(TAG, "[RNCallKeepModule] startCall called, uuid: " + uuid + ", number: " + number + ", callerName: " + callerName + ", payload: " + payload);
 
