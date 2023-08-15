@@ -16,6 +16,7 @@ declare module 'react-native-callkeep' {
     checkReachability: 'RNCallKeepCheckReachability';
     didResetProvider: 'RNCallKeepProviderReset';
     didLoadWithEvents: 'RNCallKeepDidLoadWithEvents';
+    onHasActiveCall : 'onHasActiveCall';
   }
 
   export type InitialEvents = Array<{
@@ -54,6 +55,7 @@ declare module 'react-native-callkeep' {
     checkReachability: undefined;
     didResetProvider: undefined;
     didLoadWithEvents: InitialEvents;
+    onHasActiveCall : undefined;
   }
 
   type HandleType = 'generic' | 'number' | 'email';
@@ -74,7 +76,7 @@ declare module 'react-native-callkeep' {
     defaultToSpeaker = 0x8,
     overrideMutedMicrophoneInterruption = 0x80,
   }
-  
+
   export enum AudioSessionMode {
     default = 'AVAudioSessionModeDefault',
     gameChat = 'AVAudioSessionModeGameChat',
@@ -273,5 +275,10 @@ declare module 'react-native-callkeep' {
     static setCurrentCallActive(callUUID: string): void
 
     static backToForeground(): void
+
+    /**
+     * @descriptions Android Only, Check if there is active native call
+     */
+    static checkIsInManagedCall(): Promise<boolean>
   }
 }
