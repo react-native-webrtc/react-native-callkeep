@@ -236,7 +236,6 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule implements Life
              switch (state) {
                  case TelephonyManager.CALL_STATE_RINGING:
                      // Incoming call is ringing (not used for outgoing call).
-                     Log.i("onCallStateChanged", "CALL_STATE_RINGING");
                      break;
                  case TelephonyManager.CALL_STATE_OFFHOOK:
                      // Phone call is active -- off the hook.
@@ -245,22 +244,19 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule implements Life
 
                       // Only let the JS side know if there is active app call & active native call
                       if(RNCallKeepModule.this.hasActiveCall && isInManagedCall){
-                          WritableMap args = Arguments.createMap();
-                          RNCallKeepModule.this.sendEventToJS("RNCallKeepHasActiveCall",args);
+                         WritableMap args = Arguments.createMap();
+                         RNCallKeepModule.this.sendEventToJS("RNCallKeepHasActiveCall",args);
                       }else if(VoiceConnectionService.currentConnections.size() > 0){
                         // Will enter here for the first time to mark the app has active call
-                          RNCallKeepModule.this.hasActiveCall = true;
+                         RNCallKeepModule.this.hasActiveCall = true;
                       }
-                     Log.i("onCallStateChanged", "CALL_STATE_OFFHOOK");
                      break;
                  case TelephonyManager.CALL_STATE_IDLE:
                      // Phone is idle before and after phone call.
                      // If running on version older than 19 (KitKat),
                      // restart activity when phone call ends.
-                     Log.i("onCallStateChanged", "CALL_STATE_IDLE");
                      break;
                  default:
-                     Log.i("onCallStateChanged", "default");
                      break;
              }
          }
@@ -273,7 +269,6 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule implements Life
               switch (state) {
                   case TelephonyManager.CALL_STATE_RINGING:
                       // Incoming call is ringing (not used for outgoing call).
-                      Log.i("onCallStateChanged", "CALL_STATE_RINGING");
                       break;
                   case TelephonyManager.CALL_STATE_OFFHOOK:
                       // Phone call is active -- off the hook.
@@ -289,35 +284,34 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule implements Life
                         // Will enter here for the first time to mark the app has active call
                           RNCallKeepModule.this.hasActiveCall = true;
                       }
-                      Log.i("onCallStateChanged", "CALL_STATE_OFFHOOK");
                       break;
                   case TelephonyManager.CALL_STATE_IDLE:
                       // Phone is idle before and after phone call.
                       // If running on version older than 19 (KitKat),
                       // restart activity when phone call ends.
-                      Log.i("onCallStateChanged", "CALL_STATE_IDLE");
                       break;
                   default:
-                      Log.i("onCallStateChanged", "default");
                       break;
               }
           }
     }
 
     public void stopListenToNativeCallsState() {
-        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && callStateListener !=null){
-            Log.d(TAG, "[RNCallKeepModule] stopListenToNativeCallsState");
+        Log.d(TAG, "[RNCallKeepModule] stopListenToNativeCallsState");
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && callStateListener !=null){
             telephonyManager.unregisterTelephonyCallback(callStateListener);
-        }else if(Build.VERSION.SDK_INT < Build.VERSION_CODES.S && legacyCallStateListener != null){
+        } else if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S && legacyCallStateListener != null){
             telephonyManager.listen(legacyCallStateListener, PhoneStateListener.LISTEN_NONE);
         }
     }
 
     public void listenToNativeCallsState() {
+        Log.d(TAG, "[RNCallKeepModule] listenToNativeCallsState");
         Context context = this.getAppContext();
         int permissionCheck = ContextCompat.checkSelfPermission(context, Manifest.permission.READ_PHONE_STATE);
+
         if (permissionCheck == PackageManager.PERMISSION_GRANTED) {
-        Log.d(TAG, "[RNCallKeepModule] listenToNativeCallsState");
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
                   callStateListener = new CallStateListener();
                   telephonyManager.registerTelephonyCallback(context.getMainExecutor(),callStateListener);
@@ -331,14 +325,15 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule implements Life
     public boolean checkIsInManagedCall() {
         Context context = this.getAppContext();
         int permissionCheck = ContextCompat.checkSelfPermission(context, Manifest.permission.READ_PHONE_STATE);
+
         if (permissionCheck == PackageManager.PERMISSION_GRANTED) {
                 return telecomManager.isInManagedCall();
         }
-         return false;
+        return false;
     }
 
     @ReactMethod
-        public void checkIsInManagedCall(Promise promise) {
+    public void checkIsInManagedCall(Promise promise) {
         boolean isInManagedCall = this.checkIsInManagedCall();
         promise.resolve(isInManagedCall);
     }
@@ -727,20 +722,20 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule implements Life
 
    @Override
    public void onHostResume() {
-       Log.d(TAG, "onResume()");
+
    }
 
    @Override
    public void onHostPause() {
-       Log.d(TAG, "onPause()");
+
    }
 
    @Override
    public void onHostDestroy() {
-      // when activity destroyed end all calls
-       Log.d(TAG, "onDestroy()");
+       // When activity destroyed end all calls
+       Log.d(TAG, "[RNCallKeepModule] onHostDestroy called");
        if (!isConnectionServiceAvailable() || !hasPhoneAccount()) {
-           Log.w(TAG, "[RNCallKeepModule] endAllCalls ignored due to no ConnectionService or no phone account");
+           Log.w(TAG, "[RNCallKeepModule] onHostDestroy ignored due to no ConnectionService or no phone account");
            return;
        }
 
@@ -751,8 +746,8 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule implements Life
            connectionToEnd.onDisconnect();
        }
        this.stopListenToNativeCallsState();
-       Log.d(TAG, "[RNCallKeepModule] endAllCalls executed");
-       // this line will kill the android process after ending all calls
+       Log.d(TAG, "[RNCallKeepModule] onHostDestroy executed");
+       // This line will kill the android process after ending all calls
        android.os.Process.killProcess(android.os.Process.myPid());
    }
 
