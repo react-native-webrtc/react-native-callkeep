@@ -1009,7 +1009,7 @@ RNCallKeep.addEventListener('checkReachability', () => {
 
 _Android only._
 
-A listener to tells the JS side if a native call has been answered while there is active self managed call
+A listener that tells the JS side if a native call has been answered while there was an active self-managed call
 
 ```js
 RNCallKeep.addEventListener('onHasActiveCall', () => {
