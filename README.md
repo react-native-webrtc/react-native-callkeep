@@ -219,6 +219,7 @@ Self Managed calling apps are an advanced topic, and there are many steps involv
 | [setForegroundServiceSettings()](#setForegroundServiceSettings)   | `Promise<void>`     |  ❌  |   ✅    |
 | [canMakeMultipleCalls()](#canMakeMultipleCalls)                   | `Promise<void>`     |  ❌  |   ✅    |
 | [setCurrentCallActive()](#setCurrentCallActive)                   | `Promise<void>`     |  ❌  |   ✅    |
+| [checkIsInManagedCall()](#setAvailable)                           | `Promise<Boolean>`  |  ❌  |   ✅    |
 | [isCallActive()](#isCallActive)                                   | `Promise<Boolean>`  |  ✅  |   ❌    |
 | [getCalls()](#getCalls)                                           | `Promise<Object[]>` |  ✅  |   ❌    |
 | [displayIncomingCall()](#displayIncomingCall)                     | `Promise<void>`     |  ✅  |   ✅    |
@@ -315,6 +316,16 @@ RNCallKeep.setCurrentCallActive(uuid);
 
 - `uuid`: string
   - The `uuid` used for `startCall` or `displayIncomingCall`
+
+### checkIsInManagedCall
+_This feature is available only on Android._
+
+Returns true if there is an active native call
+
+```js
+RNCallKeep.checkIsInManagedCall();
+```
+
 
 ### isCallActive
 _This feature is available only on IOS._
@@ -741,6 +752,7 @@ RNCallKeep.registerAndroidEvents();
 | [silenceIncomingCall](#silenceIncomingCall)                     |  ❌  |   ✅    |
 | [checkReachability](#checkReachability)                         |  ❌  |   ✅    |
 | [didChangeAudioRoute](#didChangeAudioRoute)                     |  ✅  |   ✅    |
+| [onHasActiveCall](#onHasActiveCall)                             |  ❌  |   ✅    |
 
 ### didReceiveStartCallAction
 
@@ -989,6 +1001,19 @@ So we have to check if the application is reachable before making a call from th
 ```js
 RNCallKeep.addEventListener('checkReachability', () => {
   RNCallKeep.setReachable();
+});
+
+```
+
+### onHasActiveCall
+
+_Android only._
+
+A listener that tells the JS side if a native call has been answered while there was an active self-managed call
+
+```js
+RNCallKeep.addEventListener('onHasActiveCall', () => {
+  // eg: End active app call if native call is answered
 });
 
 ```

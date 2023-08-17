@@ -161,6 +161,8 @@ class RNCallKeep {
     );
   };
 
+  checkIsInManagedCall = async () => isIOS? false: RNCallKeepModule.checkIsInManagedCall();
+
   answerIncomingCall = (uuid) => {
     RNCallKeepModule.answerIncomingCall(uuid);
   };
