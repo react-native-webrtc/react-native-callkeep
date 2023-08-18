@@ -274,7 +274,9 @@ RCT_EXPORT_METHOD(displayIncomingCall:(NSString *)uuidString
                   supportsHolding:(BOOL)supportsHolding
                   supportsDTMF:(BOOL)supportsDTMF
                   supportsGrouping:(BOOL)supportsGrouping
-                  supportsUngrouping:(BOOL)supportsUngrouping)
+                  supportsUngrouping:(BOOL)supportsUngrouping
+                  resolver:(RCTPromiseResolveBlock)resolve
+                  rejecter:(RCTPromiseRejectBlock)reject)
 {
     [RNCallKeep reportNewIncomingCall: uuidString
                                handle: handle
@@ -287,7 +289,9 @@ RCT_EXPORT_METHOD(displayIncomingCall:(NSString *)uuidString
                    supportsUngrouping: supportsUngrouping
                           fromPushKit: NO
                               payload: nil
-                withCompletionHandler: nil];
+                withCompletionHandler: nil
+                             resolver:resolve
+                             rejecter:reject];
 
     NSDictionary *settings = [RNCallKeep getSettings];
     NSNumber *timeout = settings[@"displayCallReachabilityTimeout"];
@@ -326,7 +330,9 @@ RCT_EXPORT_METHOD(startCall:(NSString *)uuidString
                   handle:(NSString *)handle
                   contactIdentifier:(NSString * _Nullable)contactIdentifier
                   handleType:(NSString *)handleType
-                  video:(BOOL)video)
+                  video:(BOOL)video
+                  resolver:(RCTPromiseResolveBlock)resolve
+                  rejecter:(RCTPromiseRejectBlock)reject)
 {
 #ifdef DEBUG
     NSLog(@"[RNCallKeep][startCall] uuidString = %@", uuidString);
@@ -340,10 +346,10 @@ RCT_EXPORT_METHOD(startCall:(NSString *)uuidString
 
     CXTransaction *transaction = [[CXTransaction alloc] initWithAction:startCallAction];
 
-    [self requestTransaction:transaction];
+    [self requestTransaction:transaction resolver:resolve rejecter:reject];
 }
 
-RCT_EXPORT_METHOD(answerIncomingCall:(NSString *)uuidString)
+RCT_EXPORT_METHOD(answerIncomingCall:(NSString *)uuidString resolver:(RCTPromiseResolveBlock)resolve rejecter:(RCTPromiseRejectBlock)reject)
 {
 #ifdef DEBUG
     NSLog(@"[RNCallKeep][answerIncomingCall] uuidString = %@", uuidString);
@@ -353,10 +359,10 @@ RCT_EXPORT_METHOD(answerIncomingCall:(NSString *)uuidString)
     CXTransaction *transaction = [[CXTransaction alloc] init];
     [transaction addAction:answerCallAction];
 
-    [self requestTransaction:transaction];
+    [self requestTransaction:transaction resolver:resolve rejecter:reject];
 }
 
-RCT_EXPORT_METHOD(endCall:(NSString *)uuidString)
+RCT_EXPORT_METHOD(endCall:(NSString *)uuidString resolver:(RCTPromiseResolveBlock)resolve rejecter:(RCTPromiseRejectBlock)reject)
 {
 #ifdef DEBUG
     NSLog(@"[RNCallKeep][endCall] uuidString = %@", uuidString);
@@ -365,10 +371,10 @@ RCT_EXPORT_METHOD(endCall:(NSString *)uuidString)
     CXEndCallAction *endCallAction = [[CXEndCallAction alloc] initWithCallUUID:uuid];
     CXTransaction *transaction = [[CXTransaction alloc] initWithAction:endCallAction];
 
-    [self requestTransaction:transaction];
+    [self requestTransaction:transaction resolver:resolve rejecter:reject];
 }
 
-RCT_EXPORT_METHOD(endAllCalls)
+RCT_EXPORT_METHOD(endAllCalls:(RCTPromiseResolveBlock)resolve rejecter:(RCTPromiseRejectBlock)reject)
 {
 #ifdef DEBUG
     NSLog(@"[RNCallKeep][endAllCalls] calls = %@", self.callKeepCallController.callObserver.calls);
@@ -376,11 +382,11 @@ RCT_EXPORT_METHOD(endAllCalls)
     for (CXCall *call in self.callKeepCallController.callObserver.calls) {
         CXEndCallAction *endCallAction = [[CXEndCallAction alloc] initWithCallUUID:call.UUID];
         CXTransaction *transaction = [[CXTransaction alloc] initWithAction:endCallAction];
-        [self requestTransaction:transaction];
+        [self requestTransaction:transaction resolver:resolve rejecter:reject];
     }
 }
 
-RCT_EXPORT_METHOD(setOnHold:(NSString *)uuidString :(BOOL)shouldHold)
+RCT_EXPORT_METHOD(setOnHold:(NSString *)uuidString:(BOOL)shouldHold resolver:(RCTPromiseResolveBlock)resolve rejecter:(RCTPromiseRejectBlock)reject)
 {
 #ifdef DEBUG
     NSLog(@"[RNCallKeep][setOnHold] uuidString = %@, shouldHold = %d", uuidString, shouldHold);
@@ -390,7 +396,7 @@ RCT_EXPORT_METHOD(setOnHold:(NSString *)uuidString :(BOOL)shouldHold)
     CXTransaction *transaction = [[CXTransaction alloc] init];
     [transaction addAction:setHeldCallAction];
 
-    [self requestTransaction:transaction];
+    [self requestTransaction:transaction resolver:resolve rejecter:reject];
 }
 
 RCT_EXPORT_METHOD(_startCallActionEventListenerAdded)
@@ -445,7 +451,7 @@ RCT_EXPORT_METHOD(updateDisplay:(NSString *)uuidString :(NSString *)displayName 
     [self.callKeepProvider reportCallWithUUID:uuid updated:callUpdate];
 }
 
-RCT_EXPORT_METHOD(setMutedCall:(NSString *)uuidString :(BOOL)muted)
+RCT_EXPORT_METHOD(setMutedCall:(NSString *)uuidString :(BOOL)muted resolver:(RCTPromiseResolveBlock)resolve rejecter:(RCTPromiseRejectBlock)reject)
 {
 #ifdef DEBUG
     NSLog(@"[RNCallKeep][setMutedCall] muted = %i", muted);
@@ -455,10 +461,10 @@ RCT_EXPORT_METHOD(setMutedCall:(NSString *)uuidString :(BOOL)muted)
     CXTransaction *transaction = [[CXTransaction alloc] init];
     [transaction addAction:setMutedAction];
 
-    [self requestTransaction:transaction];
+    [self requestTransaction:transaction resolver:resolve rejecter:reject];
 }
 
-RCT_EXPORT_METHOD(sendDTMF:(NSString *)uuidString dtmf:(NSString *)key)
+RCT_EXPORT_METHOD(sendDTMF:(NSString *)uuidString dtmf:(NSString *)key resolver:(RCTPromiseResolveBlock)resolve rejecter:(RCTPromiseRejectBlock)reject)
 {
 #ifdef DEBUG
     NSLog(@"[RNCallKeep][sendDTMF] key = %@", key);
@@ -468,7 +474,7 @@ RCT_EXPORT_METHOD(sendDTMF:(NSString *)uuidString dtmf:(NSString *)key)
     CXTransaction *transaction = [[CXTransaction alloc] init];
     [transaction addAction:dtmfAction];
 
-    [self requestTransaction:transaction];
+    [self requestTransaction:transaction resolver:resolve rejecter:reject];
 }
 
 RCT_EXPORT_METHOD(isCallActive:(NSString *)uuidString
@@ -655,7 +661,7 @@ RCT_EXPORT_METHOD(getAudioRoutes: (RCTPromiseResolveBlock)resolve
     return [RNCallKeep getAudioInputType: selectedOutput.portType];
 }
 
-- (void)requestTransaction:(CXTransaction *)transaction
+- (void)requestTransaction:(CXTransaction *)transaction resolver:(RCTPromiseResolveBlock)resolve rejecter:(RCTPromiseRejectBlock)reject
 {
 #ifdef DEBUG
     NSLog(@"[RNCallKeep][requestTransaction] transaction = %@", transaction);
@@ -666,6 +672,7 @@ RCT_EXPORT_METHOD(getAudioRoutes: (RCTPromiseResolveBlock)resolve
     [self.callKeepCallController requestTransaction:transaction completion:^(NSError * _Nullable error) {
         if (error != nil) {
             NSLog(@"[RNCallKeep][requestTransaction] Error requesting transaction (%@): (%@)", transaction.actions, error);
+            reject(@"requestTransaction", @"Error requesting transaction", error);
         } else {
             NSLog(@"[RNCallKeep][requestTransaction] Requested transaction successfully");
 
@@ -682,6 +689,8 @@ RCT_EXPORT_METHOD(getAudioRoutes: (RCTPromiseResolveBlock)resolve
                 callUpdate.supportsUngrouping = YES;
                 [self.callKeepProvider reportCallWithUUID:startCallAction.callUUID updated:callUpdate];
             }
+
+            resolve(@TRUE);
         }
     }];
 }
@@ -761,7 +770,40 @@ RCT_EXPORT_METHOD(getAudioRoutes: (RCTPromiseResolveBlock)resolve
            supportsUngrouping:(BOOL)supportsUngrouping
                   fromPushKit:(BOOL)fromPushKit
                       payload:(NSDictionary * _Nullable)payload
+{
+    [RNCallKeep reportNewIncomingCall:uuidString handle:handle handleType:handleType hasVideo:hasVideo localizedCallerName:localizedCallerName supportsHolding:supportsHolding supportsDTMF:supportsDTMF supportsGrouping:supportsGrouping supportsUngrouping:supportsUngrouping fromPushKit:fromPushKit payload:payload withCompletionHandler:nil resolver:nil rejecter:nil];
+}
+
++ (void)reportNewIncomingCall:(NSString *)uuidString
+                       handle:(NSString *)handle
+                   handleType:(NSString *)handleType
+                     hasVideo:(BOOL)hasVideo
+          localizedCallerName:(NSString * _Nullable)localizedCallerName
+              supportsHolding:(BOOL)supportsHolding
+                 supportsDTMF:(BOOL)supportsDTMF
+             supportsGrouping:(BOOL)supportsGrouping
+           supportsUngrouping:(BOOL)supportsUngrouping
+                  fromPushKit:(BOOL)fromPushKit
+                      payload:(NSDictionary * _Nullable)payload
+        withCompletionHandler:(void (^)(void))completion
+{
+    [RNCallKeep reportNewIncomingCall:uuidString handle:handle handleType:handleType hasVideo:hasVideo localizedCallerName:localizedCallerName supportsHolding:supportsHolding supportsDTMF:supportsDTMF supportsGrouping:supportsGrouping supportsUngrouping:supportsUngrouping fromPushKit:fromPushKit payload:payload withCompletionHandler:completion resolver:nil rejecter:nil];
+}
+
++ (void)reportNewIncomingCall:(NSString *)uuidString
+                       handle:(NSString *)handle
+                   handleType:(NSString *)handleType
+                     hasVideo:(BOOL)hasVideo
+          localizedCallerName:(NSString * _Nullable)localizedCallerName
+              supportsHolding:(BOOL)supportsHolding
+                 supportsDTMF:(BOOL)supportsDTMF
+             supportsGrouping:(BOOL)supportsGrouping
+           supportsUngrouping:(BOOL)supportsUngrouping
+                  fromPushKit:(BOOL)fromPushKit
+                      payload:(NSDictionary * _Nullable)payload
         withCompletionHandler:(void (^_Nullable)(void))completion
+                     resolver:(RCTPromiseResolveBlock _Nullable)resolve
+                     rejecter:(RCTPromiseRejectBlock _Nullable)reject
 {
 #ifdef DEBUG
     NSLog(@"[RNCallKeep][reportNewIncomingCall] uuidString = %@", uuidString);
@@ -802,6 +844,12 @@ RCT_EXPORT_METHOD(getAudioRoutes: (RCTPromiseResolveBlock)resolve
         }
         if (completion != nil) {
             completion();
+        }
+
+        if (error != nil && reject != nil) {
+            reject(@"reportNewIncomingCall", @"Error trying to display incoming call", error);
+        } else if (error == nil && resolve != nil) {
+            resolve(@TRUE);
         }
     }];
 }
