@@ -47,7 +47,7 @@ static NSString *const RNCallKeepDidLoadWithEvents = @"RNCallKeepDidLoadWithEven
     NSMutableArray *_delayedEvents;
 }
 
-static bool isSetupNatively;
+static bool isSetup;
 static CXProvider* sharedProvider;
 
 // should initialise in AppDelegate.m
@@ -180,10 +180,19 @@ RCT_EXPORT_MODULE()
 }
 
 + (void)initCallKitProvider {
-    if (sharedProvider == nil) {
-        NSDictionary *settings = [self getSettings];
-        if (settings != nil) {
-            sharedProvider = [[CXProvider alloc] initWithConfiguration:[RNCallKeep getProviderConfiguration:settings]];
+    NSDictionary *settings = [self getSettings];
+
+    if (settings != nil) {
+        CXProviderConfiguration *configuration = [RNCallKeep getProviderConfiguration:settings];
+
+#ifdef DEBUG
+        NSLog(@"[RNCallKeep][initCallKitProvider] configuration = %@", configuration);
+#endif
+
+        if (sharedProvider == nil) {
+            sharedProvider = [[CXProvider alloc] initWithConfiguration:configuration];
+        } else {
+            sharedProvider.configuration = configuration;
         }
     }
 }
@@ -195,28 +204,28 @@ RCT_EXPORT_MODULE()
 + (void)setup:(NSDictionary *)options {
     RNCallKeep *callKeep = [RNCallKeep allocWithZone: nil];
     [callKeep setup:options];
-    isSetupNatively = YES;
 }
 
 RCT_EXPORT_METHOD(setup:(NSDictionary *)options)
 {
-    if (isSetupNatively) {
+#ifdef DEBUG
+    NSLog(@"[RNCallKeep][setup] options = %@", options);
+#endif
+    [self setSettings: options];
+
+    [RNCallKeep initCallKitProvider];
+
+    if (isSetup) {
 #ifdef DEBUG
         NSLog(@"[RNCallKeep][setup] already setup");
-        RCTLog(@"[RNCallKeep][setup] already setup in native code");
 #endif
         return;
     }
 
-#ifdef DEBUG
-    NSLog(@"[RNCallKeep][setup] options = %@", options);
-#endif
+    isSetup = YES;
+
     _version = [[[NSProcessInfo alloc] init] operatingSystemVersion];
     self.callKeepCallController = [[CXCallController alloc] init];
-
-    [self setSettings: options];
-
-    [RNCallKeep initCallKitProvider];
 
     self.callKeepProvider = sharedProvider;
     [self.callKeepProvider setDelegate:self queue:nil];
