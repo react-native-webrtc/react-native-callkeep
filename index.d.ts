@@ -203,5 +203,9 @@ declare module 'react-native-callkeep' {
     static setCurrentCallActive(callUUID: string): void
 
     static backToForeground(): void
+
+    static configureVoiceAudioSession(): void
+
+    static configureVideoAudioSession(): void
   }
 }

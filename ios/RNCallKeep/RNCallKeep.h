@@ -48,4 +48,7 @@ continueUserActivity:(NSUserActivity *)userActivity
 
 + (void)setup:(NSDictionary *)options;
 
++ (void)configureVoiceAudioSession;
++ (void)configureVideoAudioSession;
+
 @end
