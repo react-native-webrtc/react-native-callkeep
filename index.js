@@ -350,6 +350,14 @@ class RNCallKeep {
   clearInitialEvents() {
     return RNCallKeepModule.clearInitialEvents();
   }
+
+  configureVideoAudioSession() {
+    return RNCallKeepModule.configureVideoAudioSession();
+  }
+
+  configureVoiceAudioSession() {
+    return RNCallKeepModule.configureVoiceAudioSession();
+  }
 }
 
 export default new RNCallKeep();
