@@ -512,7 +512,9 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule implements Life
 
         Log.d(TAG, "[RNCallKeepModule] startCall, uuid: " + uuid);
         this.listenToNativeCallsState();
-        telecomManager.placeCall(uri, extras);
+        try {
+            telecomManager.placeCall(uri, extras);
+        } catch (SecurityException ignored) {}
     }
 
     @ReactMethod
@@ -530,7 +532,7 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule implements Life
         }
         Context context = this.getAppContext();
         AudioManager audioManager = (AudioManager) context.getSystemService(context.AUDIO_SERVICE);
-        audioManager.setMode(0);
+        audioManager.setMode(AudioManager.MODE_NORMAL);
         conn.onDisconnect();
         this.stopListenToNativeCallsState();
         this.hasActiveCall = false;
@@ -673,7 +675,11 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule implements Life
         }
 
         boolean hasSim = telephonyManager.getSimState() != TelephonyManager.SIM_STATE_ABSENT;
-        boolean hasDefaultAccount = telecomManager.getDefaultOutgoingPhoneAccount("tel") != null;
+
+        boolean hasDefaultAccount = false;
+        try {
+            hasDefaultAccount = telecomManager.getDefaultOutgoingPhoneAccount("tel") != null;
+        } catch (SecurityException ignored) {}
 
         promise.resolve(!hasSim || hasDefaultAccount);
     }
@@ -1078,14 +1084,20 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule implements Life
         if (isOpened) {
             focusIntent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
             activity.startActivity(focusIntent);
-        } else {
-            focusIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK +
-                    WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED +
-                    WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD +
-                    WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON);
-
-            getReactApplicationContext().startActivity(focusIntent);
+            return;
         }
+
+        focusIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O_MR1) {
+            activity.setShowWhenLocked(true);
+            activity.setTurnScreenOn(true);
+        } else {
+            activity.getWindow().addFlags(
+                WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED +
+                WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON);
+        }
+
+        getReactApplicationContext().startActivity(focusIntent);
     }
 
     public static void onRequestPermissionsResult(int requestCode, String[] grantedPermissions, int[] grantResults) {
