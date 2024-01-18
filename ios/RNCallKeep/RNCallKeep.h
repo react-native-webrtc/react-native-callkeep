@@ -16,6 +16,9 @@
 
 @interface RNCallKeep : RCTEventEmitter <CXProviderDelegate>
 
+@property(nonatomic,retain) NSTimer *forceBluetoothTimer;
+@property BOOL shouldForceBluetooth;
+
 @property (nonatomic, strong) CXCallController *callKeepCallController;
 @property (nonatomic, strong) CXProvider *callKeepProvider;
 @property (nonatomic, strong) CXSetGroupCallAction * callKeepGroupCallAction;

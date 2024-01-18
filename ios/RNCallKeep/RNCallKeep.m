@@ -61,6 +61,7 @@ RCT_EXPORT_MODULE()
     NSLog(@"[RNCallKeep][init]");
 #endif
     if (self = [super init]) {
+        _shouldForceBluetooth = TRUE;
         _isStartCallActionEventListenerAdded = NO;
         _isReachable = NO;
         if (_delayedEvents == nil) _delayedEvents = [NSMutableArray array];
@@ -150,6 +151,12 @@ RCT_EXPORT_MODULE()
         @"output": output,
         @"reason": @(reason),
     }];
+
+    if (_shouldForceBluetooth) {
+        // Force Bluetooth as soon as possible once onAudioRouteChange event handler finishes
+        _forceBluetoothTimer = [NSTimer scheduledTimerWithTimeInterval:.1 target:self selector:@selector(forceBluetoothPreferredInput:) userInfo:nil repeats:YES];
+        [_forceBluetoothTimer fire];
+    }
 }
 
 - (void)sendEventWithNameWrapper:(NSString *)name body:(id)body {
@@ -383,6 +390,9 @@ RCT_EXPORT_METHOD(endAllCalls)
         _isAudioSessionActive = NO;
         [self requestTransaction:transaction];
     }
+
+    // We are ready to force the Bluetooth for new calls
+    _shouldForceBluetooth = true;
 }
 
 RCT_EXPORT_METHOD(setOnHold:(NSString *)uuidString :(BOOL)shouldHold)
@@ -543,6 +553,11 @@ RCT_EXPORT_METHOD(setAudioRoute: (NSString *)uuid
         AVAudioSession* myAudioSession = [AVAudioSession sharedInstance];
         if ([inputName isEqualToString:@"Speaker"]) {
             BOOL isOverrided = [myAudioSession overrideOutputAudioPort:AVAudioSessionPortOverrideSpeaker error:&err];
+
+            if (isOverrided) {
+                _shouldForceBluetooth = FALSE;
+            }
+
             if(!isOverrided){
                 [NSException raise:@"overrideOutputAudioPort failed" format:@"error: %@", err];
             }
@@ -569,6 +584,16 @@ RCT_EXPORT_METHOD(setAudioRoute: (NSString *)uuid
         for (AVAudioSessionPortDescription *port in ports) {
             if ([port.portName isEqualToString:inputName]) {
                 BOOL isSetted = [myAudioSession setPreferredInput:(AVAudioSessionPortDescription *)port error:&err];
+
+                if (isSetted) {
+                    if ([port.portType isEqualToString:AVAudioSessionPortBluetoothHFP] ||
+                        [port.portType isEqualToString:AVAudioSessionPortBluetoothA2DP]) {
+                        _shouldForceBluetooth = TRUE;
+                    } else {
+                        _shouldForceBluetooth = FALSE;
+                    }
+                }
+
                 if(!isSetted){
                     [NSException raise:@"setPreferredInput failed" format:@"error: %@", err];
                 }
@@ -931,6 +956,32 @@ RCT_EXPORT_METHOD(getAudioRoutes: (RCTPromiseResolveBlock)resolve
     
 }
 
+- (void) forceBluetoothPreferredInput:(id)sender
+{
+    [_forceBluetoothTimer invalidate];
+    _forceBluetoothTimer = nil;
+    
+    AVAudioSession* audioSession = [AVAudioSession sharedInstance];
+    NSArray *ports = [RNCallKeep getAudioInputs];
+    
+    for (AVAudioSessionPortDescription *port in ports) {
+        if ([port.portType isEqualToString:AVAudioSessionPortBluetoothHFP] ||
+            [port.portType isEqualToString:AVAudioSessionPortBluetoothA2DP]) {
+            @try {
+                NSError* err = nil;
+                BOOL isSetted = [audioSession setPreferredInput:(AVAudioSessionPortDescription *)port error:&err];
+
+                if (!isSetted) {
+                    [NSException raise:@"forceBluetoothPreferredInput failed" format:@"error: %@", err];
+                }   
+                
+                break;
+            } @catch (NSException *e) {
+                NSLog(@"[RNCallKeep][forceBluetoothPreferredInput] exception: %@",e);
+            }
+        }
+    }
+}
 
 + (BOOL)application:(UIApplication *)application
             openURL:(NSURL *)url
