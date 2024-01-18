@@ -21,6 +21,7 @@
 
 @property (nonatomic, strong) CXCallController *callKeepCallController;
 @property (nonatomic, strong) CXProvider *callKeepProvider;
+@property (nonatomic, strong) CXSetGroupCallAction * callKeepGroupCallAction;
 
 + (BOOL)application:(UIApplication *)application
             openURL:(NSURL *)url
@@ -49,5 +50,8 @@ continueUserActivity:(NSUserActivity *)userActivity
 + (BOOL)isCallActive:(NSString *)uuidString;
 
 + (void)setup:(NSDictionary *)options;
+
++ (void)configureVoiceAudioSession;
++ (void)configureVideoAudioSession;
 
 @end

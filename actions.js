@@ -11,6 +11,7 @@ const RNCallKeepDidDeactivateAudioSession = 'RNCallKeepDidDeactivateAudioSession
 const RNCallKeepDidDisplayIncomingCall = 'RNCallKeepDidDisplayIncomingCall';
 const RNCallKeepDidPerformSetMutedCallAction = 'RNCallKeepDidPerformSetMutedCallAction';
 const RNCallKeepDidToggleHoldAction = 'RNCallKeepDidToggleHoldAction';
+const RNCallKeepPerformGroupCallAction = 'RNCallKeepPerformGroupCallAction';
 const RNCallKeepDidPerformDTMFAction = 'RNCallKeepDidPerformDTMFAction';
 const RNCallKeepProviderReset = 'RNCallKeepProviderReset';
 const RNCallKeepCheckReachability = 'RNCallKeepCheckReachability';
@@ -63,6 +64,9 @@ const didPerformSetMutedCallAction = handler =>
 const didToggleHoldCallAction = handler =>
   eventEmitter.addListener(RNCallKeepDidToggleHoldAction, handler);
 
+const performGroupCallAction = handler =>
+  eventEmitter.addListener(RNCallKeepPerformGroupCallAction, handler);
+
 const didPerformDTMFAction = handler =>
   eventEmitter.addListener(RNCallKeepDidPerformDTMFAction, (data) => handler(data));
 
@@ -95,6 +99,7 @@ export const listeners = {
   didDisplayIncomingCall,
   didPerformSetMutedCallAction,
   didToggleHoldCallAction,
+  performGroupCallAction,
   didPerformDTMFAction,
   didResetProvider,
   checkReachability,

@@ -7,6 +7,7 @@ declare module 'react-native-callkeep' {
     'didDeactivateAudioSession' |
     'didDisplayIncomingCall' |
     'didToggleHoldCallAction' |
+    'performGroupCallAction' |
     'didPerformDTMFAction' |
     'didResetProvider' |
     'checkReachability' |
@@ -175,6 +176,9 @@ declare module 'react-native-callkeep' {
     static toggleAudioRouteSpeaker(uuid: string, routeSpeaker: boolean): void
 
     static setOnHold(uuid: string, held: boolean): void
+    
+    static setGroupCall(activeUuid: string, heldUuid: string): void
+    static setGroupCallFulfilled(): void
 
     static setConnectionState(uuid: string, state: number): void
 
@@ -199,5 +203,9 @@ declare module 'react-native-callkeep' {
     static setCurrentCallActive(callUUID: string): void
 
     static backToForeground(): void
+
+    static configureVoiceAudioSession(): void
+
+    static configureVideoAudioSession(): void
   }
 }
