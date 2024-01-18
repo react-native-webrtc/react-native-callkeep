@@ -145,6 +145,8 @@ declare module 'react-native-callkeep' {
      */
     static isCallActive(uuid: string): Promise<boolean>
 
+    static isAudioSessionActive(): Promise<boolean>
+
     static getCalls(): Promise<object>
 
     static getAudioRoutes(): Promise<void>

@@ -44,6 +44,7 @@ static NSString *const RNCallKeepDidLoadWithEvents = @"RNCallKeepDidLoadWithEven
     NSOperatingSystemVersion _version;
     BOOL _isStartCallActionEventListenerAdded;
     bool _hasListeners;
+    bool _isAudioSessionActive;
     bool _isReachable;
     NSMutableArray *_delayedEvents;
 }
@@ -163,6 +164,13 @@ RCT_EXPORT_MODULE()
             nil
         ];
         [_delayedEvents addObject:dictionary];
+        
+    }
+    
+    if ([name isEqualToString:@"RNCallKeepDidReceiveStartCallAction"]) {
+        [_delayedEvents addObject: [NSDictionary dictionaryWithObjectsAndKeys:
+                                    @"RNCallKeepDidActivateAudioSession", @"name", nil]];
+        _isAudioSessionActive = YES;
     }
 }
 
@@ -360,7 +368,7 @@ RCT_EXPORT_METHOD(endCall:(NSString *)uuidString)
     NSUUID *uuid = [[NSUUID alloc] initWithUUIDString:uuidString];
     CXEndCallAction *endCallAction = [[CXEndCallAction alloc] initWithCallUUID:uuid];
     CXTransaction *transaction = [[CXTransaction alloc] initWithAction:endCallAction];
-
+    _isAudioSessionActive = NO;
     [self requestTransaction:transaction];
 }
 
@@ -372,6 +380,7 @@ RCT_EXPORT_METHOD(endAllCalls)
     for (CXCall *call in self.callKeepCallController.callObserver.calls) {
         CXEndCallAction *endCallAction = [[CXEndCallAction alloc] initWithCallUUID:call.UUID];
         CXTransaction *transaction = [[CXTransaction alloc] initWithAction:endCallAction];
+        _isAudioSessionActive = NO;
         [self requestTransaction:transaction];
     }
 }
@@ -489,6 +498,12 @@ RCT_EXPORT_METHOD(sendDTMF:(NSString *)uuidString dtmf:(NSString *)key)
     [transaction addAction:dtmfAction];
 
     [self requestTransaction:transaction];
+}
+
+RCT_EXPORT_METHOD(isAudioSessionActive:(RCTPromiseResolveBlock)resolve
+                  rejecter:(RCTPromiseRejectBlock)reject)
+{
+    resolve([NSNumber numberWithBool:_isAudioSessionActive]);
 }
 
 RCT_EXPORT_METHOD(isCallActive:(NSString *)uuidString
@@ -999,6 +1014,7 @@ continueUserActivity:(NSUserActivity *)userActivity
         };
 
         RNCallKeep *callKeep = [RNCallKeep allocWithZone: nil];
+
         [callKeep sendEventWithNameWrapper:RNCallKeepDidReceiveStartCallAction body:userInfo];
         return YES;
     }
@@ -1076,6 +1092,7 @@ RCT_EXPORT_METHOD(configureVideoAudioSession)
 #ifdef DEBUG
     NSLog(@"[RNCallKeep][CXProviderDelegate][provider:performEndCallAction]");
 #endif
+    _isAudioSessionActive = NO;
     [self sendEventWithNameWrapper:RNCallKeepPerformEndCallAction body:@{ @"callUUID": [action.callUUID.UUIDString lowercaseString] }];
     [action fulfill];
 }
@@ -1139,6 +1156,8 @@ RCT_EXPORT_METHOD(configureVideoAudioSession)
     [[NSNotificationCenter defaultCenter] postNotificationName:AVAudioSessionInterruptionNotification object:nil userInfo:userInfo];
 
     //[self configureAudioSession];
+    _isAudioSessionActive = YES;
+
     [self sendEventWithNameWrapper:RNCallKeepDidActivateAudioSession body:nil];
 }
 
@@ -1147,6 +1166,7 @@ RCT_EXPORT_METHOD(configureVideoAudioSession)
 #ifdef DEBUG
     NSLog(@"[RNCallKeep][CXProviderDelegate][provider:didDeactivateAudioSession]");
 #endif
+    _isAudioSessionActive = NO;
     [self sendEventWithNameWrapper:RNCallKeepDidDeactivateAudioSession body:nil];
 }
 

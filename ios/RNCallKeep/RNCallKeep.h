@@ -45,6 +45,7 @@ continueUserActivity:(NSUserActivity *)userActivity
                  reason:(int)reason;
 
 + (BOOL)isCallActive:(NSString *)uuidString;
++ (BOOL)isAudioSessionActive;
 
 + (void)setup:(NSDictionary *)options;
 
