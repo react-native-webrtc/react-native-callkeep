@@ -96,7 +96,7 @@ declare module 'react-native-callkeep' {
       localizedCallerName?: string,
       handleType?: HandleType,
       hasVideo?: boolean,
-      options?: object,
+      options?: object | null,
     ): void
 
     static startCall(
