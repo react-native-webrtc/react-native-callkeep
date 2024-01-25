@@ -57,17 +57,17 @@ public class VoiceConnection extends Connection {
     private boolean isMuted = false;
     private boolean answered = false;
     private boolean rejected = false;
-    private HashMap<String, String> handle;
+    private HashMap<String, Object> handle;
     private Context context;
     private static final String TAG = "RNCallKeep";
 
-    VoiceConnection(Context context, HashMap<String, String> handle) {
+    VoiceConnection(Context context, HashMap<String, Object> handle) {
         super();
         this.handle = handle;
         this.context = context;
 
-        String number = handle.get(EXTRA_CALL_NUMBER);
-        String name = handle.get(EXTRA_CALLER_NAME);
+        String number = (String) handle.get(EXTRA_CALL_NUMBER);
+        String name = (String) handle.get(EXTRA_CALLER_NAME);
 
         if (number != null) {
             setAddress(Uri.parse(number), TelecomManager.PRESENTATION_ALLOWED);
@@ -135,7 +135,7 @@ public class VoiceConnection extends Connection {
         sendCallRequestToActivity(ACTION_END_CALL, handle);
         Log.d(TAG, "[VoiceConnection] onDisconnect executed");
         try {
-            ((VoiceConnectionService) context).deinitConnection(handle.get(EXTRA_CALL_UUID));
+            ((VoiceConnectionService) context).deinitConnection((String) handle.get(EXTRA_CALL_UUID));
         } catch(Throwable exception) {
             Log.e(TAG, "[VoiceConnection] onDisconnect handle map error", exception);
         }
@@ -164,7 +164,7 @@ public class VoiceConnection extends Connection {
             default:
                 break;
         }
-        ((VoiceConnectionService)context).deinitConnection(handle.get(EXTRA_CALL_UUID));
+        ((VoiceConnectionService)context).deinitConnection((String) handle.get(EXTRA_CALL_UUID));
         destroy();
     }
 
@@ -175,7 +175,7 @@ public class VoiceConnection extends Connection {
         sendCallRequestToActivity(ACTION_END_CALL, handle);
         Log.d(TAG, "[VoiceConnection] onAbort executed");
         try {
-            ((VoiceConnectionService) context).deinitConnection(handle.get(EXTRA_CALL_UUID));
+            ((VoiceConnectionService) context).deinitConnection((String) handle.get(EXTRA_CALL_UUID));
         } catch(Throwable exception) {
             Log.e(TAG, "[VoiceConnection] onAbort handle map error", exception);
         }
@@ -319,7 +319,7 @@ public class VoiceConnection extends Connection {
         sendCallRequestToActivity(ACTION_END_CALL, handle);
         Log.d(TAG, "[VoiceConnection] onReject executed");
         try {
-            ((VoiceConnectionService) context).deinitConnection(handle.get(EXTRA_CALL_UUID));
+            ((VoiceConnectionService) context).deinitConnection((String) handle.get(EXTRA_CALL_UUID));
         } catch(Throwable exception) {
             Log.e(TAG, "[VoiceConnection] onReject, handle map error", exception);
         }
@@ -328,7 +328,7 @@ public class VoiceConnection extends Connection {
 
     @Override
     public void onShowIncomingCallUi() {
-        Log.d(TAG, "[VoiceConnection] onShowIncomingCallUi");
+        Log.d(TAG, "[VoiceConnection] onShowIncomingCallUi:" + handle);
         sendCallRequestToActivity(ACTION_SHOW_INCOMING_CALL_UI, handle);
     }
 

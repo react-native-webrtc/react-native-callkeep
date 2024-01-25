@@ -273,7 +273,7 @@ public class VoiceConnectionService extends ConnectionService {
             outgoingCallConnection.setInitialized();
         }
 
-        HashMap<String, String> extrasMap = this.bundleToMap(extras);
+        HashMap<String, Object> extrasMap = this.bundleToMap(extras);
 
         sendCallRequestToActivity(ACTION_ONGOING_CALL, extrasMap, true);
         sendCallRequestToActivity(ACTION_AUDIO_SESSION, extrasMap, true);
@@ -392,7 +392,7 @@ public class VoiceConnectionService extends ConnectionService {
         if (request.getAddress() == null) {
             return null;
         }
-        HashMap<String, String> extrasMap = this.bundleToMap(extras);
+        HashMap<String, Object> extrasMap = this.bundleToMap(extras);
 
         String callerNumber = request.getAddress().toString();
         Log.d(TAG, "[VoiceConnectionService] createConnection, callerNumber:" + callerNumber);
@@ -467,7 +467,7 @@ public class VoiceConnectionService extends ConnectionService {
         Log.w(TAG, "[VoiceConnectionService] onCreateIncomingConnectionFailed: " + request);
 
         Bundle extras = request.getExtras();
-        HashMap<String, String> extrasMap = this.bundleToMap(extras);
+        HashMap<String, Object> extrasMap = this.bundleToMap(extras);
 
         String callerNumber = request.getAddress().toString();
         if (callerNumber.contains(":")) {
@@ -536,15 +536,15 @@ public class VoiceConnectionService extends ConnectionService {
         });
     }
 
-    private HashMap<String, String> bundleToMap(Bundle extras) {
-        HashMap<String, String> extrasMap = new HashMap<>();
+    private HashMap<String, Object> bundleToMap(Bundle extras) {
+        HashMap<String, Object> extrasMap = new HashMap<>();
         Set<String> keySet = extras.keySet();
         Iterator<String> iterator = keySet.iterator();
 
         while(iterator.hasNext()) {
             String key = iterator.next();
             if (extras.get(key) != null) {
-                extrasMap.put(key, extras.get(key).toString());
+                extrasMap.put(key, extras.get(key));
             }
         }
         return extrasMap;
