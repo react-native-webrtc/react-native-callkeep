@@ -74,6 +74,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.ResourceBundle;
 
 import org.json.JSONObject;
@@ -868,9 +869,10 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule implements Life
             String selectedAudioRoute = getSelectedAudioRoute(audioManager);
             for (AudioDeviceInfo device : audioDeviceInfo){
                 String type = getAudioRouteType(device.getType());
+                String name = Objects.equals(type, "Bluetooth") ? device.getProductName().toString() : type;
                 if(type != null && !typeChecker.contains(type)) {
                     WritableMap deviceInfo = Arguments.createMap();
-                    deviceInfo.putString("name",  type);
+                    deviceInfo.putString("name",  name);
                     deviceInfo.putString("type",  type);
                     if(type.equals(selectedAudioRoute)) {
                         deviceInfo.putBoolean("selected",  true);
