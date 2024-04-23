@@ -382,18 +382,22 @@ public class VoiceConnectionService extends ConnectionService {
         // Avoid to call wake up the app again in wakeUpAfterReachabilityTimeout.
         this.currentConnectionRequest = null;
 
-        Intent headlessIntent = new Intent(
-            this.getApplicationContext(),
-            RNCallKeepBackgroundMessagingService.class
-        );
-        headlessIntent.putExtra("callUUID", uuid);
-        headlessIntent.putExtra("name", displayName);
-        headlessIntent.putExtra("handle", number);
+        try {
+            Intent headlessIntent = new Intent(
+                this.getApplicationContext(),
+                RNCallKeepBackgroundMessagingService.class
+            );
+            headlessIntent.putExtra("callUUID", uuid);
+            headlessIntent.putExtra("name", displayName);
+            headlessIntent.putExtra("handle", number);
 
-        ComponentName name = this.getApplicationContext().startService(headlessIntent);
-        if (name != null) {
-          Log.d(TAG, "[VoiceConnectionService] wakeUpApplication, acquiring lock for application:" + name);
-          HeadlessJsTaskService.acquireWakeLockNow(this.getApplicationContext());
+            ComponentName name = this.getApplicationContext().startService(headlessIntent);
+            if (name != null) {
+              Log.d(TAG, "[VoiceConnectionService] wakeUpApplication, acquiring lock for application:" + name);
+              HeadlessJsTaskService.acquireWakeLockNow(this.getApplicationContext());
+            }
+        } catch (Exception e) {
+          Log.w(TAG, "[VoiceConnectionService] wakeUpApplication, error" + e.toString());
         }
     }
 

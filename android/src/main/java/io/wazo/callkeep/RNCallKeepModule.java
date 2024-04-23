@@ -718,6 +718,8 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule implements Life
             return;
         }
         conn.reportDisconnect(reason);
+
+        this.stopListenToNativeCallsState();
     }
 
    @Override
