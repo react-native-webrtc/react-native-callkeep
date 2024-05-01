@@ -896,6 +896,7 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule implements Life
             case(AudioDeviceInfo.TYPE_WIRED_HEADSET):
                 return "Headset";
             case(AudioDeviceInfo.TYPE_BUILTIN_MIC):
+            case(AudioDeviceInfo.TYPE_BUILTIN_EARPIECE):
                 return "Phone";
             case(AudioDeviceInfo.TYPE_BUILTIN_SPEAKER):
                 return "Speaker";
@@ -905,7 +906,7 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule implements Life
     }
 
     private String getSelectedAudioRoute(AudioManager audioManager){
-        if(audioManager.isBluetoothScoOn()){
+        if(audioManager.isBluetoothScoOn() || audioManager.isBluetoothA2dpOn()){
             return "Bluetooth";
         }
         if(audioManager.isSpeakerphoneOn()){
