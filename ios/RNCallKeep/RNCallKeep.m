@@ -37,14 +37,14 @@ static NSString *const RNCallKeepProviderReset = @"RNCallKeepProviderReset";
 static NSString *const RNCallKeepCheckReachability = @"RNCallKeepCheckReachability";
 static NSString *const RNCallKeepDidChangeAudioRoute = @"RNCallKeepDidChangeAudioRoute";
 static NSString *const RNCallKeepDidLoadWithEvents = @"RNCallKeepDidLoadWithEvents";
+bool _isSpeakerOn;
 
 @implementation RNCallKeep
 {
     NSOperatingSystemVersion _version;
     BOOL _isStartCallActionEventListenerAdded;
     bool _hasListeners;
-    bool _isReachable;
-    bool _isSpeakerOn;
+    bool _isReachable;    
     NSMutableArray *_delayedEvents;
 }
 
@@ -163,9 +163,9 @@ RCT_EXPORT_MODULE()
         NSDictionary *body = @{
             @"output": output,
             @"reason": @(reason),
-    };
-
-    [self sendEventWithName:RNCallKeepDidChangeAudioRoute body:body];
+        };
+        [self sendEventWithName:RNCallKeepDidChangeAudioRoute body:body];
+    }
 }
 
 - (void)sendEventWithNameWrapper:(NSString *)name body:(id)body {
