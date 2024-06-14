@@ -889,7 +889,6 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule implements Life
 
     private String getAudioRouteType(int type){
         switch (type){
-            case(AudioDeviceInfo.TYPE_BLUETOOTH_A2DP):
             case(AudioDeviceInfo.TYPE_BLUETOOTH_SCO):
                 return "Bluetooth";
             case(AudioDeviceInfo.TYPE_WIRED_HEADPHONES):
