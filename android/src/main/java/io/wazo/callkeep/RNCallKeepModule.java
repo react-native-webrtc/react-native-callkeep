@@ -588,7 +588,7 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule implements Life
                allPermissionaw.pushString(allPermission);
             }
 
-            getReactApplicationContext()
+            this.reactContext
                 .getNativeModule(PermissionsModule.class)
                 .requestMultiplePermissions(allPermissionaw, new Promise() {
                     @Override
