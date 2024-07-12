@@ -33,4 +33,5 @@ repositories {
 
 dependencies {
     implementation 'com.facebook.react:react-native:0.66.3'
+    implementation "androidx.localbroadcastmanager:localbroadcastmanager:1.1.0"
 }
