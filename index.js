@@ -27,6 +27,17 @@ class RNCallKeep {
   addEventListener = (type, handler) => {
     const listener = listeners[type](handler);
 
+    /**
+     * xxx https://idtjira.atlassian.net/browse/MOB-5329
+     */
+    if (type === 'didActivateAudioSession') {
+      this.isAudioSessionActive().then(isActive => {
+        if (isActive) {
+          handler()
+        }
+      })
+    }
+
     this._callkeepEventHandlers.set(type, listener);
   };
 
@@ -169,6 +180,8 @@ class RNCallKeep {
   };
 
   isCallActive = async (uuid) => await RNCallKeepModule.isCallActive(uuid);
+
+  isAudioSessionActive = RNCallKeepModule.isAudioSessionActive;
 
   getCalls = () => {
     if (isIOS) {
