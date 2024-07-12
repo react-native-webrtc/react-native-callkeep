@@ -16,6 +16,7 @@ def safeExtGet(prop, fallback) {
 }
 
 android {
+    namespace 'io.wazo.callkeep'
     compileSdkVersion safeExtGet('compileSdkVersion', 28)
 
     defaultConfig {
