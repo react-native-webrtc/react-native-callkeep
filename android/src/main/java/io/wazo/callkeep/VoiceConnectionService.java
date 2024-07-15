@@ -461,7 +461,14 @@ public class VoiceConnectionService extends ConnectionService {
         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             Context context = getApplicationContext();
             TelecomManager telecomManager = (TelecomManager) context.getSystemService(context.TELECOM_SERVICE);
-            PhoneAccount phoneAccount = telecomManager.getPhoneAccount(request.getAccountHandle());
+            PhoneAccount phoneAccount = null;
+
+            try {
+               phoneAccount = telecomManager.getPhoneAccount(request.getAccountHandle());
+            } catch (Exception e) {
+                Log.w(TAG, "[VoiceConnectionService] getPhoneAccount error: " + e.toString());
+                return;
+            }
 
             //If the phone account is self managed, then this connection must also be self managed.
             if((phoneAccount.getCapabilities() & PhoneAccount.CAPABILITY_SELF_MANAGED) == PhoneAccount.CAPABILITY_SELF_MANAGED) {
