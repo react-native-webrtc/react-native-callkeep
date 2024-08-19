@@ -748,6 +748,7 @@ RNCallKeep.registerAndroidEvents();
 | [didPerformSetMutedCallAction](#didPerformSetMutedCallAction)   |  ✅  |   ✅    |
 | [didToggleHoldCallAction](#didToggleHoldCallAction)             |  ✅  |   ✅    |
 | [didPerformDTMFAction](#didPerformDTMFAction)                   |  ✅  |   ✅    |
+| [didResetProvider](#didResetProvider)                           |  ✅  |   ❌    |
 | [didLoadWithEvents](#didLoadWithEvents)                         |  ✅  |   ❌    |
 | [showIncomingCallUi](#showIncomingCallUi)                       |  ❌  |   ✅    |
 | [silenceIncomingCall](#silenceIncomingCall)                     |  ❌  |   ✅    |
@@ -814,7 +815,9 @@ RNCallKeep.addEventListener('didActivateAudioSession', () => {
 });
 ```
 
-### didActivateAudioSession
+### didDeactivateAudioSession
+
+iOS only.
 
 The `AudioSession` has been deactivated by **RNCallKeep**.
 
@@ -911,6 +914,19 @@ RNCallKeep.addEventListener('didPerformDTMFAction', ({ digits, callUUID }) => {
   - The digits that emit the dtmf tone
 - `callUUID` (string)
   - The UUID of the call.
+
+### didResetProvider
+
+iOS only.
+
+The underlying native provider for RNCallKeep has been reset.
+
+```js
+RNCallKeep.addEventListener('didResetProvider', () => {
+  // Likely an error has occurred, you may want to hang up all calls
+  // and log errors.
+});
+```
 
 ### didLoadWithEvents
 
