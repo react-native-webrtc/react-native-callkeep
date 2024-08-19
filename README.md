@@ -743,6 +743,7 @@ RNCallKeep.registerAndroidEvents();
 | [answerCall](#answerCall)                                       |  ✅  |   ✅    |
 | [endCall](#endCall)                                             |  ✅  |   ✅    |
 | [didActivateAudioSession](#didActivateAudioSession)             |  ✅  |   ✅    |
+| [didDeactivateAudioSession](#didDeactivateAudioSession)         |  ✅  |   ❌    |
 | [didDisplayIncomingCall](#didDisplayIncomingCall)               |  ✅  |   ✅    |
 | [didPerformSetMutedCallAction](#didPerformSetMutedCallAction)   |  ✅  |   ✅    |
 | [didToggleHoldCallAction](#didToggleHoldCallAction)             |  ✅  |   ✅    |
@@ -810,6 +811,16 @@ The `AudioSession` has been activated by **RNCallKeep**.
 RNCallKeep.addEventListener('didActivateAudioSession', () => {
   // you might want to do following things when receiving this event:
   // - Start playing ringback if it is an outgoing call
+});
+```
+
+### didActivateAudioSession
+
+The `AudioSession` has been deactivated by **RNCallKeep**.
+
+```js
+RNCallKeep.addEventListener('didDeactivateAudioSession', () => {
+
 });
 ```
 
