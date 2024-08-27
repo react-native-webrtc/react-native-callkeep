@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		23DBCD131E13B465003D485F /* RNCallKeep.m in Sources */ = {isa = PBXBuildFile; fileRef = 23DBCD121E13B465003D485F /* RNCallKeep.m */; };
+		32B7E21C234CE7C800FE38A4 /* RNCallKeepTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 32B7E21B234CE7C800FE38A4 /* RNCallKeepTest.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -26,10 +27,20 @@
 		234528921E0B88C700D1A033 /* libRNCallKeep.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libRNCallKeep.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		23DBCD111E13B465003D485F /* RNCallKeep.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = RNCallKeep.h; path = RNCallKeep/RNCallKeep.h; sourceTree = SOURCE_ROOT; };
 		23DBCD121E13B465003D485F /* RNCallKeep.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = RNCallKeep.m; path = RNCallKeep/RNCallKeep.m; sourceTree = SOURCE_ROOT; };
+		32B7E219234CE7C800FE38A4 /* RNCallKeepTest.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = RNCallKeepTest.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		32B7E21B234CE7C800FE38A4 /* RNCallKeepTest.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = RNCallKeepTest.m; sourceTree = "<group>"; };
+		32B7E21D234CE7C800FE38A4 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
 		2345288F1E0B88C700D1A033 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		32B7E216234CE7C800FE38A4 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -43,6 +54,7 @@
 			isa = PBXGroup;
 			children = (
 				234528941E0B88C700D1A033 /* RNCallKeep */,
+				32B7E21A234CE7C800FE38A4 /* RNCallKeepTest */,
 				234528931E0B88C700D1A033 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -51,6 +63,7 @@
 			isa = PBXGroup;
 			children = (
 				234528921E0B88C700D1A033 /* libRNCallKeep.a */,
+				32B7E219234CE7C800FE38A4 /* RNCallKeepTest.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -61,8 +74,16 @@
 				23DBCD111E13B465003D485F /* RNCallKeep.h */,
 				23DBCD121E13B465003D485F /* RNCallKeep.m */,
 			);
-			name = RNCallKeep;
 			path = RNCallKeep;
+			sourceTree = "<group>";
+		};
+		32B7E21A234CE7C800FE38A4 /* RNCallKeepTest */ = {
+			isa = PBXGroup;
+			children = (
+				32B7E21B234CE7C800FE38A4 /* RNCallKeepTest.m */,
+				32B7E21D234CE7C800FE38A4 /* Info.plist */,
+			);
+			path = RNCallKeepTest;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -85,6 +106,23 @@
 			productReference = 234528921E0B88C700D1A033 /* libRNCallKeep.a */;
 			productType = "com.apple.product-type.library.static";
 		};
+		32B7E218234CE7C800FE38A4 /* RNCallKeepTest */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 32B7E220234CE7C800FE38A4 /* Build configuration list for PBXNativeTarget "RNCallKeepTest" */;
+			buildPhases = (
+				32B7E215234CE7C800FE38A4 /* Sources */,
+				32B7E216234CE7C800FE38A4 /* Frameworks */,
+				32B7E217234CE7C800FE38A4 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = RNCallKeepTest;
+			productName = RNCallKeepTest;
+			productReference = 32B7E219234CE7C800FE38A4 /* RNCallKeepTest.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -98,6 +136,10 @@
 						CreatedOnToolsVersion = 8.1;
 						ProvisioningStyle = Automatic;
 					};
+					32B7E218234CE7C800FE38A4 = {
+						CreatedOnToolsVersion = 11.0;
+						ProvisioningStyle = Automatic;
+					};
 				};
 			};
 			buildConfigurationList = 2345288D1E0B88C700D1A033 /* Build configuration list for PBXProject "RNCallKeep" */;
@@ -105,6 +147,7 @@
 			developmentRegion = English;
 			hasScannedForEncodings = 0;
 			knownRegions = (
+				English,
 				en,
 			);
 			mainGroup = 234528891E0B88C700D1A033;
@@ -113,9 +156,20 @@
 			projectRoot = "";
 			targets = (
 				234528911E0B88C700D1A033 /* RNCallKeep */,
+				32B7E218234CE7C800FE38A4 /* RNCallKeepTest */,
 			);
 		};
 /* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		32B7E217234CE7C800FE38A4 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		2345288E1E0B88C700D1A033 /* Sources */ = {
@@ -123,6 +177,14 @@
 			buildActionMask = 2147483647;
 			files = (
 				23DBCD131E13B465003D485F /* RNCallKeep.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		32B7E215234CE7C800FE38A4 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				32B7E21C234CE7C800FE38A4 /* RNCallKeepTest.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -237,6 +299,65 @@
 			};
 			name = Release;
 		};
+		32B7E21E234CE7C800FE38A4 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				INFOPLIST_FILE = RNCallKeepTest/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/../Frameworks";
+				MACOSX_DEPLOYMENT_TARGET = 10.14;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.react-native-webrtc.RNCallKeepTest";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+			};
+			name = Debug;
+		};
+		32B7E21F234CE7C800FE38A4 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				INFOPLIST_FILE = RNCallKeepTest/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/../Frameworks";
+				MACOSX_DEPLOYMENT_TARGET = 10.14;
+				MTL_FAST_MATH = YES;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.react-native-webrtc.RNCallKeepTest";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -254,6 +375,15 @@
 			buildConfigurations = (
 				2345289C1E0B88C700D1A033 /* Debug */,
 				2345289D1E0B88C700D1A033 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		32B7E220234CE7C800FE38A4 /* Build configuration list for PBXNativeTarget "RNCallKeepTest" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				32B7E21E234CE7C800FE38A4 /* Debug */,
+				32B7E21F234CE7C800FE38A4 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
