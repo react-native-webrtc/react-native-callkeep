@@ -6,6 +6,29 @@ const RNCallKeepModule = NativeModules.RNCallKeep;
 const isIOS = Platform.OS === 'ios';
 const supportConnectionService = !isIOS && Platform.Version >= 23;
 
+const AudioSessionCategoryOption = {
+  mixWithOthers: 0x1,
+  duckOthers: 0x2,
+  interruptSpokenAudioAndMixWithOthers: 0x11,
+  allowBluetooth: 0x4,
+  allowBluetoothA2DP: 0x20,
+  allowAirPlay: 0x40,
+  defaultToSpeaker: 0x8,
+  overrideMutedMicrophoneInterruption: 0x80,
+}
+
+const AudioSessionMode = {
+  default: 'AVAudioSessionModeDefault',
+  gameChat: 'AVAudioSessionModeGameChat',
+  measurement: 'AVAudioSessionModeMeasurement',
+  moviePlayback: 'AVAudioSessionModeMoviePlayback',
+  spokenAudio: 'AVAudioSessionModeSpokenAudio',
+  videoChat: 'AVAudioSessionModeVideoChat',
+  videoRecording: 'AVAudioSessionModeVideoRecording',
+  voiceChat: 'AVAudioSessionModeVoiceChat',
+  voicePrompt: 'AVAudioSessionModeVoicePrompt',
+}
+
 const CONSTANTS = {
   END_CALL_REASONS: {
     FAILED: 1,
@@ -17,7 +40,19 @@ const CONSTANTS = {
   },
 };
 
-export { emit, CONSTANTS };
+export { emit, CONSTANTS, AudioSessionCategoryOption, AudioSessionMode };
+
+class EventListener {
+  constructor(type, listener, callkeep) {
+    this._type = type;
+    this._listener = listener;
+    this._callkeep = callkeep;
+  }
+
+  remove = () => {
+    this._callkeep.removeEventListener(this._type, this._listener);
+  };
+}
 
 class RNCallKeep {
   constructor() {
@@ -27,17 +62,32 @@ class RNCallKeep {
   addEventListener = (type, handler) => {
     const listener = listeners[type](handler);
 
-    this._callkeepEventHandlers.set(type, listener);
+    const listenerSet = this._callkeepEventHandlers.get(type) ?? new Set();
+    listenerSet.add(listener);
+
+    this._callkeepEventHandlers.set(type, listenerSet);
+
+    return new EventListener(type, listener, this);
   };
 
-  removeEventListener = (type) => {
-    const listener = this._callkeepEventHandlers.get(type);
-    if (!listener) {
+  removeEventListener = (type, listener = undefined) => {
+    const listenerSet = this._callkeepEventHandlers.get(type);
+    if (!listenerSet) {
       return;
     }
 
-    listener.remove();
-    this._callkeepEventHandlers.delete(type);
+    if (listener) {
+      listenerSet.delete(listener);
+      listener.remove();
+      if (listenerSet.size <= 0) {
+        this._callkeepEventHandlers.delete(type);
+      }
+    } else {
+      listenerSet.forEach((listener) => {
+        listener.remove();
+      });
+      this._callkeepEventHandlers.delete(type);
+    }
   };
 
   setup = async (options) => {
@@ -110,6 +160,8 @@ class RNCallKeep {
       supportsUngrouping
     );
   };
+
+  checkIsInManagedCall = async () => isIOS? false: RNCallKeepModule.checkIsInManagedCall();
 
   answerIncomingCall = (uuid) => {
     RNCallKeepModule.answerIncomingCall(uuid);

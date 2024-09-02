@@ -19,6 +19,7 @@ const RNCallKeepShowIncomingCallUi = 'RNCallKeepShowIncomingCallUi';
 const RNCallKeepOnSilenceIncomingCall = 'RNCallKeepOnSilenceIncomingCall';
 const RNCallKeepOnIncomingConnectionFailed = 'RNCallKeepOnIncomingConnectionFailed';
 const RNCallKeepDidChangeAudioRoute = 'RNCallKeepDidChangeAudioRoute';
+const RNCallKeepHasActiveCall = 'RNCallKeepHasActiveCall';
 const isIOS = Platform.OS === 'ios';
 
 const didReceiveStartCallAction = handler => {
@@ -59,6 +60,9 @@ const didDisplayIncomingCall = handler => eventEmitter.addListener(RNCallKeepDid
 
 const didPerformSetMutedCallAction = handler =>
   eventEmitter.addListener(RNCallKeepDidPerformSetMutedCallAction, (data) => handler(data));
+
+const onHasActiveCall = handler =>
+  eventEmitter.addListener(RNCallKeepHasActiveCall, handler);
 
 const didToggleHoldCallAction = handler =>
   eventEmitter.addListener(RNCallKeepDidToggleHoldAction, handler);
@@ -103,4 +107,5 @@ export const listeners = {
   silenceIncomingCall,
   createIncomingConnectionFailed,
   didChangeAudioRoute,
+  onHasActiveCall
 };

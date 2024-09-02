@@ -23,6 +23,8 @@ import android.app.ActivityManager.RunningTaskInfo;
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
+import android.app.PendingIntent;
+import android.app.Activity;
 import android.content.res.Resources;
 import android.content.Intent;
 import android.content.Context;
@@ -82,6 +84,7 @@ public class VoiceConnectionService extends ConnectionService {
     private static ConnectionRequest currentConnectionRequest;
     private static PhoneAccountHandle phoneAccountHandle;
     private static String TAG = "RNCallKeep";
+    private static int NOTIFICATION_ID = -4567;
 
     // Delay events sent to RNCallKeepModule when there is no listener available
     private static List<Bundle> delayedEvents = new ArrayList<Bundle>();
@@ -215,17 +218,23 @@ public class VoiceConnectionService extends ConnectionService {
     @Override
     public Connection onCreateOutgoingConnection(PhoneAccountHandle connectionManagerPhoneAccount, ConnectionRequest request) {
         VoiceConnectionService.hasOutgoingCall = true;
-        String uuid = UUID.randomUUID().toString();
 
-        Log.d(TAG, "[VoiceConnectionService] onCreateOutgoingConnection, uuid:" + uuid);
+        Bundle extras = request.getExtras();
+        String callUUID = extras.getString(EXTRA_CALL_UUID);
+
+        if(callUUID == null || callUUID == ""){
+          callUUID = UUID.randomUUID().toString();
+        }
+
+        Log.d(TAG, "[VoiceConnectionService] onCreateOutgoingConnection, uuid:"  + callUUID);
 
         if (!isInitialized && !isReachable) {
-            this.notReachableCallUuid = uuid;
+            this.notReachableCallUuid = callUUID;
             this.currentConnectionRequest = request;
             this.checkReachability();
         }
 
-        return this.makeOutgoingCall(request, uuid, false);
+        return this.makeOutgoingCall(request, callUUID, false);
     }
 
     private Connection makeOutgoingCall(ConnectionRequest request, String uuid, Boolean forceWakeUp) {
@@ -291,7 +300,7 @@ public class VoiceConnectionService extends ConnectionService {
         Log.d(TAG, "[VoiceConnectionService] startForegroundService");
         ReadableMap foregroundSettings = getForegroundSettings(null);
 
-        if (foregroundSettings == null || !foregroundSettings.hasKey("channelId")) {
+        if (!this.isForegroundServiceConfigured()) {
             Log.w(TAG, "[VoiceConnectionService] Not creating foregroundService because not configured");
             return;
         }
@@ -309,6 +318,18 @@ public class VoiceConnectionService extends ConnectionService {
             .setContentTitle(foregroundSettings.getString("notificationTitle"))
             .setPriority(NotificationManager.IMPORTANCE_MIN)
             .setCategory(Notification.CATEGORY_SERVICE);
+
+        Activity currentActivity = RNCallKeepModule.instance.getCurrentReactActivity();
+        if (currentActivity != null) {
+            Intent notificationIntent = new Intent(this, currentActivity.getClass());
+            notificationIntent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
+
+            final int flag =  Build.VERSION.SDK_INT >= Build.VERSION_CODES.M ? PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE : PendingIntent.FLAG_UPDATE_CURRENT;
+
+            PendingIntent pendingIntent = PendingIntent.getActivity(this, NOTIFICATION_ID, notificationIntent, flag);
+
+            notificationBuilder.setContentIntent(pendingIntent);
+        }
 
         if (foregroundSettings.hasKey("notificationIcon")) {
             Context context = this.getApplicationContext();
@@ -331,8 +352,8 @@ public class VoiceConnectionService extends ConnectionService {
         Log.d(TAG, "[VoiceConnectionService] stopForegroundService");
         ReadableMap foregroundSettings = getForegroundSettings(null);
 
-        if (foregroundSettings == null || !foregroundSettings.hasKey("channelId")) {
-            Log.d(TAG, "[VoiceConnectionService] Discarding stop foreground service, no service configured");
+        if (!this.isForegroundServiceConfigured()) {
+            Log.w(TAG, "[VoiceConnectionService] Not creating foregroundService because not configured");
             return;
         }
          try {
@@ -348,18 +369,22 @@ public class VoiceConnectionService extends ConnectionService {
         // Avoid to call wake up the app again in wakeUpAfterReachabilityTimeout.
         this.currentConnectionRequest = null;
 
-        Intent headlessIntent = new Intent(
-            this.getApplicationContext(),
-            RNCallKeepBackgroundMessagingService.class
-        );
-        headlessIntent.putExtra("callUUID", uuid);
-        headlessIntent.putExtra("name", displayName);
-        headlessIntent.putExtra("handle", number);
+        try {
+            Intent headlessIntent = new Intent(
+                this.getApplicationContext(),
+                RNCallKeepBackgroundMessagingService.class
+            );
+            headlessIntent.putExtra("callUUID", uuid);
+            headlessIntent.putExtra("name", displayName);
+            headlessIntent.putExtra("handle", number);
 
-        ComponentName name = this.getApplicationContext().startService(headlessIntent);
-        if (name != null) {
-          Log.d(TAG, "[VoiceConnectionService] wakeUpApplication, acquiring lock for application:" + name);
-          HeadlessJsTaskService.acquireWakeLockNow(this.getApplicationContext());
+            ComponentName name = this.getApplicationContext().startService(headlessIntent);
+            if (name != null) {
+              Log.d(TAG, "[VoiceConnectionService] wakeUpApplication, acquiring lock for application:" + name);
+              HeadlessJsTaskService.acquireWakeLockNow(this.getApplicationContext());
+            }
+        } catch (Exception e) {
+          Log.w(TAG, "[VoiceConnectionService] wakeUpApplication, error" + e.toString());
         }
     }
 
