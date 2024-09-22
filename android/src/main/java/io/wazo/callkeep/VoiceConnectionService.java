@@ -25,6 +25,7 @@ import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Activity;
+import android.app.Service;
 import android.content.res.Resources;
 import android.content.Intent;
 import android.content.Context;
@@ -359,7 +360,7 @@ public class VoiceConnectionService extends ConnectionService {
         }
 
         try {
-            stopForeground(FOREGROUND_SERVICE_TYPE_MICROPHONE);
+            stopForeground(Service.STOP_FOREGROUND_REMOVE);
         } catch (Exception e) {
             Log.w(TAG, "[VoiceConnectionService] can't stop foreground service :" + e.toString());
         }
