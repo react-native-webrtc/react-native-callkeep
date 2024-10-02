@@ -515,11 +515,17 @@ RCT_EXPORT_METHOD(setAudioRoute: (NSString *)uuid
     @try {
         NSError* err = nil;
         AVAudioSession* myAudioSession = [AVAudioSession sharedInstance];
+        [myAudioSession setCategory:AVAudioSessionCategoryPlayAndRecord error:&err];
+
         if ([inputName isEqualToString:@"Speaker"]) {
             BOOL isOverrided = [myAudioSession overrideOutputAudioPort:AVAudioSessionPortOverrideSpeaker error:&err];
+
+            [myAudioSession setActive:YES error:&err];
+
             if(!isOverrided){
                 [NSException raise:@"overrideOutputAudioPort failed" format:@"error: %@", err];
             }
+
             resolve(@"Speaker");
             return;
         }
@@ -528,9 +534,13 @@ RCT_EXPORT_METHOD(setAudioRoute: (NSString *)uuid
         for (AVAudioSessionPortDescription *port in ports) {
             if ([port.portName isEqualToString:inputName]) {
                 BOOL isSetted = [myAudioSession setPreferredInput:(AVAudioSessionPortDescription *)port error:&err];
+
+                [myAudioSession setActive:YES error:&err];
+
                 if(!isSetted){
                     [NSException raise:@"setPreferredInput failed" format:@"error: %@", err];
                 }
+
                 resolve(inputName);
                 return;
             }
