@@ -826,9 +826,7 @@ RCT_EXPORT_METHOD(getAudioRoutes: (RCTPromiseResolveBlock)resolve
         }];
         if (error == nil) {
             // Workaround per https://forums.developer.apple.com/message/169511
-            if ([callKeep lessThanIos10_2]) {
-                [callKeep configureAudioSession:AVAudioSessionModeVoiceChat];
-            }
+            [callKeep configureAudioSession:AVAudioSessionModeVoiceChat];
         }
         if (completion != nil) {
             completion();
