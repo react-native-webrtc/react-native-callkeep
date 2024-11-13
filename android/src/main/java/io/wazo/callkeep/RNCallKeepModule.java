@@ -35,6 +35,7 @@ import android.media.AudioManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Looper;
 import android.view.WindowManager;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -303,6 +304,7 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule implements Life
             telephonyManager.unregisterTelephonyCallback(callStateListener);
         } else if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S && legacyCallStateListener != null){
             telephonyManager.listen(legacyCallStateListener, PhoneStateListener.LISTEN_NONE);
+            Looper.myLooper().quit();
         }
     }
 
@@ -316,8 +318,10 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule implements Life
                   callStateListener = new CallStateListener();
                   telephonyManager.registerTelephonyCallback(context.getMainExecutor(),callStateListener);
             } else {
+                  Looper.prepare();
                   legacyCallStateListener  = new LegacyCallStateListener();
                   telephonyManager.listen(legacyCallStateListener, PhoneStateListener.LISTEN_CALL_STATE);
+                  Looper.loop();
             }
         }
     }
