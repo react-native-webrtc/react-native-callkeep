@@ -32,6 +32,19 @@ private static List<ReactPackage> getPackages() {
     );
 }
 ```
+3.1 In `android/app/src/main/java/.../MainApplication.kt`:
+
+```kotlin
+import io.wazo.callkeep.RNCallKeepPackage // Add this import line
+//...
+
+override fun getPackages(): List<ReactPackage> =
+        PackageList(this).packages.apply {
+          // Packages that cannot be autolinked yet can be added manually here, for example:
+          // add(MyReactNativePackage())
+          add(RNCallKeepPackage())
+        }
+```
 
 4. Add permissionResult listener in `MainActivity.java`:
 
@@ -53,6 +66,30 @@ public class MainActivity extends ReactActivity {
                 break;
         }
     }
+}
+```
+
+4.1 Add permissionResult listener in `MainActivity.kt`:
+
+```kotlin
+import io.wazo.callkeep.RNCallKeepModule // Add these import lines
+import android.support.annotation.NonNull
+import android.support.annotation.Nullable
+
+class MainActivity : ReactActivity() {
+    // ...
+
+    // Permission results
+    override fun onRequestPermissionsResult(
+    requestCode: Int,
+    permissions: Array<out String>,
+    grantResults: IntArray
+  ) {
+    super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+    when (requestCode) {
+      RNCallKeepModule.REQUEST_READ_PHONE_STATE -> RNCallKeepModule.onRequestPermissionsResult(requestCode, permissions, grantResults)
+    }
+  }
 }
 ```
 
