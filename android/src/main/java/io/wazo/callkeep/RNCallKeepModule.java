@@ -86,6 +86,7 @@ import static io.wazo.callkeep.Constants.EXTRA_CALLER_NAME;
 import static io.wazo.callkeep.Constants.EXTRA_CALL_UUID;
 import static io.wazo.callkeep.Constants.EXTRA_CALL_NUMBER;
 import static io.wazo.callkeep.Constants.EXTRA_HAS_VIDEO;
+import static io.wazo.callkeep.Constants.EXTRA_SELF_MANAGED;
 import static io.wazo.callkeep.Constants.EXTRA_PAYLOAD;
 import static io.wazo.callkeep.Constants.ACTION_END_CALL;
 import static io.wazo.callkeep.Constants.ACTION_ANSWER_CALL;
@@ -509,6 +510,7 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule implements Life
         callExtras.putString(EXTRA_CALL_UUID, uuid);
         callExtras.putString(EXTRA_CALL_NUMBER, number);
         callExtras.putString(EXTRA_HAS_VIDEO, String.valueOf(hasVideo));
+        callExtras.putString(EXTRA_SELF_MANAGED, String.valueOf(isSelfManaged()));
         if (payload != null) {
             callExtras.putBundle(EXTRA_PAYLOAD, payload);
         }
