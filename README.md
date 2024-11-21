@@ -589,7 +589,7 @@ RNCallKeep.toggleAudioRouteSpeaker(uuid, true);
 Get the list of available audio routes. i.e. bluetooth, wired/ear-piece, speaker and phone.
 
 ```js
-await RNCallKeep.getAudioRoutes(): AudioRoute;
+await RNCallKeep.getAudioRoutes(): AudioRoute[];
 ```
 
 ```

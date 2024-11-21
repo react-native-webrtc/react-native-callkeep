@@ -222,7 +222,7 @@ declare module 'react-native-callkeep' {
       outgoing: boolean
     }[] | void>
 
-    static getAudioRoutes(): Promise<void>
+    static getAudioRoutes(): Promise<AudioRoute[]>
 
     static setAudioRoute: (uuid: string, inputName: string) => Promise<void>
 
