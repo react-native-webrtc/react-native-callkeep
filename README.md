@@ -743,10 +743,12 @@ RNCallKeep.registerAndroidEvents();
 | [answerCall](#answerCall)                                       |  ✅  |   ✅    |
 | [endCall](#endCall)                                             |  ✅  |   ✅    |
 | [didActivateAudioSession](#didActivateAudioSession)             |  ✅  |   ✅    |
+| [didDeactivateAudioSession](#didDeactivateAudioSession)         |  ✅  |   ❌    |
 | [didDisplayIncomingCall](#didDisplayIncomingCall)               |  ✅  |   ✅    |
 | [didPerformSetMutedCallAction](#didPerformSetMutedCallAction)   |  ✅  |   ✅    |
 | [didToggleHoldCallAction](#didToggleHoldCallAction)             |  ✅  |   ✅    |
 | [didPerformDTMFAction](#didPerformDTMFAction)                   |  ✅  |   ✅    |
+| [didResetProvider](#didResetProvider)                           |  ✅  |   ❌    |
 | [didLoadWithEvents](#didLoadWithEvents)                         |  ✅  |   ❌    |
 | [showIncomingCallUi](#showIncomingCallUi)                       |  ❌  |   ✅    |
 | [silenceIncomingCall](#silenceIncomingCall)                     |  ❌  |   ✅    |
@@ -810,6 +812,18 @@ The `AudioSession` has been activated by **RNCallKeep**.
 RNCallKeep.addEventListener('didActivateAudioSession', () => {
   // you might want to do following things when receiving this event:
   // - Start playing ringback if it is an outgoing call
+});
+```
+
+### didDeactivateAudioSession
+
+iOS only.
+
+The `AudioSession` has been deactivated by **RNCallKeep**.
+
+```js
+RNCallKeep.addEventListener('didDeactivateAudioSession', () => {
+
 });
 ```
 
@@ -900,6 +914,19 @@ RNCallKeep.addEventListener('didPerformDTMFAction', ({ digits, callUUID }) => {
   - The digits that emit the dtmf tone
 - `callUUID` (string)
   - The UUID of the call.
+
+### didResetProvider
+
+iOS only.
+
+The underlying native provider for RNCallKeep has been reset.
+
+```js
+RNCallKeep.addEventListener('didResetProvider', () => {
+  // Likely an error has occurred, you may want to hang up all calls
+  // and log errors.
+});
+```
 
 ### didLoadWithEvents
 
