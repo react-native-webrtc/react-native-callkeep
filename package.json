@@ -6,7 +6,7 @@
   "scripts": {},
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/react-native-webrtc/react-native-callkeep.git"
+    "url": "git+https://github.com/Siperb/react-native-callkeep.git"
   },
   "author": "See AUTHORS file",
   "maintainers": ["See AUTHORS file"],
