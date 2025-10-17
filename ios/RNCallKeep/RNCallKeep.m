@@ -610,13 +610,6 @@ RCT_EXPORT_METHOD(getAudioRoutes: (RCTPromiseResolveBlock)resolve
         }
     }
 
-    BOOL isCategoryActivated = [myAudioSession setActive:YES error:&err];
-    if (!isCategoryActivated)
-    {
-        NSLog(@"[RNCallKeep][getAudioInputs] setActive failed");
-        [NSException raise:@"setActive failed" format:@"error: %@", err];
-    }
-
     NSArray *inputs = [myAudioSession availableInputs];
     return inputs;
 }
