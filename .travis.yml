@@ -1,0 +1,20 @@
+matrix:
+  include:
+    - os: linux
+      language: android
+      sudo: required
+      jdk: oraclejdk8
+      android:
+        components:
+          - tools
+          - platform-tools
+          - build-tools-23.0.1
+          - android-23
+    - os: osx
+      language: objective-c
+      osx_image:
+        - xcode10
+        - xcode11
+      xcode_project: ios/RNCallKeep.xcodeproj
+      xcode_scheme: RNCallKeep
+      xcode_destination: platform=iOS Simulator,OS=12.1,name=iPhone X
