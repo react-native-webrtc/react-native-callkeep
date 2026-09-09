@@ -14,5 +14,8 @@ Pod::Spec.new do |s|
   s.platform            = :ios, "8.0"
   s.source_files        = "ios/RNCallKeep/*.{h,m}"
   s.dependency 'React'
+  s.resource_bundles = {
+    'RNCallKeepPrivacyInfo' => ['ios/PrivacyInfo.xcprivacy'],
+  }
 end
 

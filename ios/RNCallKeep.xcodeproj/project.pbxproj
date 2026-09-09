@@ -26,6 +26,7 @@
 		234528921E0B88C700D1A033 /* libRNCallKeep.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libRNCallKeep.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		23DBCD111E13B465003D485F /* RNCallKeep.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = RNCallKeep.h; path = RNCallKeep/RNCallKeep.h; sourceTree = SOURCE_ROOT; };
 		23DBCD121E13B465003D485F /* RNCallKeep.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = RNCallKeep.m; path = RNCallKeep/RNCallKeep.m; sourceTree = SOURCE_ROOT; };
+		F28778C02BCEA2D40026F49C /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -42,6 +43,7 @@
 		234528891E0B88C700D1A033 = {
 			isa = PBXGroup;
 			children = (
+				F28778C02BCEA2D40026F49C /* PrivacyInfo.xcprivacy */,
 				234528941E0B88C700D1A033 /* RNCallKeep */,
 				234528931E0B88C700D1A033 /* Products */,
 			);
@@ -61,7 +63,6 @@
 				23DBCD111E13B465003D485F /* RNCallKeep.h */,
 				23DBCD121E13B465003D485F /* RNCallKeep.m */,
 			);
-			name = RNCallKeep;
 			path = RNCallKeep;
 			sourceTree = "<group>";
 		};
@@ -105,6 +106,7 @@
 			developmentRegion = English;
 			hasScannedForEncodings = 0;
 			knownRegions = (
+				English,
 				en,
 			);
 			mainGroup = 234528891E0B88C700D1A033;
