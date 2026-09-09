@@ -304,7 +304,9 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule implements Life
             telephonyManager.unregisterTelephonyCallback(callStateListener);
         } else if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S && legacyCallStateListener != null){
             telephonyManager.listen(legacyCallStateListener, PhoneStateListener.LISTEN_NONE);
-            Looper.myLooper().quit();
+            if (Looper.myLooper() != null) {
+                Looper.myLooper().quit();
+            }
         }
     }
 
