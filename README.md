@@ -78,6 +78,16 @@ const options = {
 RNCallKeep.setup(options).then(accepted => {});
 ```
 
+> [note!] Please keep in mind that without your own modifications to Java code for Android, VoiceConnectionService class in particular, you have to specify these foreground service settings:
+```
+{
+  channelId: "io.wazo.callkeep.VoiceConnectionService",
+  channelName: "VoiceConnectionService",
+  notificationTitle: "<your notification title>",
+  notificationIcon: "<your icon to just phone_account_icon>",
+}
+```
+
 iOS only.
 
 Alternative on iOS you can perform setup in `AppDelegate.m`. Doing this allows capturing events prior to the react native event bridge being up. Please be aware that calling setup in `AppDelegate.m` will ignore any subsequent calls to `RNCallKeep.setup();`.
