@@ -156,10 +156,15 @@ public class VoiceConnectionService extends ConnectionService {
         Log.d(TAG, "[VoiceConnectionService] deinitConnection:" + connectionId);
         VoiceConnectionService.hasOutgoingCall = false;
 
-        currentConnectionService.stopForegroundService();
-
         if (currentConnections.containsKey(connectionId)) {
             currentConnections.remove(connectionId);
+        }
+        
+        if (currentConnections.isEmpty()) {
+            Log.d(TAG, "[VoiceConnectionService] deinitConnection. No other connections left -> RUN stopForegroundService!");
+            currentConnectionService.stopForegroundService();
+        } else {
+            Log.d(TAG, "[VoiceConnectionService] deinitConnection. There still exist other connections -> NO stopForegroundService!");
         }
     }
 
