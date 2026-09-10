@@ -198,6 +198,7 @@ To implement a self managed calling app, the following steps are necessary:
 - When `showIncomingCallUi` is fired, you must show an incoming call UI. This would be a high priority notification ([Android: Display time-sensitive notifications](https://developer.android.com/training/notify-user/time-sensitive)).
 - If the user answers the call, you call the appropriate RNCallKeep actions such as `answerCall` or `endCall`
 - In certain cases Android will not allow you to show an incoming call notification. In that case the 'createIncomingConnectionFailed' event is fired and you should reject the incoming SIP Invite.
+- When using self managed mode, all connections created by the foreground service will be self managed.
 
 Self Managed calling apps are an advanced topic, and there are many steps involved in implementing them, but here are some things to keep in mind:
 - React Native Headless Tasks are a great way to execute React Native code. Remember to start up the headless task as a Foreground Service.
