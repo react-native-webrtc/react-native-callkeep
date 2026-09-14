@@ -35,7 +35,7 @@ import android.media.AudioManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Looper;
+import android.os.HandlerThread;
 import android.view.WindowManager;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -120,6 +120,7 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule implements Life
 
     private static final String TAG = "RNCallKeep";
     private static TelecomManager telecomManager;
+    private HandlerThread handlerThread;
     private LegacyCallStateListener legacyCallStateListener;
     private CallStateListener callStateListener;
     private static TelephonyManager telephonyManager;
@@ -314,7 +315,11 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule implements Life
             telephonyManager.unregisterTelephonyCallback(callStateListener);
         } else if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S && legacyCallStateListener != null){
             telephonyManager.listen(legacyCallStateListener, PhoneStateListener.LISTEN_NONE);
-            Looper.myLooper().quit();
+            
+            if (handlerThread != null) {
+                handlerThread.quitSafely();
+                handlerThread = null;
+            }
         }
     }
 
@@ -325,15 +330,16 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule implements Life
 
         if (permissionCheck == PackageManager.PERMISSION_GRANTED) {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                  callStateListener = new CallStateListener();
-                  telephonyManager.registerTelephonyCallback(context.getMainExecutor(),callStateListener);
+                callStateListener = new CallStateListener();
+                telephonyManager.registerTelephonyCallback(context.getMainExecutor(),callStateListener);
             } else {
-                  if (Looper.myLooper() == null) {
-                    Looper.prepare();
-                  }
-                  legacyCallStateListener  = new LegacyCallStateListener();
-                  telephonyManager.listen(legacyCallStateListener, PhoneStateListener.LISTEN_CALL_STATE);
-                  Looper.loop();
+                if (handlerThread == null) {
+                    handlerThread = new HandlerThread("TelephonyManager");
+                    handlerThread.start();
+                }
+
+                legacyCallStateListener  = new LegacyCallStateListener();
+                telephonyManager.listen(legacyCallStateListener, PhoneStateListener.LISTEN_CALL_STATE);
             }
         }
     }
