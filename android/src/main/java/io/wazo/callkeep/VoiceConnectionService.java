@@ -69,6 +69,7 @@ import static io.wazo.callkeep.Constants.EXTRA_CALLER_NAME;
 import static io.wazo.callkeep.Constants.EXTRA_CALL_NUMBER;
 import static io.wazo.callkeep.Constants.EXTRA_CALL_NUMBER_SCHEMA;
 import static io.wazo.callkeep.Constants.EXTRA_CALL_UUID;
+import static io.wazo.callkeep.Constants.EXTRA_SELF_MANAGED;
 import static io.wazo.callkeep.Constants.EXTRA_DISABLE_ADD_CALL;
 import static io.wazo.callkeep.Constants.FOREGROUND_SERVICE_TYPE_MICROPHONE;
 import static io.wazo.callkeep.Constants.ACTION_ON_CREATE_CONNECTION_FAILED;
@@ -458,7 +459,13 @@ public class VoiceConnectionService extends ConnectionService {
         VoiceConnection connection = new VoiceConnection(this, extrasMap);
         connection.setConnectionCapabilities(Connection.CAPABILITY_MUTE | Connection.CAPABILITY_SUPPORT_HOLD);
 
-        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O &&
+                Boolean.parseBoolean(extras.getString(EXTRA_SELF_MANAGED))) {
+            // The mode is captured when this request is submitted. Looking up
+            // even our own PhoneAccount requires READ_PHONE_NUMBERS on recent
+            // Android versions, which self-managed callers do not request.
+            connection.setConnectionProperties(Connection.PROPERTY_SELF_MANAGED);
+        } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             Context context = getApplicationContext();
             TelecomManager telecomManager = (TelecomManager) context.getSystemService(context.TELECOM_SERVICE);
             PhoneAccount phoneAccount = telecomManager.getPhoneAccount(request.getAccountHandle());
