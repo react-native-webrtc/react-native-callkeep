@@ -63,7 +63,6 @@ import com.facebook.react.bridge.ReadableArray;
 import com.facebook.react.bridge.ReadableMap;
 import com.facebook.react.bridge.WritableArray;
 import com.facebook.react.bridge.WritableMap;
-import com.facebook.react.bridge.WritableNativeArray;
 import com.facebook.react.bridge.WritableNativeMap;
 import com.facebook.react.HeadlessJsTaskService;
 import com.facebook.react.modules.core.DeviceEventManagerModule.RCTDeviceEventEmitter;
@@ -129,7 +128,10 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule implements Life
     private boolean isReceiverRegistered = false;
     private VoiceBroadcastReceiver voiceBroadcastReceiver;
     private static WritableMap _settings;
-    private WritableNativeArray delayedEvents;
+    // WritableNativeArray caches its Java-side contents on the first read.
+    // Keep the mutable queue in Java and create a fresh native snapshot for
+    // each bridge delivery (including repeated getInitialEvents calls).
+    private final List<Map<String, Object>> delayedEvents = new ArrayList<>();
     private boolean hasListeners = false;
     private boolean hasActiveCall = false;
 
@@ -161,7 +163,6 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule implements Life
         Log.d(TAG, "[RNCallKeepModule] constructor");
 
         this.reactContext = reactContext;
-        delayedEvents = new WritableNativeArray();
     }
 
     private boolean isSelfManaged() {
@@ -204,12 +205,20 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule implements Life
     }
 
     public void startObserving() {
-        int count = delayedEvents.size();
-        Log.d(TAG, "[RNCallKeepModule] startObserving, event count: " + count);
-        if (count > 0) {
-            this.reactContext.getJSModule(RCTDeviceEventEmitter.class).emit("RNCallKeepDidLoadWithEvents", delayedEvents);
-            delayedEvents = new WritableNativeArray();
+        // Native setup may run more than once while React is still starting.
+        // Do not consume the pending actions until they can be delivered.
+        if (this.reactContext == null || !this.reactContext.hasActiveCatalystInstance() || !hasListeners) {
+            return;
         }
+        WritableArray events;
+        synchronized (delayedEvents) {
+            if (delayedEvents.isEmpty()) {
+                return;
+            }
+            events = Arguments.makeNativeArray(delayedEvents);
+            delayedEvents.clear();
+        }
+        this.reactContext.getJSModule(RCTDeviceEventEmitter.class).emit("RNCallKeepDidLoadWithEvents", events);
     }
 
     public void initializeTelecomManager() {
@@ -676,12 +685,16 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule implements Life
 
     @ReactMethod
     public void getInitialEvents(Promise promise) {
-        promise.resolve(delayedEvents);
+        synchronized (delayedEvents) {
+            promise.resolve(Arguments.makeNativeArray(delayedEvents));
+        }
     }
 
     @ReactMethod
     public void clearInitialEvents() {
-        delayedEvents = new WritableNativeArray();
+        synchronized (delayedEvents) {
+            delayedEvents.clear();
+        }
     }
 
     @ReactMethod
@@ -1145,14 +1158,12 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule implements Life
         if (isBoundToJS && hasListeners) {
             this.reactContext.getJSModule(RCTDeviceEventEmitter.class).emit(eventName, params);
         } else {
-            WritableMap data = Arguments.createMap();
-            if (params == null) {
-                params = Arguments.createMap();
+            Map<String, Object> data = new HashMap<>();
+            data.put("name", eventName);
+            data.put("data", params == null ? new HashMap<String, Object>() : params.toHashMap());
+            synchronized (delayedEvents) {
+                delayedEvents.add(data);
             }
-
-            data.putString("name", eventName);
-            data.putMap("data", params);
-            delayedEvents.pushMap(data);
         }
     }
 
