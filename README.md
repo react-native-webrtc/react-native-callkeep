@@ -165,6 +165,46 @@ You can alternatively just call `setSettings()` with the same option as `setup()
 
 To use this library with Expo, you will need to create a development build. Expo Go does not support custom native modules. For information on how to create and run a development build, visit: [Create a development build - Expo Documentation](https://docs.expo.dev/develop/development-builds/create-a-build/). You can use and test this library with a development build installed on your physical device (iOS and Android). 
 
+Once you have created your development build, follow these steps to install and configure `react-native-callkeep` with Expo:
+
+1. Install the required packages:
+  ```sh
+  npx expo install react-native-callkeep
+  npx expo install @config-plugins/react-native-callkeep
+  ```
+
+2. Update your `app.json` or `app.config.js|ts` to include the necessary permissions and plugins:
+
+```json
+{
+  "expo": {
+    // ... other config ...
+    "android": {
+      "permissions": [
+        // The following permissions should be automatically added by 
+        // @config-plugins/react-native-callkeep
+        // when you create a development build (using `npx expo prebuild` or `eas build`).
+        // If they are not added, you can manually include them as shown below.
+        "android.permission.BIND_TELECOM_CONNECTION_SERVICE",
+        "android.permission.FOREGROUND_SERVICE",
+        "android.permission.READ_PHONE_STATE",
+        "android.permission.CALL_PHONE",
+
+        // You may also need these additional permissions.
+        // For more details, see:
+        // https://github.com/react-native-webrtc/react-native-callkeep/blob/db693d5b6a0a3c38b5d645fd53fc37801d016742/android/src/main/java/io/wazo/callkeep/RNCallKeepModule.java#L115
+        "android.permission.READ_PHONE_NUMBERS",
+        "android.permission.RECORD_AUDIO"
+      ]
+    },
+    "plugins": [
+      // ... other plugins ...
+      "@config-plugins/react-native-callkeep"
+    ]
+  }
+}
+```
+
 # Constants
 
 To make passing the right integer into methods easier, there are constants that are exported from the module.
