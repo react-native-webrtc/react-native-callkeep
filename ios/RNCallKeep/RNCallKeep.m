@@ -171,6 +171,7 @@ RCT_EXPORT_MODULE()
             body, @"data",
             nil
         ];
+        if (_delayedEvents == nil) _delayedEvents = [NSMutableArray array];
         [_delayedEvents addObject:dictionary];
     }
 }
