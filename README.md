@@ -753,6 +753,7 @@ RNCallKeep.registerAndroidEvents();
 | [checkReachability](#checkReachability)                         |  ❌  |   ✅    |
 | [didChangeAudioRoute](#didChangeAudioRoute)                     |  ✅  |   ✅    |
 | [onHasActiveCall](#onHasActiveCall)                             |  ❌  |   ✅    |
+| [didFailCallAction](#didFailCallAction)                         |  ✅  |   ❌    |
 
 ### didReceiveStartCallAction
 
@@ -900,6 +901,30 @@ RNCallKeep.addEventListener('didPerformDTMFAction', ({ digits, callUUID }) => {
   - The digits that emit the dtmf tone
 - `callUUID` (string)
   - The UUID of the call.
+
+### didFailCallAction
+
+CallKit refused a call action that callkeep requested: `startCall`, `answerIncomingCall`, `endCall`, `setOnHold`, `setMutedCall` or `sendDTMF`. Until now such a refusal was only written to the native log, so JavaScript kept believing the action had happened. The most common case is `startCall` while another call is active with `maximumCallGroups: '1'`: CallKit answers `MaximumCallGroupsReached`, no outgoing call is shown, and no `didReceiveStartCallAction` follows.
+
+```js
+RNCallKeep.addEventListener('didFailCallAction', ({ callUUID, action, errorCode, error }) => {
+  if (action === 'startCall') {
+    // CallKit never started this call: hang up your own leg and forget it.
+    hangUpAndForget(callUUID);
+  }
+});
+```
+
+- `callUUID` (string)
+  - The UUID of the call the refused action was for (lowercase), or `''` when the action has none.
+- `action` (string)
+  - `startCall`, `answerCall`, `endCall`, `setHeld`, `setMuted`, `playDTMF`, or `unknown`.
+- `errorCode` (string)
+  - The `CXErrorCodeRequestTransactionError`: `Unentitled`, `UnknownCallProvider`, `EmptyTransaction`, `UnknownCallUUID`, `CallUUIDAlreadyExists`, `InvalidAction`, `MaximumCallGroupsReached`, `CallIsProtected`, or `Unknown`.
+- `error` (string)
+  - The error's localized description.
+
+iOS only. One sent before JavaScript is listening is replayed in `didLoadWithEvents`, like the other events.
 
 ### didLoadWithEvents
 

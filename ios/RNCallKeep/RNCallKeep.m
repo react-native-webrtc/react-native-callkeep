@@ -37,6 +37,7 @@ static NSString *const RNCallKeepProviderReset = @"RNCallKeepProviderReset";
 static NSString *const RNCallKeepCheckReachability = @"RNCallKeepCheckReachability";
 static NSString *const RNCallKeepDidChangeAudioRoute = @"RNCallKeepDidChangeAudioRoute";
 static NSString *const RNCallKeepDidLoadWithEvents = @"RNCallKeepDidLoadWithEvents";
+static NSString *const RNCallKeepDidFailCallAction = @"RNCallKeepDidFailCallAction";
 
 @implementation RNCallKeep
 {
@@ -115,7 +116,8 @@ RCT_EXPORT_MODULE()
         RNCallKeepProviderReset,
         RNCallKeepCheckReachability,
         RNCallKeepDidLoadWithEvents,
-        RNCallKeepDidChangeAudioRoute
+        RNCallKeepDidChangeAudioRoute,
+        RNCallKeepDidFailCallAction
     ];
 }
 
@@ -675,6 +677,17 @@ RCT_EXPORT_METHOD(getAudioRoutes: (RCTPromiseResolveBlock)resolve
     [self.callKeepCallController requestTransaction:transaction completion:^(NSError * _Nullable error) {
         if (error != nil) {
             NSLog(@"[RNCallKeep][requestTransaction] Error requesting transaction (%@): (%@)", transaction.actions, error);
+            // Without this event JavaScript never learns that CallKit refused the
+            // action: a refused startCall (e.g. maximumCallGroups reached) leaves
+            // the app holding a call that CallKit does not know about.
+            CXAction *action = [transaction.actions firstObject];
+            NSUUID *callUUID = [action isKindOfClass:[CXCallAction class]] ? ((CXCallAction *)action).callUUID : nil;
+            [self sendEventWithNameWrapper:RNCallKeepDidFailCallAction body:@{
+                @"callUUID": callUUID ? [callUUID.UUIDString lowercaseString] : @"",
+                @"action": [self getCallActionName:action],
+                @"errorCode": [self getRequestTransactionErrorCode:error],
+                @"error": error.localizedDescription ? error.localizedDescription : @"",
+            }];
         } else {
             NSLog(@"[RNCallKeep][requestTransaction] Requested transaction successfully");
 
@@ -813,6 +826,49 @@ RCT_EXPORT_METHOD(getAudioRoutes: (RCTPromiseResolveBlock)resolve
             completion();
         }
     }];
+}
+
+- (NSString *)getCallActionName:(CXAction *)action {
+    if ([action isKindOfClass:[CXStartCallAction class]]) {
+        return @"startCall";
+    } else if ([action isKindOfClass:[CXAnswerCallAction class]]) {
+        return @"answerCall";
+    } else if ([action isKindOfClass:[CXEndCallAction class]]) {
+        return @"endCall";
+    } else if ([action isKindOfClass:[CXSetHeldCallAction class]]) {
+        return @"setHeld";
+    } else if ([action isKindOfClass:[CXSetMutedCallAction class]]) {
+        return @"setMuted";
+    } else if ([action isKindOfClass:[CXPlayDTMFCallAction class]]) {
+        return @"playDTMF";
+    }
+    return @"unknown";
+}
+
+- (NSString *)getRequestTransactionErrorCode:(NSError *)error {
+    if (![[error domain] isEqualToString:CXErrorDomainRequestTransaction]) {
+        return @"Unknown";
+    }
+    switch ([error code]) {
+        case CXErrorCodeRequestTransactionErrorUnentitled:
+            return @"Unentitled";
+        case CXErrorCodeRequestTransactionErrorUnknownCallProvider:
+            return @"UnknownCallProvider";
+        case CXErrorCodeRequestTransactionErrorEmptyTransaction:
+            return @"EmptyTransaction";
+        case CXErrorCodeRequestTransactionErrorUnknownCallUUID:
+            return @"UnknownCallUUID";
+        case CXErrorCodeRequestTransactionErrorCallUUIDAlreadyExists:
+            return @"CallUUIDAlreadyExists";
+        case CXErrorCodeRequestTransactionErrorInvalidAction:
+            return @"InvalidAction";
+        case CXErrorCodeRequestTransactionErrorMaximumCallGroupsReached:
+            return @"MaximumCallGroupsReached";
+        case 8: // CXErrorCodeRequestTransactionErrorCallIsProtected; a literal so older SDKs still build
+            return @"CallIsProtected";
+        default:
+            return @"Unknown";
+    }
 }
 
 - (NSString *)getIncomingCallErrorCode:(NSError *)error {

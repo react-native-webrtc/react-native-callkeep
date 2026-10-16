@@ -17,6 +17,7 @@ declare module 'react-native-callkeep' {
     didResetProvider: 'RNCallKeepProviderReset';
     didLoadWithEvents: 'RNCallKeepDidLoadWithEvents';
     onHasActiveCall : 'onHasActiveCall';
+    didFailCallAction: 'RNCallKeepDidFailCallAction';
   }
 
   export type InitialEvents = Array<{
@@ -56,6 +57,12 @@ declare module 'react-native-callkeep' {
     didResetProvider: undefined;
     didLoadWithEvents: InitialEvents;
     onHasActiveCall : undefined;
+    didFailCallAction: {
+      callUUID: string,
+      action: 'startCall' | 'answerCall' | 'endCall' | 'setHeld' | 'setMuted' | 'playDTMF' | 'unknown',
+      errorCode: 'Unentitled' | 'UnknownCallProvider' | 'EmptyTransaction' | 'UnknownCallUUID' | 'CallUUIDAlreadyExists' | 'InvalidAction' | 'MaximumCallGroupsReached' | 'CallIsProtected' | 'Unknown',
+      error: string,
+    };
   }
 
   type HandleType = 'generic' | 'number' | 'email';
