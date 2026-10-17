@@ -10,7 +10,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
   // The app delegate creates React Native; SceneDelegate creates the window and starts it.
   // This is also where an app registers for VoIP pushes and reports the incoming call with
-  // RNCallKeep.reportNewIncomingCall (see the README's PushKit section); the example doesn't, as it
+  // RNCallKeep.reportNewIncomingCall (see docs/guides/background-calls.md); the example doesn't, as it
   // has no push server.
   func application(
     _ application: UIApplication,

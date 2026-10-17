@@ -31,7 +31,7 @@ To try a change in your own app instead, install your clone there (`npm install 
 | `index.d.ts` | TypeScript typings for the API and the event payloads |
 | `ios/RNCallKeep/RNCallKeep.m` | iOS: CallKit provider, call actions and audio session |
 | `android/src/main/java/io/wazo/callkeep/` | Android: `RNCallKeepModule` (the module), `VoiceConnectionService` and `VoiceConnection` (Telecom) |
-| `docs/` | Installation guides |
+| `docs/` | The documentation: setup, API reference, events, guides, troubleshooting |
 | `example/` | The example app, which runs the library from this repository |
 | `tests/android/` | Android instrumentation tests, run inside a React Native host app (see its README) |
 
@@ -57,7 +57,7 @@ A GitHub Actions workflow (`.github/workflows/stale.yml`) applies this policy ev
 3. **Update everything a user sees** when you change the API or an event:
    - `index.js` and, for events, `actions.js`
    - `index.d.ts`
-   - `README.md`: the method or event table and its section
+   - `docs/api.md` or `docs/events.md`: the table and the method's or event's section
 4. **Add a line to `CHANGELOG.md`** under `[Unreleased]`, saying what changed for users.
 5. **Run `npm run check`** (see below).
 6. **Open a pull request** that explains what changed, why, and how you tested it.
@@ -69,7 +69,7 @@ CI runs these on every pull request. Run them before you push; they need only No
 ```bash
 npm run check   # all of the below
 npm run check:types     # index.d.ts compiles with TypeScript in strict mode
-npm run check:events    # every event matches across actions.js, index.d.ts and the README events table
+npm run check:events    # every event matches across actions.js, index.d.ts and the docs/events.md table
 npm run check:package   # what npm publish would ship: the native sources are in, tests and scripts are out
 ```
 

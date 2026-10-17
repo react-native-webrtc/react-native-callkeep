@@ -23,7 +23,7 @@ jobs:
       - name: index.d.ts compiles in strict mode
         run: npm run check:types
 
-      - name: Events match across actions.js, index.d.ts and the README
+      - name: Events match across actions.js, index.d.ts and docs/events.md
         run: npm run check:events
 
   package:
