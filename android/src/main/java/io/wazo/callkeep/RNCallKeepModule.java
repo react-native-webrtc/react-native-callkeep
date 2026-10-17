@@ -18,7 +18,10 @@
 package io.wazo.callkeep;
 import com.facebook.react.bridge.LifecycleEventListener;
 import android.Manifest;
+import android.annotation.TargetApi;
 import android.app.Activity;
+import android.app.Application;
+import android.app.KeyguardManager;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
@@ -37,7 +40,6 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.HandlerThread;
-import android.view.WindowManager;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
@@ -1114,14 +1116,43 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule implements Life
         if (isOpened) {
             focusIntent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
             activity.startActivity(focusIntent);
+            if (isLocked(activity)) {
+                requestUnlock(activity);
+            }
         } else {
-            focusIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK +
-                    WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED +
-                    WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD +
-                    WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON);
-
+            focusIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            if (isLocked(context)) {
+                // Ask for the unlock once the activity exists.
+                final Application application = (Application) context.getApplicationContext();
+                application.registerActivityLifecycleCallbacks(new Application.ActivityLifecycleCallbacks() {
+                    @Override public void onActivityCreated(Activity created, Bundle savedInstanceState) {
+                        application.unregisterActivityLifecycleCallbacks(this);
+                        requestUnlock(created);
+                    }
+                    @Override public void onActivityStarted(Activity a) {}
+                    @Override public void onActivityResumed(Activity a) {}
+                    @Override public void onActivityPaused(Activity a) {}
+                    @Override public void onActivityStopped(Activity a) {}
+                    @Override public void onActivitySaveInstanceState(Activity a, Bundle outState) {}
+                    @Override public void onActivityDestroyed(Activity a) {}
+                });
+            }
             getReactApplicationContext().startActivity(focusIntent);
         }
+    }
+
+    // On a locked device the app comes to the front behind the lock screen: ask the user to unlock
+    // (Android 8 and later), as iOS does when they open the app from the call screen.
+    private boolean isLocked(Context context) {
+        KeyguardManager keyguardManager = (KeyguardManager) context.getSystemService(Context.KEYGUARD_SERVICE);
+        return Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && keyguardManager != null && keyguardManager.isKeyguardLocked();
+    }
+
+    @TargetApi(Build.VERSION_CODES.O)
+    private void requestUnlock(Activity activity) {
+        Log.d(TAG, "[RNCallKeepModule] backToForeground, asking to unlock the device");
+        KeyguardManager keyguardManager = (KeyguardManager) activity.getSystemService(Context.KEYGUARD_SERVICE);
+        keyguardManager.requestDismissKeyguard(activity, null);
     }
 
     public static void onRequestPermissionsResult(int requestCode, String[] grantedPermissions, int[] grantResults) {
