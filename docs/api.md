@@ -565,8 +565,9 @@ RNCallKeep.checkPhoneAccountEnabled();
 
 _This feature is available only on Android._
 
-Use this to display the application in foreground if the application was in background state. 
-This method will open the application if it was closed.
+Brings your app to the front, and opens it when it has no activity (for example from a headless task after the app was killed). Call it when your app should show a call, for example when the user answers from the system's call screen: Android lets the app come to the front then. Otherwise, Android 10 and later may block it while your app is in the background (see [restrictions on starting activities from the background](https://developer.android.com/guide/components/activities/background-starts)).
+
+On a locked device, Android 8 and later ask the user to unlock (PIN, fingerprint...) before showing the app, as iOS does when the user opens the app from the call screen. To show a call screen over the lock screen instead, start that activity yourself, with `android:showWhenLocked="true"`, rather than calling `backToForeground()`.
 
 ```js
 RNCallKeep.backToForeground();
