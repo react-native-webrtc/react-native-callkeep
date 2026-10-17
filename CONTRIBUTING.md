@@ -46,7 +46,21 @@ Look for issues labeled **help wanted** or **good first issue**. If you plan a l
    - `index.d.ts`
    - `README.md`: the method or event table and its section
 4. **Add a line to `CHANGELOG.md`** under `[Unreleased]`, saying what changed for users.
-5. **Open a pull request** that explains what changed, why, and how you tested it.
+5. **Run `npm run check`** (see below).
+6. **Open a pull request** that explains what changed, why, and how you tested it.
+
+## Checks
+
+CI runs these on every pull request. Run them before you push; they need only Node.js:
+
+```bash
+npm run check   # all of the below
+npm run check:types     # index.d.ts compiles with TypeScript in strict mode
+npm run check:events    # every event matches across actions.js, index.d.ts and the README events table
+npm run check:package   # what npm publish would ship: the native sources are in, tests and scripts are out
+```
+
+CI also evaluates `RNCallKeep.podspec` with CocoaPods and checks that the privacy manifest ships in its resource bundle.
 
 ## Testing
 
