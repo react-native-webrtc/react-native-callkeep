@@ -66,6 +66,7 @@ import com.facebook.react.bridge.ReactMethod;
 import com.facebook.react.bridge.ReadableArray;
 import com.facebook.react.bridge.ReadableMap;
 import com.facebook.react.bridge.WritableArray;
+import com.facebook.react.bridge.UiThreadUtil;
 import com.facebook.react.bridge.WritableMap;
 import com.facebook.react.bridge.WritableNativeMap;
 import com.facebook.react.HeadlessJsTaskService;
@@ -826,31 +827,35 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule implements Life
 
    @Override
    public void onHostDestroy() {
-       // Calls that must outlive the activity (owned by native code, for instance) stay, and so
-       // does the process.
-       WritableMap settings = getSettings(this.getAppContext());
-       if (settings != null && settings.hasKey("endCallsOnHostDestroy") && !settings.getBoolean("endCallsOnHostDestroy")) {
-           Log.d(TAG, "[RNCallKeepModule] onHostDestroy: calls kept, endCallsOnHostDestroy is false");
-           return;
-       }
-       // When activity destroyed end all calls
-       Log.d(TAG, "[RNCallKeepModule] onHostDestroy called");
-       if (!isConnectionServiceAvailable() || !hasPhoneAccount()) {
-           Log.w(TAG, "[RNCallKeepModule] onHostDestroy ignored due to no ConnectionService or no phone account");
-           return;
-       }
-
-       ArrayList<Map.Entry<String, VoiceConnection>> connections =
-           new ArrayList<Map.Entry<String, VoiceConnection>>(VoiceConnectionService.currentConnections.entrySet());
-       for (Map.Entry<String, VoiceConnection> connectionEntry : connections) {
-           Connection connectionToEnd = connectionEntry.getValue();
-           connectionToEnd.onDisconnect();
-       }
-       this.stopListenToNativeCallsState();
-       Log.d(TAG, "[RNCallKeepModule] onHostDestroy executed");
-       // This line will kill the android process after ending all calls
-       android.os.Process.killProcess(android.os.Process.myPid());
+       // The activity is gone, not the call: an unhandled configuration change (font size,
+       // language), Back on Android 11 and earlier, or swiping the app away from Recents destroy it
+       // while the app's JavaScript keeps running. Calls go on, as in other calling apps. They end
+       // when the process dies (Telecom ends them) or when React Native stops (invalidate).
+       Log.d(TAG, "[RNCallKeepModule] onHostDestroy: the activity is destroyed, calls go on");
    }
+
+    @Override
+    public void invalidate() {
+        // React Native's instance is going away (a reload, an over-the-air update): the JavaScript
+        // that handles the calls goes with it, so they end, unless native code owns them.
+        WritableMap settings = getSettings(this.getAppContext());
+        boolean endCalls = settings == null || !settings.hasKey("endCallsWhenReactNativeStops")
+            || settings.getBoolean("endCallsWhenReactNativeStops");
+        if (endCalls) {
+            // React Native may invalidate on a background thread; connections live on the main one.
+            UiThreadUtil.runOnUiThread(() -> {
+                ArrayList<VoiceConnection> connections = new ArrayList<>(VoiceConnectionService.currentConnections.values());
+                Log.d(TAG, "[RNCallKeepModule] invalidate: ending " + connections.size() + " call(s)");
+                for (Connection connection : connections) {
+                    connection.onDisconnect();
+                }
+            });
+        } else {
+            Log.d(TAG, "[RNCallKeepModule] invalidate: calls kept, endCallsWhenReactNativeStops is false");
+        }
+        this.stopListenToNativeCallsState();
+        super.invalidate();
+    }
 
     @ReactMethod
     public void rejectCall(String uuid) {

@@ -38,6 +38,7 @@ Changes to the library's JavaScript (`../index.js`, `../actions.js`) reload with
 | **Audio routes** | Lists the speaker, receiver, Bluetooth and headset, and moves the active call to one. | `getAudioRoutes`, `setAudioRoute` |
 | **Events** | Every event the library sends, with its payload. | all of them |
 | **Android mode** | Switches between self-managed and managed mode and runs `setup` again. | `setup({ android: { selfManaged } })` |
+| During a call (Android): change the font size, press **Back**, or swipe the app away from Recents | The call goes on. Reopen the app: it shows the call, which you can hang up. | [Calls and the app's lifecycle](../docs/setup.md#calls-and-the-apps-lifecycle-android) |
 | Call a contact back from **Recents** (iOS) | iOS opens the app and passes the call to the scene delegate; the app starts it. | `RNCallKeep.continueUserActivity` → `didReceiveStartCallAction` without `callUUID` → `startCall` |
 
 ## Where to look
@@ -45,7 +46,7 @@ Changes to the library's JavaScript (`../index.js`, `../actions.js`) reload with
 | File | What it shows |
 |---|---|
 | [`src/callkeep.ts`](src/callkeep.ts) | The `setup()` options, Android runtime permissions, call UUIDs |
-| [`src/useCallKeep.ts`](src/useCallKeep.ts) | The event listeners and what an app does on each one; events received before JavaScript was listening (`didLoadWithEvents`) |
+| [`index.js`](index.js), [`src/useCallKeep.ts`](src/useCallKeep.ts) | The event listeners, registered once at startup, and what an app does on each one; the call state, kept outside the screen; events received before JavaScript was listening (`didLoadWithEvents`) |
 | [`App.tsx`](App.tsx) | The screen |
 | [`ios/CallKeepExample/SceneDelegate.swift`](ios/CallKeepExample/SceneDelegate.swift) | The scene life cycle that iOS 27 requires, and calls from Recents, Contacts or Siri |
 | [`ios/CallKeepExample/AppDelegate.swift`](ios/CallKeepExample/AppDelegate.swift) | Where an app handles VoIP pushes |

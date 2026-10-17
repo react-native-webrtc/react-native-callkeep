@@ -85,8 +85,8 @@ RNCallKeep.setup(options).then(accepted => {});
       - `notificationTitle`: string
       - `notificationIcon`: string (optional), the name of a `mipmap` resource, such as `ic_launcher`
       - `foregroundServiceType`: number (optional, Android 10 and later), the types the service starts with, as a mask of [`ServiceInfo.FOREGROUND_SERVICE_TYPE_*`](https://developer.android.com/reference/android/content/pm/ServiceInfo#FOREGROUND_SERVICE_TYPE_PHONE_CALL) values: `4` for `phoneCall`, `132` for `phoneCall` and `microphone`. Each type must be declared on the service in the manifest. Without it, the service starts with every type the manifest declares. CallKeep starts the service when the call is created and keeps these types for the whole call: with `4` alone, an answered call has no microphone access while the app is in the background. To add `microphone` once the call is answered, call `startForeground(Constants.FOREGROUND_SERVICE_NOTIFICATION_ID, notification, types)` on `VoiceConnectionService.currentConnectionService` from native code, with both types
-    - `endCallsOnHostDestroy`: boolean (optional, default `true`)
-      When the React activity is destroyed, CallKeep ends every call and kills the app's process. Set it to `false` when your calls must outlive the activity, for instance when native code owns them: ending them is then up to your app.
+    - `endCallsWhenReactNativeStops`: boolean (optional, default `true`)
+      When React Native's instance stops while the app keeps running (a reload, an over-the-air update), CallKeep ends the calls: the JavaScript that handled them is gone. Set it to `false` when native code owns your calls, as with [setup from native code](#setup-from-native-code-android). See [Calls and the app's lifecycle](#calls-and-the-apps-lifecycle-android).
     - `selfManaged`: boolean (optional)
       When set to true, call keep will configure itself to run as a self managed connection service. See the [self-managed mode guide](guides/android-self-managed.md) and [Google's documentation](https://developer.android.com/guide/topics/connectivity/telecom/selfManaged).
       - `displayCallReachabilityTimeout`: number in ms (optional)
@@ -141,6 +141,16 @@ RNCallKeepModule.displayIncomingCall(context, callUUID, number, callerName, fals
 It stores the settings and registers the phone account as `setup()` does, but creates no module and no React context. Your app then shows its own incoming-call UI and handles the call from CallKeep's local broadcasts: register a receiver with `LocalBroadcastManager` for the `Constants.ACTION_*` actions (`ACTION_SHOW_INCOMING_CALL_UI`, `ACTION_ANSWER_CALL`, `ACTION_END_CALL`, ...); each intent carries the call's `Constants.EXTRA_CALL_UUID` in its `attributeMap` extra. When React Native starts later, its module uses the same settings. Register your receiver before `displayIncomingCall`: the call's actions (`ACTION_SHOW_INCOMING_CALL_UI`, `ACTION_ANSWER_CALL`, `ACTION_END_CALL`, hold, DTMF...) reach only the receivers registered when they happen. Only the connection service's events (`ACTION_DID_DISPLAY_INCOMING_CALL`, `ACTION_ON_CREATE_CONNECTION_FAILED`...) are kept for JavaScript when no receiver gets them, so once your receiver is registered, React Native's [`getInitialEvents()`](api.md#getinitialevents) doesn't return them either.
 
 Telecom gives self-managed calls the call focus (Android 9 and later). To start a call's audio before React Native runs, set `VoiceConnectionService.nativeFocusListener`: `onFocusGained` tells when the call may use audio, and on `onFocusLost` release its audio and microphone, then call `connectionServiceFocusReleased()` on `VoiceConnectionService.currentConnectionService`. `VoiceConnectionService.hasConnectionServiceFocus()` reads the current state; it turns false when the last call ends, for which Telecom calls no `onFocusLost`.
+
+## Calls and the app's lifecycle (Android)
+
+A call lasts as long as the app can handle it, not as long as its screen:
+
+- **The activity is destroyed**, while the app keeps running: a configuration change the activity doesn't handle (font size, language), Back on Android 11 and earlier, or the user swiping the app away from Recents. The call goes on, as in other calling apps; Telecom keeps the app's process running during a call. The user gets back to it from the app or its notification.
+- **The app's process dies** (a crash, or the system stops it): Telecom ends its calls.
+- **React Native's instance stops** while the process runs (a reload, an over-the-air update): CallKeep ends the calls, unless [`endCallsWhenReactNativeStops`](#options) is `false`.
+
+So keep your call state, and register CallKeep's event listeners, outside your screens, once when the app starts (in `index.js`, for instance): a new activity renders the calls that are still going on. The [example app](../example/) does so.
 
 ## Foreground service (Android 11 and later)
 

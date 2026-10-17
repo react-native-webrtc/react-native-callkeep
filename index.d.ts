@@ -111,8 +111,8 @@ declare module 'react-native-callkeep' {
       imageName?: string,
       additionalPermissions: string[],
       selfManaged?: boolean,
-      /** End every call and the process when the React activity is destroyed (default true). */
-      endCallsOnHostDestroy?: boolean,
+      /** End the calls when React Native's instance stops, as on a reload (default true). */
+      endCallsWhenReactNativeStops?: boolean,
       foregroundService?: {
         channelId: string,
         channelName: string,
