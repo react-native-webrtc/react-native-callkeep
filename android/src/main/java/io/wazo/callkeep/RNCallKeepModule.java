@@ -35,10 +35,12 @@ import android.media.AudioManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Looper;
+import android.os.Handler;
+import android.os.HandlerThread;
 import android.view.WindowManager;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.annotation.RequiresApi;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
@@ -63,7 +65,6 @@ import com.facebook.react.bridge.ReadableArray;
 import com.facebook.react.bridge.ReadableMap;
 import com.facebook.react.bridge.WritableArray;
 import com.facebook.react.bridge.WritableMap;
-import com.facebook.react.bridge.WritableNativeArray;
 import com.facebook.react.bridge.WritableNativeMap;
 import com.facebook.react.HeadlessJsTaskService;
 import com.facebook.react.modules.core.DeviceEventManagerModule.RCTDeviceEventEmitter;
@@ -86,6 +87,7 @@ import static io.wazo.callkeep.Constants.EXTRA_CALLER_NAME;
 import static io.wazo.callkeep.Constants.EXTRA_CALL_UUID;
 import static io.wazo.callkeep.Constants.EXTRA_CALL_NUMBER;
 import static io.wazo.callkeep.Constants.EXTRA_HAS_VIDEO;
+import static io.wazo.callkeep.Constants.EXTRA_SELF_MANAGED;
 import static io.wazo.callkeep.Constants.EXTRA_PAYLOAD;
 import static io.wazo.callkeep.Constants.ACTION_END_CALL;
 import static io.wazo.callkeep.Constants.ACTION_ANSWER_CALL;
@@ -120,6 +122,7 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule implements Life
 
     private static final String TAG = "RNCallKeep";
     private static TelecomManager telecomManager;
+    private HandlerThread handlerThread;
     private LegacyCallStateListener legacyCallStateListener;
     private CallStateListener callStateListener;
     private static TelephonyManager telephonyManager;
@@ -129,7 +132,10 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule implements Life
     private boolean isReceiverRegistered = false;
     private VoiceBroadcastReceiver voiceBroadcastReceiver;
     private static WritableMap _settings;
-    private WritableNativeArray delayedEvents;
+    // WritableNativeArray caches its Java-side contents on the first read.
+    // Keep the mutable queue in Java and create a fresh native snapshot for
+    // each bridge delivery (including repeated getInitialEvents calls).
+    private final List<Map<String, Object>> delayedEvents = new ArrayList<>();
     private boolean hasListeners = false;
     private boolean hasActiveCall = false;
 
@@ -161,7 +167,6 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule implements Life
         Log.d(TAG, "[RNCallKeepModule] constructor");
 
         this.reactContext = reactContext;
-        delayedEvents = new WritableNativeArray();
     }
 
     private boolean isSelfManaged() {
@@ -204,12 +209,20 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule implements Life
     }
 
     public void startObserving() {
-        int count = delayedEvents.size();
-        Log.d(TAG, "[RNCallKeepModule] startObserving, event count: " + count);
-        if (count > 0) {
-            this.reactContext.getJSModule(RCTDeviceEventEmitter.class).emit("RNCallKeepDidLoadWithEvents", delayedEvents);
-            delayedEvents = new WritableNativeArray();
+        // Native setup may run more than once while React is still starting.
+        // Do not consume the pending actions until they can be delivered.
+        if (this.reactContext == null || !this.reactContext.hasActiveCatalystInstance() || !hasListeners) {
+            return;
         }
+        WritableArray events;
+        synchronized (delayedEvents) {
+            if (delayedEvents.isEmpty()) {
+                return;
+            }
+            events = Arguments.makeNativeArray(delayedEvents);
+            delayedEvents.clear();
+        }
+        this.reactContext.getJSModule(RCTDeviceEventEmitter.class).emit("RNCallKeepDidLoadWithEvents", events);
     }
 
     public void initializeTelecomManager() {
@@ -263,6 +276,7 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule implements Life
          }
     }
 
+    @RequiresApi(Build.VERSION_CODES.S)
     private class CallStateListener extends TelephonyCallback implements TelephonyCallback.CallStateListener {
 
           @Override
@@ -302,9 +316,19 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule implements Life
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && callStateListener !=null){
             telephonyManager.unregisterTelephonyCallback(callStateListener);
-        } else if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S && legacyCallStateListener != null){
-            telephonyManager.listen(legacyCallStateListener, PhoneStateListener.LISTEN_NONE);
-            Looper.myLooper().quit();
+        } else if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S && handlerThread != null){
+            // Unregister on the listener's thread, after any pending registration, then let the thread end.
+            new Handler(handlerThread.getLooper()).post(new Runnable() {
+                @Override
+                public void run() {
+                    if (legacyCallStateListener != null) {
+                        telephonyManager.listen(legacyCallStateListener, PhoneStateListener.LISTEN_NONE);
+                        legacyCallStateListener = null;
+                    }
+                }
+            });
+            handlerThread.quitSafely();
+            handlerThread = null;
         }
     }
 
@@ -315,15 +339,23 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule implements Life
 
         if (permissionCheck == PackageManager.PERMISSION_GRANTED) {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                  callStateListener = new CallStateListener();
-                  telephonyManager.registerTelephonyCallback(context.getMainExecutor(),callStateListener);
+                callStateListener = new CallStateListener();
+                telephonyManager.registerTelephonyCallback(context.getMainExecutor(),callStateListener);
             } else {
-                  if (Looper.myLooper() == null) {
-                    Looper.prepare();
-                  }
-                  legacyCallStateListener  = new LegacyCallStateListener();
-                  telephonyManager.listen(legacyCallStateListener, PhoneStateListener.LISTEN_CALL_STATE);
-                  Looper.loop();
+                if (handlerThread == null) {
+                    handlerThread = new HandlerThread("TelephonyManager");
+                    handlerThread.start();
+                }
+
+                // PhoneStateListener runs its callbacks on the looper of the thread that creates it,
+                // so create it on the handler thread instead of the caller's thread.
+                new Handler(handlerThread.getLooper()).post(new Runnable() {
+                    @Override
+                    public void run() {
+                        legacyCallStateListener = new LegacyCallStateListener();
+                        telephonyManager.listen(legacyCallStateListener, PhoneStateListener.LISTEN_CALL_STATE);
+                    }
+                });
             }
         }
     }
@@ -435,11 +467,6 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule implements Life
     }
 
     @ReactMethod
-    public void displayIncomingCall(String uuid, String number, String callerName) {
-        this.displayIncomingCall(uuid, number, callerName, false, null);
-    }
-
-    @ReactMethod
     public void displayIncomingCall(String uuid, String number, String callerName, boolean hasVideo) {
         this.displayIncomingCall(uuid, number, callerName, hasVideo, null);
     }
@@ -459,6 +486,7 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule implements Life
         extras.putString(EXTRA_CALLER_NAME, callerName);
         extras.putString(EXTRA_CALL_UUID, uuid);
         extras.putString(EXTRA_HAS_VIDEO, String.valueOf(hasVideo));
+        extras.putString(EXTRA_SELF_MANAGED, String.valueOf(isSelfManaged()));
         if (payload != null) {
             extras.putBundle(EXTRA_PAYLOAD, payload);
         }
@@ -484,11 +512,6 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule implements Life
     }
 
     @ReactMethod
-    public void startCall(String uuid, String number, String callerName) {
-        this.startCall(uuid, number, callerName, false, null);
-    }
-
-    @ReactMethod
     public void startCall(String uuid, String number, String callerName, boolean hasVideo) {
         this.startCall(uuid, number, callerName, hasVideo, null);
     }
@@ -509,6 +532,7 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule implements Life
         callExtras.putString(EXTRA_CALL_UUID, uuid);
         callExtras.putString(EXTRA_CALL_NUMBER, number);
         callExtras.putString(EXTRA_HAS_VIDEO, String.valueOf(hasVideo));
+        callExtras.putString(EXTRA_SELF_MANAGED, String.valueOf(isSelfManaged()));
         if (payload != null) {
             callExtras.putBundle(EXTRA_PAYLOAD, payload);
         }
@@ -686,12 +710,16 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule implements Life
 
     @ReactMethod
     public void getInitialEvents(Promise promise) {
-        promise.resolve(delayedEvents);
+        synchronized (delayedEvents) {
+            promise.resolve(Arguments.makeNativeArray(delayedEvents));
+        }
     }
 
     @ReactMethod
     public void clearInitialEvents() {
-        delayedEvents = new WritableNativeArray();
+        synchronized (delayedEvents) {
+            delayedEvents.clear();
+        }
     }
 
     @ReactMethod
@@ -1018,7 +1046,7 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule implements Life
             return;
         }
 
-        if (Build.MANUFACTURER.equalsIgnoreCase("Samsung") || Build.MANUFACTURER.equalsIgnoreCase("OnePlus")) {
+        if (Build.MANUFACTURER.equalsIgnoreCase("Samsung") || Build.MANUFACTURER.equalsIgnoreCase("OnePlus") || Build.MANUFACTURER.equalsIgnoreCase("Oppo")) {
             Intent intent = new Intent();
             intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_MULTIPLE_TASK);
             intent.setComponent(new ComponentName("com.android.server.telecom",
@@ -1155,14 +1183,12 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule implements Life
         if (isBoundToJS && hasListeners) {
             this.reactContext.getJSModule(RCTDeviceEventEmitter.class).emit(eventName, params);
         } else {
-            WritableMap data = Arguments.createMap();
-            if (params == null) {
-                params = Arguments.createMap();
+            Map<String, Object> data = new HashMap<>();
+            data.put("name", eventName);
+            data.put("data", params == null ? new HashMap<String, Object>() : params.toHashMap());
+            synchronized (delayedEvents) {
+                delayedEvents.add(data);
             }
-
-            data.putString("name", eventName);
-            data.putMap("data", params);
-            delayedEvents.pushMap(data);
         }
     }
 

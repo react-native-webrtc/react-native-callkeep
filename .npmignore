@@ -1,5 +1,7 @@
-example/
 node_modules/
 .idea/
 .github/
 docs/
+tests/
+scripts/
+example/

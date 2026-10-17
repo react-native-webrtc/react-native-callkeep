@@ -21,6 +21,7 @@ For more information about **ConnectionService** on Android, please see [Android
   - [API](#Api)
   - [Example](#Example)
 - [PushKit](#PushKit)
+- [iOS 27: scene life cycle](#iOS-27-scene-life-cycle)
 - [Android 11](#Android-11)
 - [Debug](#Debug)
 - [Troubleshooting](#Troubleshooting)
@@ -743,13 +744,16 @@ RNCallKeep.registerAndroidEvents();
 | [answerCall](#answerCall)                                       |  ✅  |   ✅    |
 | [endCall](#endCall)                                             |  ✅  |   ✅    |
 | [didActivateAudioSession](#didActivateAudioSession)             |  ✅  |   ✅    |
+| [didDeactivateAudioSession](#didDeactivateAudioSession)         |  ✅  |   ❌    |
 | [didDisplayIncomingCall](#didDisplayIncomingCall)               |  ✅  |   ✅    |
 | [didPerformSetMutedCallAction](#didPerformSetMutedCallAction)   |  ✅  |   ✅    |
 | [didToggleHoldCallAction](#didToggleHoldCallAction)             |  ✅  |   ✅    |
 | [didPerformDTMFAction](#didPerformDTMFAction)                   |  ✅  |   ✅    |
+| [didResetProvider](#didResetProvider)                           |  ✅  |   ❌    |
 | [didLoadWithEvents](#didLoadWithEvents)                         |  ✅  |   ❌    |
 | [showIncomingCallUi](#showIncomingCallUi)                       |  ❌  |   ✅    |
 | [silenceIncomingCall](#silenceIncomingCall)                     |  ❌  |   ✅    |
+| [createIncomingConnectionFailed](#createIncomingConnectionFailed) |  ❌  |   ✅    |
 | [checkReachability](#checkReachability)                         |  ❌  |   ✅    |
 | [didChangeAudioRoute](#didChangeAudioRoute)                     |  ✅  |   ✅    |
 | [onHasActiveCall](#onHasActiveCall)                             |  ❌  |   ✅    |
@@ -810,6 +814,18 @@ The `AudioSession` has been activated by **RNCallKeep**.
 RNCallKeep.addEventListener('didActivateAudioSession', () => {
   // you might want to do following things when receiving this event:
   // - Start playing ringback if it is an outgoing call
+});
+```
+
+### didDeactivateAudioSession
+
+iOS only.
+
+The `AudioSession` has been deactivated by **RNCallKeep**.
+
+```js
+RNCallKeep.addEventListener('didDeactivateAudioSession', () => {
+
 });
 ```
 
@@ -900,6 +916,19 @@ RNCallKeep.addEventListener('didPerformDTMFAction', ({ digits, callUUID }) => {
   - The digits that emit the dtmf tone
 - `callUUID` (string)
   - The UUID of the call.
+
+### didResetProvider
+
+iOS only.
+
+The underlying native provider for RNCallKeep has been reset.
+
+```js
+RNCallKeep.addEventListener('didResetProvider', () => {
+  // Likely an error has occurred, you may want to hang up all calls
+  // and log errors.
+});
+```
 
 ### didLoadWithEvents
 
@@ -1020,7 +1049,9 @@ RNCallKeep.addEventListener('onHasActiveCall', () => {
 
 ## Example
 
-A full example is available in the [example](https://github.com/react-native-webrtc/react-native-callkeep/tree/master/example) folder.
+The [example app](example/) runs every part of the library with simulated calls, on iOS and Android, from this repository's code. Its [README](example/README.md) explains what each part shows and which file to look at.
+
+A typical integration:
 
 ```javascript
 import React from 'react';
@@ -1184,6 +1215,68 @@ Since iOS 13, you'll have to report the incoming calls that wakes up your applic
 }
 ```
 
+## iOS 27: scene life cycle
+
+Apps built with the iOS 27 SDK must use the scene life cycle: without a scene delegate declared in `Info.plist`, iOS refuses to launch them ("UIScene life cycle is required for apps built with this SDK"). The React Native 0.87 template still creates its window in `AppDelegate`, so it needs this change.
+
+With scenes, iOS no longer calls the app delegate's `application(_:continue:restorationHandler:)` when the user starts a call from Recents, Contacts or Siri: it calls the scene delegate. Forward those activities to `RNCallKeep.continueUserActivity(_:)`, which sends `didReceiveStartCallAction` as before:
+
+```swift
+import UIKit
+import RNCallKeep
+
+class SceneDelegate: UIResponder, UIWindowSceneDelegate {
+  var window: UIWindow?
+
+  func scene(
+    _ scene: UIScene,
+    willConnectTo session: UISceneSession,
+    options connectionOptions: UIScene.ConnectionOptions
+  ) {
+    guard let windowScene = scene as? UIWindowScene,
+          let appDelegate = UIApplication.shared.delegate as? AppDelegate else { return }
+
+    let window = UIWindow(windowScene: windowScene)
+    self.window = window
+    appDelegate.reactNativeFactory?.startReactNative(withModuleName: "YourApp", in: window, launchOptions: nil)
+
+    // A call started from Recents, Contacts or Siri while the app was not running.
+    for userActivity in connectionOptions.userActivities {
+      RNCallKeep.continueUserActivity(userActivity)
+    }
+  }
+
+  // A call started from Recents, Contacts or Siri while the app is running.
+  func scene(_ scene: UIScene, continue userActivity: NSUserActivity) {
+    RNCallKeep.continueUserActivity(userActivity)
+  }
+}
+```
+
+In `AppDelegate`, keep creating the React Native factory in `application(_:didFinishLaunchingWithOptions:)`, but remove the window and the `startReactNative` call: the scene delegate does that now. Then declare the scene in `Info.plist`:
+
+```xml
+<key>UIApplicationSceneManifest</key>
+<dict>
+  <key>UIApplicationSupportsMultipleScenes</key>
+  <false/>
+  <key>UISceneConfigurations</key>
+  <dict>
+    <key>UIWindowSceneSessionRoleApplication</key>
+    <array>
+      <dict>
+        <key>UISceneConfigurationName</key>
+        <string>Default</string>
+        <key>UISceneDelegateClassName</key>
+        <string>$(PRODUCT_MODULE_NAME).SceneDelegate</string>
+      </dict>
+    </array>
+  </dict>
+</dict>
+```
+
+PushKit (`reportNewIncomingCall`) and a native `RNCallKeep.setup` stay in the app delegate: they don't depend on scenes. In Objective-C, the call is `[RNCallKeep continueUserActivity:userActivity]`.
+
 ## Android 11
 
 Since Android 11, your application [requires to start a foregroundService](https://developer.android.com/about/versions/11/privacy/foreground-services) in order to access the microphone in background.
@@ -1204,7 +1297,7 @@ adb logcat *:S RNCallKeep:V
 
 ## Contributing
 
-Any pull request, issue report and suggestion are highly welcome!
+Any pull request, issue report and suggestion are highly welcome! See [CONTRIBUTING.md](CONTRIBUTING.md) for how to try a change in an app and what a pull request needs, [CHANGELOG.md](CHANGELOG.md) for what changed in each release, and [SECURITY.md](SECURITY.md) to report a vulnerability privately.
 
 ## License
 

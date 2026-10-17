@@ -81,6 +81,7 @@ RCT_EXPORT_MODULE()
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
         sharedInstance = [super allocWithZone:zone];
+        sharedInstance->_delayedEvents = [NSMutableArray array];
     });
     return sharedInstance;
 }
@@ -538,7 +539,7 @@ RCT_EXPORT_METHOD(setAudioRoute: (NSString *)uuid
     }
     @catch ( NSException *e ){
         NSLog(@"[RNCallKeep][setAudioRoute] exception: %@",e);
-        reject(@"Failure to set audio route", e, nil);
+        reject(@"Failure to set audio route", e.description, nil);
     }
 }
 
@@ -555,7 +556,7 @@ RCT_EXPORT_METHOD(getAudioRoutes: (RCTPromiseResolveBlock)resolve
     }
     @catch ( NSException *e ) {
         NSLog(@"[RNCallKeep][getAudioRoutes] exception: %@",e);
-        reject(@"Failure to get audio routes", e, nil);
+        reject(@"Failure to get audio routes", e.description, nil);
     }
 }
 
@@ -608,13 +609,6 @@ RCT_EXPORT_METHOD(getAudioRoutes: (RCTPromiseResolveBlock)resolve
             NSLog(@"setCategory failed");
             [NSException raise:@"setCategory failed" format:@"error: %@", err];
         }
-    }
-
-    BOOL isCategoryActivated = [myAudioSession setActive:YES error:&err];
-    if (!isCategoryActivated)
-    {
-        NSLog(@"[RNCallKeep][getAudioInputs] setActive failed");
-        [NSException raise:@"setActive failed" format:@"error: %@", err];
     }
 
     NSArray *inputs = [myAudioSession availableInputs];
@@ -966,8 +960,13 @@ RCT_EXPORT_METHOD(getAudioRoutes: (RCTPromiseResolveBlock)resolve
 continueUserActivity:(NSUserActivity *)userActivity
  restorationHandler:(void(^)(NSArray * __nullable restorableObjects))restorationHandler
 {
+    return [RNCallKeep continueUserActivity:userActivity];
+}
+
++ (BOOL)continueUserActivity:(NSUserActivity *)userActivity
+{
 #ifdef DEBUG
-    NSLog(@"[RNCallKeep][application:continueUserActivity]");
+    NSLog(@"[RNCallKeep][continueUserActivity]");
 #endif
     INInteraction *interaction = userActivity.interaction;
     INPerson *contact;

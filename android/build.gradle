@@ -24,6 +24,11 @@ android {
         versionCode 1
         versionName "1.0"
     }
+
+    // Conditional for compatibility with AGP <4.2.
+    if (project.android.hasProperty("namespace")) {
+        namespace = "io.wazo.callkeep"
+    }
 }
 
 repositories {

@@ -1,0 +1,63 @@
+name: CI
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+
+permissions:
+  contents: read
+
+jobs:
+  js:
+    name: Typings and events
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+
+      - name: index.d.ts compiles in strict mode
+        run: npm run check:types
+
+      - name: Events match across actions.js, index.d.ts and the README
+        run: npm run check:events
+
+  package:
+    name: Package contents
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+
+      - name: What npm publish would ship
+        run: npm run check:package
+
+  podspec:
+    name: Podspec and privacy manifest
+    runs-on: ubuntu-latest
+    env:
+      LANG: en_US.UTF-8
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.3'
+
+      - name: Install CocoaPods
+        run: gem install cocoapods --no-document
+
+      - name: Podspec evaluates
+        run: pod ipc spec RNCallKeep.podspec > podspec.json
+
+      - name: Privacy manifest is a valid plist and ships in the resource bundle
+        run: |
+          python3 -c "import plistlib; plistlib.load(open('ios/PrivacyInfo.xcprivacy', 'rb'))"
+          python3 -c "import json; bundles = json.load(open('podspec.json'))['resource_bundles']; assert 'ios/PrivacyInfo.xcprivacy' in bundles['RNCallKeepPrivacyInfo'], bundles"
