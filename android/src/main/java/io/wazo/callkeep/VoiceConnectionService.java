@@ -74,6 +74,8 @@ import static io.wazo.callkeep.Constants.EXTRA_SELF_MANAGED;
 import static io.wazo.callkeep.Constants.EXTRA_DISABLE_ADD_CALL;
 import static io.wazo.callkeep.Constants.FOREGROUND_SERVICE_TYPE_MICROPHONE;
 import static io.wazo.callkeep.Constants.ACTION_ON_CREATE_CONNECTION_FAILED;
+import static io.wazo.callkeep.Constants.ACTION_DID_DISPLAY_INCOMING_CALL;
+import static io.wazo.callkeep.Constants.EXTRA_HAS_VIDEO;
 
 // @see https://github.com/kbagchiGWC/voice-quickstart-android/blob/9a2aff7fbe0d0a5ae9457b48e9ad408740dfb968/exampleConnectionService/src/main/java/com/twilio/voice/examples/connectionservice/VoiceConnectionService.java
 @TargetApi(Build.VERSION_CODES.M)
@@ -214,6 +216,13 @@ public class VoiceConnectionService extends ConnectionService {
         incomingCallConnection.setInitialized();
 
         startForegroundService();
+
+        HashMap<String, String> attributeMap = new HashMap<>();
+        attributeMap.put(EXTRA_CALL_UUID, callUUID);
+        attributeMap.put(EXTRA_CALL_NUMBER, number.getSchemeSpecificPart());
+        attributeMap.put(EXTRA_CALLER_NAME, name);
+        attributeMap.put(EXTRA_HAS_VIDEO, extra.getString(EXTRA_HAS_VIDEO));
+        sendCallRequestToActivity(ACTION_DID_DISPLAY_INCOMING_CALL, attributeMap, true);
 
         if (timeout != null) {
             this.checkForAppReachability(callUUID, timeout);
