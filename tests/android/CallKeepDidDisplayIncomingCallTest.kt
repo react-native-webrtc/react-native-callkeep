@@ -39,6 +39,7 @@ class CallKeepDidDisplayIncomingCallTest {
   }
 
   @After fun tearDown() {
+    if (!::module.isInitialized) return // skipped before Android 8
     instrumentation.runOnMainSync {
       calls.forEach { VoiceConnectionService.getConnection(it)?.onReject() }
       module.clearInitialEvents()

@@ -444,6 +444,8 @@ _This feature is available only on Android._
 Update the audio route of Audio Service on Android with a `routeSpeaker` boolean value (`true` if speaker need on, `false` otherwise).
 When Phone call is active, Android control the audio via connection service. so this function help to toggle the audio to Speaker or wired/ear-piece or vice-versa 
 
+Needs Android 8 (API 26) or later: on older versions it does nothing.
+
 ```js
 RNCallKeep.toggleAudioRouteSpeaker(uuid, true);
 ```
@@ -480,6 +482,8 @@ await RNCallKeep.setAudioRoute(uuid, routeName);
   - uuid of the current call.
 - `routeName`: String
   - AudioRoute.name. 
+
+On Android, the promise is rejected when no call has this `uuid`, and before Android 8 (API 26), which has no API to change a call's audio route.
 
 ### supportConnectionService
 

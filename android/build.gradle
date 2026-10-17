@@ -1,14 +1,3 @@
-buildscript {
-    repositories {
-        mavenCentral()
-        google()
-    }
-
-    dependencies {
-        classpath 'com.android.tools.build:gradle:3.0.1'
-    }
-}
-
 apply plugin: 'com.android.library'
 
 def safeExtGet(prop, fallback) {
