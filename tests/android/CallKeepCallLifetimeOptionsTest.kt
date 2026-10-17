@@ -1,6 +1,7 @@
 package io.wazo.callkeep
 
 import android.app.ActivityManager
+import android.content.ComponentName
 import android.content.Context
 import android.content.pm.ServiceInfo
 import android.os.Build
@@ -21,8 +22,10 @@ import org.junit.runner.RunWith
 
 /**
  * The `foregroundService.foregroundServiceType` and `endCallsOnHostDestroy` options, through Telecom.
- * Same host setup as CallKeepForegroundServiceTest; the host manifest declares the `phoneCall` type
- * on VoiceConnectionService. Android 8+, and 10+ for the service type.
+ * Same host setup as CallKeepForegroundServiceTest. The host manifest must declare
+ * `phoneCall|microphone` on VoiceConnectionService: with `phoneCall` alone, the service starts with
+ * `phoneCall` without the option too, and the type test would prove nothing, so it asserts this.
+ * Android 8+, and 10+ for the service type.
  */
 @RunWith(AndroidJUnit4::class)
 @Suppress("DEPRECATION")
@@ -67,6 +70,10 @@ class CallKeepCallLifetimeOptionsTest {
   /** A call can ring with the `phoneCall` type alone, although the manifest also declares `microphone`. */
   @Test fun theForegroundServiceStartsWithTheGivenType() {
     assumeTrue(Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q)
+    val bothTypes = ServiceInfo.FOREGROUND_SERVICE_TYPE_PHONE_CALL or ServiceInfo.FOREGROUND_SERVICE_TYPE_MICROPHONE
+    val declared = context.packageManager
+      .getServiceInfo(ComponentName(context, VoiceConnectionService::class.java), 0).foregroundServiceType
+    assertEquals("the host must declare phoneCall|microphone on VoiceConnectionService", bothTypes, declared and bothTypes)
     val module = RNCallKeepModule.getInstance(BridgeReactContext(context), true)
     onModuleThread {
       module.setup(selfManagedOptions(foregroundServiceType = ServiceInfo.FOREGROUND_SERVICE_TYPE_PHONE_CALL))

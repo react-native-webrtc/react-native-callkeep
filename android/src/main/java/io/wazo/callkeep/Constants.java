@@ -29,5 +29,8 @@ public class Constants {
     // Can't use telecom.EXTRA_DISABLE_ADD_CALL ...
     public static final String EXTRA_DISABLE_ADD_CALL = "android.telecom.extra.DISABLE_ADD_CALL";
 
-    public static final int FOREGROUND_SERVICE_TYPE_MICROPHONE = 128;
+    // The id of the foreground service's notification. FOREGROUND_SERVICE_TYPE_MICROPHONE is the same
+    // value under its historical name, kept for apps that use it: it isn't a service type here.
+    public static final int FOREGROUND_SERVICE_NOTIFICATION_ID = 128;
+    public static final int FOREGROUND_SERVICE_TYPE_MICROPHONE = FOREGROUND_SERVICE_NOTIFICATION_ID;
 }

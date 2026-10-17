@@ -72,7 +72,7 @@ import static io.wazo.callkeep.Constants.EXTRA_CALL_NUMBER_SCHEMA;
 import static io.wazo.callkeep.Constants.EXTRA_CALL_UUID;
 import static io.wazo.callkeep.Constants.EXTRA_SELF_MANAGED;
 import static io.wazo.callkeep.Constants.EXTRA_DISABLE_ADD_CALL;
-import static io.wazo.callkeep.Constants.FOREGROUND_SERVICE_TYPE_MICROPHONE;
+import static io.wazo.callkeep.Constants.FOREGROUND_SERVICE_NOTIFICATION_ID;
 import static io.wazo.callkeep.Constants.ACTION_ON_CREATE_CONNECTION_FAILED;
 import static io.wazo.callkeep.Constants.ACTION_DID_DISPLAY_INCOMING_CALL;
 import static io.wazo.callkeep.Constants.EXTRA_HAS_VIDEO;
@@ -362,10 +362,10 @@ public class VoiceConnectionService extends ConnectionService {
             // Without a type, Android 10 and later start the service with every type its manifest
             // entry declares.
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q && foregroundSettings.hasKey("foregroundServiceType")) {
-                startForeground(FOREGROUND_SERVICE_TYPE_MICROPHONE, notification,
+                startForeground(FOREGROUND_SERVICE_NOTIFICATION_ID, notification,
                     foregroundSettings.getInt("foregroundServiceType"));
             } else {
-                startForeground(FOREGROUND_SERVICE_TYPE_MICROPHONE, notification);
+                startForeground(FOREGROUND_SERVICE_NOTIFICATION_ID, notification);
             }
         } catch (Exception e) {
             Log.w(TAG, "[VoiceConnectionService] Can't start foreground service : " + e.toString());

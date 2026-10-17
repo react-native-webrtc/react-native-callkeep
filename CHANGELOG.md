@@ -13,7 +13,7 @@ are not listed here.
 
 ### Added
 
-- **Android:** `foregroundService.foregroundServiceType` sets the types the foreground service starts with (Android 10 and later), as a mask of `ServiceInfo.FOREGROUND_SERVICE_TYPE_*` values. An app can ring with `phoneCall` alone while its manifest also declares `microphone`. Without it, the service still starts with every type the manifest declares.
+- **Android:** `foregroundService.foregroundServiceType` sets the types the foreground service starts with (Android 10 and later), as a mask of `ServiceInfo.FOREGROUND_SERVICE_TYPE_*` values. An app can ring with `phoneCall` alone while its manifest also declares `microphone`; CallKeep keeps the types for the whole call, so adding `microphone` after the answer is up to the app's native code (see the option in `docs/setup.md`). Without the option, the service still starts with every type the manifest declares.
 - **Android:** `endCallsOnHostDestroy: false` keeps the calls, and the app's process, when the React activity is destroyed, for calls that must outlive it (owned by native code, for instance). By default CallKeep still ends every call and kills the process.
 
 ### Changed
