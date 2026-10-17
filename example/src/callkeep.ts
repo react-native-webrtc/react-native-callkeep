@@ -1,7 +1,7 @@
 import { PermissionsAndroid, Platform } from 'react-native';
 import type { Permission } from 'react-native';
 
-// The options passed to RNCallKeep.setup(). The README's setup section describes every key.
+// The options passed to RNCallKeep.setup(). docs/setup.md describes every key.
 export function setupOptions(selfManaged: boolean) {
   return {
     ios: {

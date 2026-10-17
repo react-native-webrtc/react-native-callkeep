@@ -57,7 +57,7 @@ In your own app you install the library from npm instead (`npm install react-nat
 
 ## What it leaves out
 
-- **Calls that arrive while the app is in the background or not running.** JavaScript doesn't run then (a `setTimeout` waits until the app comes back), so apps report those calls natively when a push arrives: a VoIP push on iOS, with `RNCallKeep.reportNewIncomingCall` in the app delegate (see the main README's PushKit section), and a high-priority FCM message on Android. That needs a push server and certificates, which the example doesn't have.
+- **Calls that arrive while the app is in the background or not running.** The app's JavaScript timers don't run then (a `setTimeout` waits until the app comes back), so apps report those calls when a push wakes them: a VoIP push on iOS, handled natively with `RNCallKeep.reportNewIncomingCall` in the app delegate, and a high-priority FCM message on Android, whose background handler can call `displayIncomingCall` (see [incoming calls when the app isn't running](../docs/guides/background-calls.md)). That needs a push server and certificates, which the example doesn't have.
 - **The incoming-call notification in self-managed mode.** In the background, a self-managed app has to show its own full-screen notification when `showIncomingCallUi` arrives (for example with a notification library). The example only shows the call inside the app.
 - **Media.** Connect your WebRTC or SIP stack where the example marks calls active (`answerCall`, an outgoing call that connects), and on iOS start the audio on `didActivateAudioSession`.
 

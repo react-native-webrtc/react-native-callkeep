@@ -11,6 +11,10 @@ are not listed here.
 
 ## [Unreleased]
 
+### Changed
+
+- **Docs:** The README is now short (what the library does, compatibility, installation, a quick start), and the documentation moved to `docs/`: setup and options, the API reference, events, guides (calls when the app isn't running, Android self-managed mode, the iOS 27 scene life cycle, Expo), troubleshooting and the migration guides. Fixed on the way: the method table's return types (most call methods return nothing, not a promise), missing methods (`sendDTMF`, `getAudioRoutes`, `setAudioRoute`), the `CONSTANTS` import example, the `foregroundService` and `notificationIcon` options, the claim that self-managed mode needs `READ_CALL_LOG` (the library doesn't use it), and the claim that nothing works on emulators (Android emulators do).
+
 ### Fixed
 
 - The npm package no longer includes the release notes file (`notes.md`) and an IntelliJ project file (`android/react-native-callkeep.iml`), which 4.4.0 shipped by mistake.

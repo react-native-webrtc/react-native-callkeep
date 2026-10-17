@@ -35,6 +35,8 @@
 	</dict>
 	<key>NSMicrophoneUsageDescription</key>
 	<string>CallKeep Example uses the microphone for calls.</string>
+	<key>RCTNewArchEnabled</key>
+	<true/>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>
