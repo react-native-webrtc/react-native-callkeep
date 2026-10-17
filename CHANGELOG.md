@@ -19,6 +19,7 @@ are not listed here.
 
 ### Fixed
 
+- **Android:** `didDisplayIncomingCall` is sent for calls shown with `displayIncomingCall`, once Telecom has created the call, as on iOS. It was only sent by the native `reportNewIncomingCall`, right away, even when the call was then refused or ignored. Its fields now follow the documentation: `localizedCallerName` (`name` is kept), `hasVideo` as `"1"` or `"0"` (it was `"true"` or `"false"`), `fromPushKit` as `"0"`, and the `payload` of `reportNewIncomingCall` or of the native `displayIncomingCall`. ([#672](https://github.com/react-native-webrtc/react-native-callkeep/pull/672), @RamsayRomero; fixes [#671](https://github.com/react-native-webrtc/react-native-callkeep/issues/671))
 - The npm package no longer includes the release notes file (`notes.md`) and an IntelliJ project file (`android/react-native-callkeep.iml`), which 4.4.0 shipped by mistake.
 
 ## [4.4.0] - 2026-10-17

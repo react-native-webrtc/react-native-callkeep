@@ -103,7 +103,10 @@ RNCallKeep.addEventListener('didDeactivateAudioSession', () => {
 
 ### didDisplayIncomingCall
 
-Callback for `RNCallKeep.displayIncomingCall`
+Sent for an incoming call reported with `displayIncomingCall`, or from native code with `reportNewIncomingCall` (for example when a push arrives):
+
+- On iOS, once CallKit has accepted or refused the call. `error` is set when it refused.
+- On Android, once Telecom has created the call, so methods that act on the call work from this event. If Android refuses the call, you get [`createIncomingConnectionFailed`](#createincomingconnectionfailed) instead.
 
 ```js
 RNCallKeep.addEventListener('didDisplayIncomingCall', ({ error, callUUID, handle, localizedCallerName, hasVideo, fromPushKit, payload }) => {
@@ -122,14 +125,17 @@ RNCallKeep.addEventListener('didDisplayIncomingCall', ({ error, callUUID, handle
   - Phone number of the caller
 - `localizedCallerName` (string)
   - Name of the caller to be displayed on the native UI
+- `name` (string)
+  - Android only. The same as `localizedCallerName`, for apps written when only `reportNewIncomingCall` sent this event.
 - `hasVideo` (string)
   - `1` (video enabled)
   - `0` (video not enabled)
 - `fromPushKit` (string)
   - `1` (call triggered from PushKit)
-  - `0` (call not triggered from PushKit)
-- `payload` (object)
-  - VOIP push payload.
+  - `0` (call not triggered from PushKit, and always on Android)
+- `payload` (object or string)
+  - iOS: the VoIP push payload passed to `reportNewIncomingCall`.
+  - Android: the payload passed to the native `reportNewIncomingCall` (a string) or `displayIncomingCall` (a `Bundle`, sent as an object). Absent when there is none.
 
 ### didPerformSetMutedCallAction
 

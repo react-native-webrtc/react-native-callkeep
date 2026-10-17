@@ -73,6 +73,7 @@ import com.facebook.react.modules.permissions.PermissionsModule;
 import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -104,6 +105,7 @@ import static io.wazo.callkeep.Constants.ACTION_SHOW_INCOMING_CALL_UI;
 import static io.wazo.callkeep.Constants.ACTION_ON_SILENCE_INCOMING_CALL;
 import static io.wazo.callkeep.Constants.ACTION_ON_CREATE_CONNECTION_FAILED;
 import static io.wazo.callkeep.Constants.ACTION_DID_CHANGE_AUDIO_ROUTE;
+import static io.wazo.callkeep.Constants.ACTION_DID_DISPLAY_INCOMING_CALL;
 
 // @see https://github.com/kbagchiGWC/voice-quickstart-android/blob/9a2aff7fbe0d0a5ae9457b48e9ad408740dfb968/exampleConnectionService/src/main/java/com/twilio/voice/examples/connectionservice/VoiceConnectionServiceActivity.java
 public class RNCallKeepModule extends ReactContextBaseJavaModule implements LifecycleEventListener {
@@ -138,6 +140,9 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule implements Life
     private final List<Map<String, Object>> delayedEvents = new ArrayList<>();
     private boolean hasListeners = false;
     private boolean hasActiveCall = false;
+    // Payloads of incoming calls, by call UUID, until Telecom creates the call and
+    // didDisplayIncomingCall carries them: a String from reportNewIncomingCall, or a Bundle.
+    private static final Map<String, Object> incomingCallPayloads = Collections.synchronizedMap(new HashMap<>());
 
     public static RNCallKeepModule getInstance(ReactApplicationContext reactContext, boolean realContext) {
         if (instance == null) {
@@ -194,18 +199,11 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule implements Life
     public void reportNewIncomingCall(String uuid, String number, String callerName, boolean hasVideo, String payload) {
         Log.d(TAG, "[RNCallKeepModule] reportNewIncomingCall, uuid: " + uuid + ", number: " + number + ", callerName: " + callerName);
 
-        this.displayIncomingCall(uuid, number, callerName, hasVideo);
-
-        // Send event to JS
-        WritableMap args = Arguments.createMap();
-        args.putString("handle", number);
-        args.putString("callUUID", uuid);
-        args.putString("name", callerName);
-        args.putString("hasVideo", String.valueOf(hasVideo));
         if (payload != null) {
-            args.putString("payload", payload);
+            incomingCallPayloads.put(uuid, payload);
         }
-        sendEventToJS("RNCallKeepDidDisplayIncomingCall", args);
+        // didDisplayIncomingCall is sent once Telecom has created the call.
+        this.displayIncomingCall(uuid, number, callerName, hasVideo);
     }
 
     public void startObserving() {
@@ -474,6 +472,7 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule implements Life
     public void displayIncomingCall(String uuid, String number, String callerName, boolean hasVideo, @Nullable Bundle payload) {
         if (!isConnectionServiceAvailable() || !hasPhoneAccount()) {
             Log.w(TAG, "[RNCallKeepModule] displayIncomingCall ignored due to no ConnectionService or no phone account");
+            incomingCallPayloads.remove(uuid);
             return;
         }
 
@@ -489,6 +488,7 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule implements Life
         extras.putString(EXTRA_SELF_MANAGED, String.valueOf(isSelfManaged()));
         if (payload != null) {
             extras.putBundle(EXTRA_PAYLOAD, payload);
+            incomingCallPayloads.put(uuid, payload);
         }
         this.listenToNativeCallsState();
         telecomManager.addNewIncomingCall(handle, extras);
@@ -1246,6 +1246,7 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule implements Life
             intentFilter.addAction(ACTION_ON_SILENCE_INCOMING_CALL);
             intentFilter.addAction(ACTION_ON_CREATE_CONNECTION_FAILED);
             intentFilter.addAction(ACTION_DID_CHANGE_AUDIO_ROUTE);
+            intentFilter.addAction(ACTION_DID_DISPLAY_INCOMING_CALL);
 
             if (this.reactContext != null) {
                 LocalBroadcastManager.getInstance(this.reactContext).registerReceiver(voiceBroadcastReceiver, intentFilter);
@@ -1385,7 +1386,25 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule implements Life
                     args.putString("name", attributeMap.get(EXTRA_CALLER_NAME));
                     sendEventToJS("RNCallKeepOnSilenceIncomingCall", args);
                     break;
+                case ACTION_DID_DISPLAY_INCOMING_CALL:
+                    String callUUID = attributeMap.get(EXTRA_CALL_UUID);
+                    args.putString("callUUID", callUUID);
+                    args.putString("handle", attributeMap.get(EXTRA_CALL_NUMBER));
+                    args.putString("localizedCallerName", attributeMap.get(EXTRA_CALLER_NAME));
+                    // reportNewIncomingCall used to send this event with the caller's name as `name`.
+                    args.putString("name", attributeMap.get(EXTRA_CALLER_NAME));
+                    args.putString("hasVideo", Boolean.parseBoolean(attributeMap.get(EXTRA_HAS_VIDEO)) ? "1" : "0");
+                    args.putString("fromPushKit", "0");
+                    Object payload = incomingCallPayloads.remove(callUUID);
+                    if (payload instanceof Bundle) {
+                        args.putMap("payload", Arguments.fromBundle((Bundle) payload));
+                    } else if (payload != null) {
+                        args.putString("payload", payload.toString());
+                    }
+                    sendEventToJS("RNCallKeepDidDisplayIncomingCall", args);
+                    break;
                 case ACTION_ON_CREATE_CONNECTION_FAILED:
+                    incomingCallPayloads.remove(attributeMap.get(EXTRA_CALL_UUID));
                     args.putString("handle", attributeMap.get(EXTRA_CALL_NUMBER));
                     args.putString("callUUID", attributeMap.get(EXTRA_CALL_UUID));
                     args.putString("name", attributeMap.get(EXTRA_CALLER_NAME));
