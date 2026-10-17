@@ -16,6 +16,8 @@ Pod::Spec.new do |s|
   s.platform            = :ios, (defined?(min_ios_version_supported) ? min_ios_version_supported : "8.0")
   s.source_files        = "ios/RNCallKeep/*.{h,m}"
   s.dependency 'React'
+  # Lets a Swift AppDelegate or SceneDelegate `import RNCallKeep` without a bridging header.
+  s.pod_target_xcconfig = { 'DEFINES_MODULE' => 'YES' }
   s.resource_bundles = {
     'RNCallKeepPrivacyInfo' => ['ios/PrivacyInfo.xcprivacy'],
   }
