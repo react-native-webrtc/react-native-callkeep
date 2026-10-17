@@ -15,6 +15,7 @@ These changes will ship as 4.4.0. They include everything tagged as 4.3.17 on 20
 
 ### Added
 
+- **iOS:** `RNCallKeep.continueUserActivity(_:)`, for apps with a scene life cycle, which iOS 27 requires: forward the scene delegate's user activities to it so calls started from Recents, Contacts or Siri still send `didReceiveStartCallAction`. The pod now defines a module, so Swift code can `import RNCallKeep`. The README explains the scene setup.
 - **Docs:** `CONTRIBUTING.md` (how to try a change in an app, what a pull request needs), `SECURITY.md` (private vulnerability reporting), this changelog, and every contributor in `AUTHORS`.
 - **iOS:** Privacy manifest (`PrivacyInfo.xcprivacy`, UserDefaults reason CA92.1, no collected data) shipped through a CocoaPods resource bundle. The podspec now uses React Native's minimum iOS version when available. ([#770](https://github.com/react-native-webrtc/react-native-callkeep/pull/770), @ujeon, follow-up by @sboily)
 

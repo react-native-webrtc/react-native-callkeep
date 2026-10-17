@@ -27,6 +27,11 @@
 continueUserActivity:(NSUserActivity *)userActivity
   restorationHandler:(void(^)(NSArray * __nullable restorableObjects))restorationHandler;
 
+// For apps with a scene life cycle, which iOS 27 requires: call it from the scene delegate's
+// scene(_:continue:), and with connectionOptions.userActivities when a scene connects.
+// Sends didReceiveStartCallAction for a call started from Recents, Contacts or Siri.
++ (BOOL)continueUserActivity:(NSUserActivity *)userActivity NS_SWIFT_NAME(continueUserActivity(_:));
+
 + (void)reportNewIncomingCall:(NSString *)uuidString
                        handle:(NSString *)handle
                    handleType:(NSString *)handleType

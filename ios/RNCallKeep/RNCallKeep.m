@@ -965,8 +965,13 @@ RCT_EXPORT_METHOD(getAudioRoutes: (RCTPromiseResolveBlock)resolve
 continueUserActivity:(NSUserActivity *)userActivity
  restorationHandler:(void(^)(NSArray * __nullable restorableObjects))restorationHandler
 {
+    return [RNCallKeep continueUserActivity:userActivity];
+}
+
++ (BOOL)continueUserActivity:(NSUserActivity *)userActivity
+{
 #ifdef DEBUG
-    NSLog(@"[RNCallKeep][application:continueUserActivity]");
+    NSLog(@"[RNCallKeep][continueUserActivity]");
 #endif
     INInteraction *interaction = userActivity.interaction;
     INPerson *contact;
