@@ -1232,7 +1232,7 @@ adb logcat *:S RNCallKeep:V
 
 ## Contributing
 
-Any pull request, issue report and suggestion are highly welcome!
+Any pull request, issue report and suggestion are highly welcome! See [CONTRIBUTING.md](CONTRIBUTING.md) for how to try a change in an app and what a pull request needs, [CHANGELOG.md](CHANGELOG.md) for what changed in each release, and [SECURITY.md](SECURITY.md) to report a vulnerability privately.
 
 ## License
 
