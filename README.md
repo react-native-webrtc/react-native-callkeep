@@ -752,6 +752,7 @@ RNCallKeep.registerAndroidEvents();
 | [didLoadWithEvents](#didLoadWithEvents)                         |  ✅  |   ❌    |
 | [showIncomingCallUi](#showIncomingCallUi)                       |  ❌  |   ✅    |
 | [silenceIncomingCall](#silenceIncomingCall)                     |  ❌  |   ✅    |
+| [createIncomingConnectionFailed](#createIncomingConnectionFailed) |  ❌  |   ✅    |
 | [checkReachability](#checkReachability)                         |  ❌  |   ✅    |
 | [didChangeAudioRoute](#didChangeAudioRoute)                     |  ✅  |   ✅    |
 | [onHasActiveCall](#onHasActiveCall)                             |  ❌  |   ✅    |
