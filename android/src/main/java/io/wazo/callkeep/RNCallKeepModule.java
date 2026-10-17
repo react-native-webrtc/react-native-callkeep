@@ -365,7 +365,8 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule implements Life
         int permissionCheck = ContextCompat.checkSelfPermission(context, Manifest.permission.READ_PHONE_STATE);
 
         if (permissionCheck == PackageManager.PERMISSION_GRANTED) {
-                return telecomManager.isInManagedCall();
+            // Before Android 8 there are no self-managed calls: every call is a managed one.
+            return Build.VERSION.SDK_INT >= Build.VERSION_CODES.O ? telecomManager.isInManagedCall() : telecomManager.isInCall();
         }
         return false;
     }
@@ -544,7 +545,12 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule implements Life
 
         Log.d(TAG, "[RNCallKeepModule] startCall, uuid: " + uuid);
         this.listenToNativeCallsState();
-        telecomManager.placeCall(uri, extras);
+        try {
+            telecomManager.placeCall(uri, extras);
+        } catch (SecurityException e) {
+            // hasPermissions() is checked above, but a permission can be revoked at any time.
+            Log.w(TAG, "[RNCallKeepModule] startCall failed: " + e.getMessage());
+        }
     }
 
     @ReactMethod
@@ -562,7 +568,7 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule implements Life
         }
         Context context = this.getAppContext();
         AudioManager audioManager = (AudioManager) context.getSystemService(context.AUDIO_SERVICE);
-        audioManager.setMode(0);
+        audioManager.setMode(AudioManager.MODE_NORMAL);
         conn.onDisconnect();
         this.stopListenToNativeCallsState();
         this.hasActiveCall = false;
@@ -705,7 +711,14 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule implements Life
         }
 
         boolean hasSim = telephonyManager.getSimState() != TelephonyManager.SIM_STATE_ABSENT;
-        boolean hasDefaultAccount = telecomManager.getDefaultOutgoingPhoneAccount("tel") != null;
+        boolean hasDefaultAccount;
+        try {
+            hasDefaultAccount = telecomManager.getDefaultOutgoingPhoneAccount("tel") != null;
+        } catch (SecurityException e) {
+            // Without READ_PHONE_STATE there is no way to tell: don't ask the user to change it.
+            Log.w(TAG, "[RNCallKeepModule] checkDefaultPhoneAccount: " + e.getMessage());
+            hasDefaultAccount = true;
+        }
 
         promise.resolve(!hasSim || hasDefaultAccount);
     }
@@ -850,6 +863,10 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule implements Life
             Log.w(TAG, "[RNCallKeepModule] toggleAudioRouteSpeaker ignored because no connection found, uuid: " + uuid);
             return;
         }
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
+            Log.w(TAG, "[RNCallKeepModule] toggleAudioRouteSpeaker ignored: Connection.setAudioRoute needs Android 8");
+            return;
+        }
         if (routeSpeaker) {
             conn.setAudioRoute(CallAudioState.ROUTE_SPEAKER);
         } else {
@@ -862,6 +879,11 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule implements Life
         try {
             VoiceConnection conn = (VoiceConnection) VoiceConnectionService.getConnection(uuid);
             if (conn == null) {
+                promise.reject("SetAudioRoute", "No call found with UUID " + uuid);
+                return;
+            }
+            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
+                promise.reject("SetAudioRoute", "Setting the audio route needs Android 8 (API 26) or later");
                 return;
             }
             if(audioRoute.equals("Bluetooth")) {
