@@ -1,0 +1,36 @@
+name: Stale issues
+
+# Issue policy (see CONTRIBUTING.md): an issue with no activity for two years is marked stale,
+# then closed 30 days later unless someone comments. Pull requests are not affected.
+on:
+  schedule:
+    - cron: '30 3 * * *'
+  workflow_dispatch:
+
+permissions:
+  actions: write  # the action keeps its progress between runs in the Actions cache
+  issues: write
+
+jobs:
+  stale:
+    name: Mark and close stale issues
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/stale@v11
+        with:
+          days-before-issue-stale: 730
+          days-before-issue-close: 30
+          days-before-pr-stale: -1
+          days-before-pr-close: -1
+          stale-issue-label: stale
+          exempt-issue-labels: 'help wanted,good first issue'
+          close-issue-reason: not_planned
+          operations-per-run: 500
+          stale-issue-message: >
+            This issue has had no activity for two years, so it will be closed in 30 days.
+            If it still happens with the latest release, please comment with your
+            react-native-callkeep, React Native and OS versions, and it will stay open.
+          close-issue-message: >
+            Closed after two years without activity (see the issue policy in CONTRIBUTING.md).
+            If it still happens with the latest release, please open a new issue with the
+            details and a link to this one.
