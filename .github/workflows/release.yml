@@ -41,14 +41,15 @@ jobs:
             exit 1
           fi
 
+      # Written outside the checkout, so npm doesn't pack it with the package.
       - name: Release notes from CHANGELOG.md
         run: |
           awk -v v="$GITHUB_REF_NAME" '
             index($0, "## [" v "]") == 1 { found = 1; next }
             found && /^## \[/ { exit }
             found { print }
-          ' CHANGELOG.md > notes.md
-          if ! grep -q '[^[:space:]]' notes.md; then
+          ' CHANGELOG.md > "$RUNNER_TEMP/notes.md"
+          if ! grep -q '[^[:space:]]' "$RUNNER_TEMP/notes.md"; then
             echo "::error::CHANGELOG.md has no section for $GITHUB_REF_NAME"
             exit 1
           fi
@@ -64,7 +65,7 @@ jobs:
       - name: Draft the GitHub release
         env:
           GH_TOKEN: ${{ github.token }}
-        run: gh release create "$GITHUB_REF_NAME" --draft --title "$GITHUB_REF_NAME" --notes-file notes.md --verify-tag
+        run: gh release create "$GITHUB_REF_NAME" --draft --title "$GITHUB_REF_NAME" --notes-file "$RUNNER_TEMP/notes.md" --verify-tag
 
       - name: Next steps
         run: |
