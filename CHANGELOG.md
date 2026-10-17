@@ -11,7 +11,7 @@ are not listed here.
 
 ## [Unreleased]
 
-## [4.5.0] - 2026-10-18
+## [4.5.0] - 2026-10-17
 
 On Android, calls now outlive the app's activity, as in other calling apps: read the first *Changed* entry if your app relied on calls ending with it. Native code can now set CallKeep up and show calls on Android, and observe its events on iOS, before React Native runs.
 
