@@ -9,7 +9,7 @@ Pod::Spec.new do |s|
   s.homepage            = package['homepage']
   s.license             = package['license']
   s.author              = package['author']
-  s.source              = { :git => package['repository']['url'], :tag => "v#{s.version}" }
+  s.source              = { :git => package['repository']['url'], :tag => s.version.to_s }
   s.requires_arc        = true
   # React Native raises the pod's target to its minimum iOS version after install, but not the
   # privacy resource bundle target, which Xcode 27 rejects below iOS 15.

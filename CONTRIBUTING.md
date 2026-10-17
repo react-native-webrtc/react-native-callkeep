@@ -94,6 +94,28 @@ There is no simulator-only shortcut for calls, so tell us in the pull request wh
 - **Don't break the public API**: if a method's arguments, return value or an event's payload must change, discuss it in an issue first.
 - **Allow edits by maintainers** on your pull request, so small fixes can be pushed without another round trip.
 
+## Releasing (maintainers)
+
+1. In a pull request, set the new version in `package.json`, and in `CHANGELOG.md` turn `[Unreleased]` into the new version and date: keep an empty `[Unreleased]` above it, and update the links at the bottom.
+2. Merge it, then tag the merge commit on `master` with the bare version and push the tag:
+
+   ```bash
+   git tag 4.4.0 <merge commit> && git push origin 4.4.0
+   ```
+
+3. The Release workflow checks that the tag matches `package.json` and is on `master`, runs `npm run check`, **stages** the version on npm (with provenance), and drafts the GitHub release from the changelog section.
+4. Approve the staged version with your 2FA, which publishes it:
+
+   ```bash
+   npm stage list react-native-callkeep    # shows the stage id
+   npm stage approve <stage-id>
+   ```
+
+   (or approve it on npmjs.com). To drop it instead: `npm stage reject <stage-id>`.
+5. Publish the draft GitHub release.
+
+The package's settings on npmjs.com trust this repository's `release.yml` (Trusted Publishing), so no npm token is stored in GitHub, and that trust only allows staging: nothing reaches npm users without a maintainer's approval.
+
 ## Reporting Security Issues
 
 Please don't open a public issue: see [SECURITY.md](SECURITY.md).

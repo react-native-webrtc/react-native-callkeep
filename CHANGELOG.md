@@ -11,7 +11,9 @@ are not listed here.
 
 ## [Unreleased]
 
-These changes will ship as 4.4.0. They include everything tagged as 4.3.17 on 2026-09-10, which was never published to npm.
+## [4.4.0] - 2026-10-17
+
+Includes everything tagged as 4.3.17 on 2026-09-10, which was never published to npm.
 
 ### Added
 
@@ -22,6 +24,7 @@ These changes will ship as 4.4.0. They include everything tagged as 4.3.17 on 20
 
 ### Changed
 
+- Releases are staged on npm by GitHub Actions, with provenance, when a tag named after the version is pushed (`4.4.0`, no `v` prefix), and published once a maintainer approves them. The podspec's source tag follows that format.
 - **iOS:** The library no longer sets a preferred sample rate (44.1 kHz) and IO buffer duration (5 ms) on the call's audio session. On an iPhone 15 Pro Max with iOS 27 the hardware rate stays 48 kHz either way, and the IO buffer goes from 5 ms to iOS's default (about 23 ms). If your audio stack needs a short buffer and doesn't set one itself, call `AVAudioSession.sharedInstance().setPreferredIOBufferDuration(_:)` in your app. ([#858](https://github.com/react-native-webrtc/react-native-callkeep/pull/858), @fhilleriteau-fdi)
 - **Docs:** `didDeactivateAudioSession`, `didResetProvider` and `createIncomingConnectionFailed` added to the events table. ([#804](https://github.com/react-native-webrtc/react-native-callkeep/pull/804), @davidliu)
 
@@ -639,7 +642,8 @@ Version 3.0.5 was tagged (`v3.0.5`) but not published to npm; its changes are li
 
 - First release as react-native-callkeep, forked from react-native-callkit 1.3.4 (iOS CallKit, by @ianlin). Adds Android support through ConnectionService; the native module is renamed `RNCallKeep` and `setup` takes `{ ios, android }` options. ([#1](https://github.com/react-native-webrtc/react-native-callkeep/pull/1), @manuquentin)
 
-[Unreleased]: https://github.com/react-native-webrtc/react-native-callkeep/compare/db693d5...HEAD
+[Unreleased]: https://github.com/react-native-webrtc/react-native-callkeep/compare/4.4.0...HEAD
+[4.4.0]: https://github.com/react-native-webrtc/react-native-callkeep/compare/db693d5...4.4.0
 [4.3.16]: https://www.npmjs.com/package/react-native-callkeep/v/4.3.16
 [4.3.15]: https://www.npmjs.com/package/react-native-callkeep/v/4.3.15
 [4.3.14]: https://www.npmjs.com/package/react-native-callkeep/v/4.3.14
