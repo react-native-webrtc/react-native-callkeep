@@ -37,6 +37,17 @@ JavaScript changes reload with Metro; Objective-C and Java changes need a native
 
 Look for issues labeled **help wanted** or **good first issue**. If you plan a larger change, open an issue first so we can agree on the approach before you write the code.
 
+## Issue Policy
+
+Open issues are the work we intend to look at, so they shouldn't pile up:
+
+- An issue with **no activity for two years** gets the `stale` label and a comment.
+- It is **closed 30 days later** unless someone comments. A comment keeps it open, so if the problem still happens with the latest release, say so, with your react-native-callkeep, React Native and OS versions.
+- After it is closed, open a new issue with the details and a link to the old one (GitHub doesn't let authors reopen an issue someone else closed).
+- Issues labeled **help wanted** or **good first issue** are never closed this way. Pull requests aren't either.
+
+A GitHub Actions workflow (`.github/workflows/stale.yml`) applies this policy every day.
+
 ## Making a Change
 
 1. **Create a branch** from `master`.
