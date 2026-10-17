@@ -124,7 +124,4 @@ On iOS you can also perform setup in `AppDelegate`. Doing this allows capturing 
 
 ## Foreground service (Android 11 and later)
 
-Since Android 11, your application [requires to start a foregroundService](https://developer.android.com/about/versions/11/privacy/foreground-services) in order to access the microphone in background.
-You'll need to upgrade your `compileSdkVersion` to `30` to be able to use this feature.
-
-You have to set the `foregroundService` key in the [`setup()` options](#options) and add a `foregroundServiceType` in the [`AndroidManifest` file](android-installation.md#android-common-step-installation).
+Since Android 11, an app needs a [foreground service](https://developer.android.com/about/versions/11/privacy/foreground-services) to use the microphone in the background. Set the `foregroundService` key in the [`setup()` options](#options), and declare the service's types in the manifest: see [Android installation](android-installation.md#manifest).

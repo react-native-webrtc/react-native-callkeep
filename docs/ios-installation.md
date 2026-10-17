@@ -1,105 +1,58 @@
-# iOS Installation
+# iOS installation
 
-## Automatic linking
+## Install
 
 ```sh
-react-native link react-native-callkeep
+npm install react-native-callkeep
+cd ios && pod install
 ```
 
-## Installation with Cocoa pods
+Autolinking adds the `RNCallKeep` pod: there is nothing to link by hand in Xcode. The pod ships a privacy manifest, and it builds as a module, so Swift code can `import RNCallKeep`.
 
-Include in a Podfile in your react-native `ios` directory:
+## Background modes and microphone
 
-```
-pod 'RNCallKeep', :path => '../node_modules/react-native-callkeep'
-```
+In Xcode, under *Signing & Capabilities*, add **Background Modes** and check **Voice over IP** and **Audio, AirPlay, and Picture in Picture**. In `Info.plist`, together with the text iOS shows when it asks for the microphone, this is:
 
-Then:
-```bash
-cd ios
-pod install
-```
-
-## Manual installation
-
-### 1. Add Files To Project
-
-1.1. In Xcode: Right click `Libraries` ➜ Add Files to `[Your project name]`.
-
-![iOS Add Library](pictures/ios-add-library.png)
-
-1.2. Choose `node_modules/react-native-callkeep/ios/RNCallKeep.xcodeproj` then click `Add`.
-
-![iOS Select Library](pictures/ios-select-library.png)
-
-You'll now have the Library included.
-
-![iOS Libraries](pictures/ios-libraries.png)
-
-### 2. Link library in build phases
-
-2.1. Click on `Build Phases` tab, then open `Link Binary With Libraries`.
-
-![iOS Bild Phases](pictures/ios-build-phases.png)
-
-2.2. Add `libRNCallKeep.a`.
-
-![iOS Add build target](pictures/ios-add-build-target.png)
-
-## Common installation steps
-
-### 1. Link required libraries
-
-1.1. Click on `Build Phases` tab, then open `Link Binary With Libraries`.
-
-1.2. Add `CallKit.framework` and `Intents.framework` (and mark it `Optional`).
-
-![iOS Other libraries](pictures/ios-other-libraries.png)
-
-### 2. Add header search path
-
-2.1. Click on `Build Settings` tab, then search for `Header Search Paths`.
-
-2.2. Add `$(SRCROOT)/../node_modules/react-native-callkeep/ios/RNCallKeep`.
-
-![iOS Search Paths](pictures/ios-search-paths.png)
-
-### 3. Allow voip background
-
-3.1. Open `Info.plist` file and add `voip` in `UIBackgroundModes`.
-
-![iOS info.plist](pictures/ios-info-plist.png)
-
-By editing this file with a text editor, your should see:
-
-```
+```xml
 <key>UIBackgroundModes</key>
 <array>
+  <string>audio</string>
   <string>voip</string>
 </array>
+<key>NSMicrophoneUsageDescription</key>
+<string>Your app uses the microphone for calls.</string>
 ```
 
-### 4. Updating AppDelegate.m
+`voip` is what lets a VoIP push wake your app (see [below](#incoming-calls-when-the-app-isnt-running)).
 
-4.1. Import Library:
+## Calls started from Recents, Contacts or Siri
 
-```diff
-+ #import "RNCallKeep.h"
-```
+When the user calls a contact back from the Phone app's Recents, iOS opens your app with that call. Forward it to CallKeep, which sends [`didReceiveStartCallAction`](events.md#didreceivestartcallaction):
 
-4.2. Handling User Activity.
+- With the scene life cycle, which apps built with the iOS 27 SDK must use: in your scene delegate, see [iOS 27: scene life cycle](guides/ios-scenes.md).
+- Without scenes: in your app delegate.
 
-This delegate will be called when the user tries to start a call from native Phone App.
+  ```swift
+  import RNCallKeep
 
-Add it before the `@end` tag.
+  // In AppDelegate:
+  func application(
+    _ application: UIApplication,
+    continue userActivity: NSUserActivity,
+    restorationHandler: @escaping ([UIUserActivityRestoring]?) -> Void
+  ) -> Bool {
+    return RNCallKeep.continueUserActivity(userActivity)
+  }
+  ```
 
-```diff
-+ - (BOOL)application:(UIApplication *)application
-+ continueUserActivity:(NSUserActivity *)userActivity
-+   restorationHandler:(void(^)(NSArray<id<UIUserActivityRestoring>> * __nullable restorableObjects))restorationHandler
-+ {
-+   return [RNCallKeep application:application
-+            continueUserActivity:userActivity
-+              restorationHandler:restorationHandler];
-+ }
-```
+Your calls appear in Recents when `includesCallsInRecents` is `true` in the [setup options](setup.md#options), which is the default.
+
+## Incoming calls when the app isn't running
+
+iOS wakes a terminated app for an incoming call only through a VoIP push (PushKit), and the app must report the call to CallKit as soon as the push arrives. Add the **Push Notifications** capability, then follow [Incoming calls when the app isn't running](guides/background-calls.md).
+
+## Set up CallKeep
+
+Call `RNCallKeep.setup()` early in your JavaScript: see [Setup and options](setup.md).
+
+Test calls on a device: the iOS Simulator has no CallKit service, so call actions fail there. The [example app](../example/) has this whole setup, tested on iOS 27.
