@@ -11,6 +11,10 @@ are not listed here.
 
 ## [Unreleased]
 
+## [4.5.0] - 2026-10-18
+
+On Android, calls now outlive the app's activity, as in other calling apps: read the first *Changed* entry if your app relied on calls ending with it. Native code can now set CallKeep up and show calls on Android, and observe its events on iOS, before React Native runs.
+
 ### Added
 
 - **Android:** `foregroundService.foregroundServiceType` sets the types the foreground service starts with (Android 10 and later), as a mask of `ServiceInfo.FOREGROUND_SERVICE_TYPE_*` values. An app can ring with `phoneCall` alone while its manifest also declares `microphone`; CallKeep keeps the types for the whole call, so adding `microphone` after the answer is up to the app's native code (see the option in `docs/setup.md`). Without the option, the service still starts with every type the manifest declares.
@@ -669,7 +673,8 @@ Version 3.0.5 was tagged (`v3.0.5`) but not published to npm; its changes are li
 
 - First release as react-native-callkeep, forked from react-native-callkit 1.3.4 (iOS CallKit, by @ianlin). Adds Android support through ConnectionService; the native module is renamed `RNCallKeep` and `setup` takes `{ ios, android }` options. ([#1](https://github.com/react-native-webrtc/react-native-callkeep/pull/1), @manuquentin)
 
-[Unreleased]: https://github.com/react-native-webrtc/react-native-callkeep/compare/4.4.0...HEAD
+[Unreleased]: https://github.com/react-native-webrtc/react-native-callkeep/compare/4.5.0...HEAD
+[4.5.0]: https://github.com/react-native-webrtc/react-native-callkeep/compare/4.4.0...4.5.0
 [4.4.0]: https://github.com/react-native-webrtc/react-native-callkeep/compare/db693d5...4.4.0
 [4.3.16]: https://www.npmjs.com/package/react-native-callkeep/v/4.3.16
 [4.3.15]: https://www.npmjs.com/package/react-native-callkeep/v/4.3.15
