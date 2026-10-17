@@ -1,7 +1,8 @@
 name: Release
 
-# Publishes to npm and creates the GitHub release when a version tag (X.Y.Z, no "v") is pushed.
-# npm trusts this workflow through Trusted Publishing (OIDC), so no npm token is stored here.
+# Stages the version on npm and drafts the GitHub release when a version tag (X.Y.Z, no "v") is
+# pushed. npm trusts this workflow through Trusted Publishing (OIDC), so no npm token is stored here,
+# and the trust only allows staging: a maintainer approves the staged version with 2FA to publish it.
 on:
   push:
     tags: ['[0-9]+.[0-9]+.[0-9]+']
@@ -24,7 +25,7 @@ jobs:
           node-version: 24
           registry-url: https://registry.npmjs.org
 
-      # Trusted Publishing needs npm 11.5.1 or later.
+      # Staged publishing (npm stage publish) needs a recent npm 11.
       - name: Update npm
         run: npm install -g npm@11
 
@@ -55,10 +56,20 @@ jobs:
       - name: Quality checks
         run: npm run check
 
-      - name: Publish to npm
-        run: npm publish --provenance --access public
+      # Provenance is generated automatically with Trusted Publishing.
+      - name: Stage on npm
+        run: npm stage publish
 
-      - name: Create the GitHub release
+      # A draft, published by hand once the npm version is approved.
+      - name: Draft the GitHub release
         env:
           GH_TOKEN: ${{ github.token }}
-        run: gh release create "$GITHUB_REF_NAME" --title "$GITHUB_REF_NAME" --notes-file notes.md --verify-tag
+        run: gh release create "$GITHUB_REF_NAME" --draft --title "$GITHUB_REF_NAME" --notes-file notes.md --verify-tag
+
+      - name: Next steps
+        run: |
+          {
+            echo "### $GITHUB_REF_NAME is staged on npm"
+            echo "1. Approve it with 2FA: \`npm stage list react-native-callkeep\`, then \`npm stage approve <stage-id>\` (or on npmjs.com)."
+            echo "2. Publish the draft GitHub release for $GITHUB_REF_NAME."
+          } >> "$GITHUB_STEP_SUMMARY"

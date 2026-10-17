@@ -103,9 +103,18 @@ There is no simulator-only shortcut for calls, so tell us in the pull request wh
    git tag 4.4.0 <merge commit> && git push origin 4.4.0
    ```
 
-3. The Release workflow checks that the tag matches `package.json` and is on `master`, runs `npm run check`, publishes to npm with provenance, and creates the GitHub release from the changelog section.
+3. The Release workflow checks that the tag matches `package.json` and is on `master`, runs `npm run check`, **stages** the version on npm (with provenance), and drafts the GitHub release from the changelog section.
+4. Approve the staged version with your 2FA, which publishes it:
 
-npm publishes through Trusted Publishing: the package's settings on npmjs.com trust this repository's `release.yml`, so no npm token is stored in GitHub.
+   ```bash
+   npm stage list react-native-callkeep    # shows the stage id
+   npm stage approve <stage-id>
+   ```
+
+   (or approve it on npmjs.com). To drop it instead: `npm stage reject <stage-id>`.
+5. Publish the draft GitHub release.
+
+The package's settings on npmjs.com trust this repository's `release.yml` (Trusted Publishing), so no npm token is stored in GitHub, and that trust only allows staging: nothing reaches npm users without a maintainer's approval.
 
 ## Reporting Security Issues
 

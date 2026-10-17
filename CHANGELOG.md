@@ -24,7 +24,7 @@ Includes everything tagged as 4.3.17 on 2026-09-10, which was never published to
 
 ### Changed
 
-- Releases are published to npm from GitHub Actions, with provenance, when a tag named after the version is pushed (`4.4.0`, no `v` prefix). The podspec's source tag follows that format.
+- Releases are staged on npm by GitHub Actions, with provenance, when a tag named after the version is pushed (`4.4.0`, no `v` prefix), and published once a maintainer approves them. The podspec's source tag follows that format.
 - **iOS:** The library no longer sets a preferred sample rate (44.1 kHz) and IO buffer duration (5 ms) on the call's audio session. On an iPhone 15 Pro Max with iOS 27 the hardware rate stays 48 kHz either way, and the IO buffer goes from 5 ms to iOS's default (about 23 ms). If your audio stack needs a short buffer and doesn't set one itself, call `AVAudioSession.sharedInstance().setPreferredIOBufferDuration(_:)` in your app. ([#858](https://github.com/react-native-webrtc/react-native-callkeep/pull/858), @fhilleriteau-fdi)
 - **Docs:** `didDeactivateAudioSession`, `didResetProvider` and `createIncomingConnectionFailed` added to the events table. ([#804](https://github.com/react-native-webrtc/react-native-callkeep/pull/804), @davidliu)
 
