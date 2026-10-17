@@ -164,6 +164,13 @@ RCT_EXPORT_MODULE()
 - (void)sendEventWithNameWrapper:(NSString *)name body:(id)body {
     NSLog(@"[RNCallKeep] sendEventWithNameWrapper: %@, hasListeners : %@", name, _hasListeners ? @"YES": @"NO");
 
+    // Native code can observe every event too, under the same name with the body as userInfo,
+    // as Android's local broadcasts allow: before a React Native runtime exists, and while
+    // JavaScript is busy. The event sent to JavaScript below is unchanged.
+    [[NSNotificationCenter defaultCenter] postNotificationName:name
+                                                        object:nil
+                                                      userInfo:body ?: @{}];
+
     if (_hasListeners) {
         [self sendEventWithName:name body:body];
     } else {

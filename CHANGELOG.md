@@ -15,6 +15,8 @@ are not listed here.
 
 - **Android:** `foregroundService.foregroundServiceType` sets the types the foreground service starts with (Android 10 and later), as a mask of `ServiceInfo.FOREGROUND_SERVICE_TYPE_*` values. An app can ring with `phoneCall` alone while its manifest also declares `microphone`; CallKeep keeps the types for the whole call, so adding `microphone` after the answer is up to the app's native code (see the option in `docs/setup.md`). Without the option, the service still starts with every type the manifest declares.
 - **Android:** `endCallsOnHostDestroy: false` keeps the calls, and the app's process, when the React activity is destroyed, for calls that must outlive it (owned by native code, for instance). By default CallKeep still ends every call and kills the process.
+- **Android:** `RNCallKeepModule.setupNative(context, options)` and `RNCallKeepModule.displayIncomingCall(context, uuid, number, callerName, hasVideo)` set CallKeep up and show an incoming call from native code, before React Native runs or without it (self-managed mode, Android 8 and later), for instance from a Firebase messaging service. `VoiceConnectionService.nativeFocusListener` and `hasConnectionServiceFocus()` let native code follow Telecom's call focus (Android 9 and later). See [Setup from native code (Android)](docs/setup.md#setup-from-native-code-android).
+- **iOS:** Events are also posted to `NotificationCenter`, so native code can observe the call's actions before a React Native runtime exists. See [Listening from native code (iOS)](docs/events.md#listening-from-native-code-ios).
 
 ### Changed
 
