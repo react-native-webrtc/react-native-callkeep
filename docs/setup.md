@@ -95,11 +95,13 @@ RNCallKeep.setup(options).then(accepted => {});
       
 `setup` calls internally `registerPhoneAccount`, `registerEvents` and `setSettings`.
 
+You can call `setup()` again to change the options, for example when the user changes a preference. On iOS the new CallKit options (`includesCallsInRecents`, `supportsVideo`, `ringtoneSound`...) apply to the next calls. If you [set up from native code](#setup-from-native-code-ios), call `[RNCallKeep setup:]` again instead.
+
 You can alternatively just call `setSettings()` with the same option as `setup()` to define only your settings.
 
 ## Setup from native code (iOS)
 
-On iOS you can also perform setup in `AppDelegate`. Doing this allows capturing events prior to the react native event bridge being up. Please be aware that calling setup in `AppDelegate.m` will ignore any subsequent calls to `RNCallKeep.setup();`.
+On iOS you can also perform setup in `AppDelegate`. Doing this allows capturing events prior to the react native event bridge being up. Please be aware that calling setup in `AppDelegate.m` will ignore any subsequent calls to `RNCallKeep.setup();` from JavaScript: to change the options, call `[RNCallKeep setup:]` again.
 
 ```objective-c
 @implementation AppDelegate

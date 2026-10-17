@@ -60,7 +60,7 @@ import RNCallKeep from 'react-native-callkeep';
 
 Stores the settings without the rest of `setup()`, which already calls it. It takes the same options as [`setup()`](setup.md#options) and keeps the `ios` or `android` part for the current platform.
 
-On iOS, CallKit's configuration (`appName`, `imageName`, `ringtoneSound`, `supportsVideo`...) is read once, when `setup()` creates the CallKit provider: a later `setSettings()` doesn't change it.
+On iOS, `setSettings()` doesn't change CallKit's configuration (`imageName`, `ringtoneSound`, `supportsVideo`...): call [`setup()`](setup.md) again for that.
 
 ```js
 RNCallKeep.setSettings(options);
