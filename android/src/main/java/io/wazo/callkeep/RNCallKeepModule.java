@@ -406,6 +406,7 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule implements Life
         _settings = storeSettings(context.getApplicationContext(), options);
         registerPhoneAccount(context.getApplicationContext());
         VoiceConnectionService.setPhoneAccountHandle(handle);
+        // The state setup() ends in once the phone account is registered: available, so initialized.
         VoiceConnectionService.setAvailable(true);
     }
 

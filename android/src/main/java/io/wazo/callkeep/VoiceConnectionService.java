@@ -195,6 +195,8 @@ public class VoiceConnectionService extends ConnectionService {
         }
         
         if (currentConnections.isEmpty()) {
+            // Telecom doesn't call onConnectionServiceFocusLost when the last call ends.
+            connectionServiceFocused = false;
             Log.d(TAG, "[VoiceConnectionService] deinitConnection. No other connections left -> RUN stopForegroundService!");
             currentConnectionService.stopForegroundService();
         } else {

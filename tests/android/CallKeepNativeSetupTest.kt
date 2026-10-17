@@ -13,7 +13,7 @@ import org.junit.runner.RunWith
 
 /**
  * Setup and an incoming call from native code, without a React context or a CallKeep module, then
- * Telecom's call focus. Same host setup as CallKeepSelfManagedTest. Android 9+ (the call focus).
+ * Telecom's call focus, gained by the active call and gone with the last call. Same host setup as CallKeepSelfManagedTest. Android 9+ (the call focus).
  */
 @RunWith(AndroidJUnit4::class)
 class CallKeepNativeSetupTest {
@@ -31,7 +31,7 @@ class CallKeepNativeSetupTest {
     return false
   }
 
-  @Test fun aNativeIncomingCallRingsAndGetsTheCallFocus() {
+  @Test fun aNativeIncomingCallGetsTheCallFocusUntilItEnds() {
     assumeTrue(Build.VERSION.SDK_INT >= Build.VERSION_CODES.P)
     // Other fixtures may have created the module in this process: this one runs without it.
     val module = RNCallKeepModule.instance
@@ -57,6 +57,9 @@ class CallKeepNativeSetupTest {
       }
       assertTrue("the active call did not get the call focus",
         waitFor { gained && VoiceConnectionService.hasConnectionServiceFocus() })
+      instrumentation.runOnMainSync { VoiceConnectionService.getConnection(uuid)!!.onDisconnect() }
+      assertTrue("the call focus outlived the last call",
+        waitFor { VoiceConnectionService.getConnection(uuid) == null && !VoiceConnectionService.hasConnectionServiceFocus() })
     } finally {
       instrumentation.runOnMainSync {
         VoiceConnectionService.getConnection(uuid)?.onDisconnect()
