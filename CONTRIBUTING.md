@@ -83,6 +83,19 @@ There is no simulator-only shortcut for calls, so tell us in the pull request wh
 - **Don't break the public API**: if a method's arguments, return value or an event's payload must change, discuss it in an issue first.
 - **Allow edits by maintainers** on your pull request, so small fixes can be pushed without another round trip.
 
+## Releasing (maintainers)
+
+1. In a pull request, set the new version in `package.json`, and in `CHANGELOG.md` turn `[Unreleased]` into the new version and date: keep an empty `[Unreleased]` above it, and update the links at the bottom.
+2. Merge it, then tag the merge commit on `master` with the bare version and push the tag:
+
+   ```bash
+   git tag 4.4.0 <merge commit> && git push origin 4.4.0
+   ```
+
+3. The Release workflow checks that the tag matches `package.json` and is on `master`, runs `npm run check`, publishes to npm with provenance, and creates the GitHub release from the changelog section.
+
+npm publishes through Trusted Publishing: the package's settings on npmjs.com trust this repository's `release.yml`, so no npm token is stored in GitHub.
+
 ## Reporting Security Issues
 
 Please don't open a public issue: see [SECURITY.md](SECURITY.md).
