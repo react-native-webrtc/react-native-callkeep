@@ -64,12 +64,14 @@ A GitHub Actions workflow (`.github/workflows/stale.yml`) applies this policy ev
 
 ## Checks
 
-CI runs these on every pull request. Run them before you push; they need only Node.js:
+CI runs these on every pull request. Run them before you push; they need only Node.js and git:
 
 ```bash
 npm run check   # all of the below
 npm run check:types     # index.d.ts compiles with TypeScript in strict mode
 npm run check:events    # every event matches across actions.js, index.d.ts and the docs/events.md table
+npm run check:api       # every method matches across index.js, index.d.ts and the docs/api.md table
+npm run check:links     # relative links and #anchors in the Markdown files point somewhere
 npm run check:package   # what npm publish would ship: the native sources are in, tests and scripts are out
 ```
 
