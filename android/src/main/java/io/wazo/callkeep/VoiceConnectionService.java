@@ -359,7 +359,14 @@ public class VoiceConnectionService extends ConnectionService {
         Notification notification = notificationBuilder.build();
 
         try {
-            startForeground(FOREGROUND_SERVICE_TYPE_MICROPHONE, notification);
+            // Without a type, Android 10 and later start the service with every type its manifest
+            // entry declares.
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q && foregroundSettings.hasKey("foregroundServiceType")) {
+                startForeground(FOREGROUND_SERVICE_TYPE_MICROPHONE, notification,
+                    foregroundSettings.getInt("foregroundServiceType"));
+            } else {
+                startForeground(FOREGROUND_SERVICE_TYPE_MICROPHONE, notification);
+            }
         } catch (Exception e) {
             Log.w(TAG, "[VoiceConnectionService] Can't start foreground service : " + e.toString());
         }

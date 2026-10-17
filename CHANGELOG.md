@@ -11,6 +11,11 @@ are not listed here.
 
 ## [Unreleased]
 
+### Added
+
+- **Android:** `foregroundService.foregroundServiceType` sets the types the foreground service starts with (Android 10 and later), as a mask of `ServiceInfo.FOREGROUND_SERVICE_TYPE_*` values. An app can ring with `phoneCall` alone while its manifest also declares `microphone`. Without it, the service still starts with every type the manifest declares.
+- **Android:** `endCallsOnHostDestroy: false` keeps the calls, and the app's process, when the React activity is destroyed, for calls that must outlive it (owned by native code, for instance). By default CallKeep still ends every call and kills the process.
+
 ### Changed
 
 - **Docs:** The Expo guide explains the config plugin's setup and what to add to it: the `audio` background mode and microphone text on iOS; on Android, the foreground service permissions, without which Android 14 and later refuse CallKeep's foreground service, and the `phoneCall|microphone` service types; `RECORD_AUDIO` with Expo SDK 54 and earlier. ([#849](https://github.com/react-native-webrtc/react-native-callkeep/pull/849), @sultanmyrza)
