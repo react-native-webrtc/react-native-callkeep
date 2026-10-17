@@ -96,7 +96,7 @@ class CallKeepForegroundServiceTest {
     moduleThread.quitSafely()
   }
 
-  /** The app passes its own channel, which rings: the service posts in it and leaves it as it is. */
+  /** The app passes its own channel, which rings: the service posts in it, keeps its importance and renames it. */
   @Test fun theForegroundServiceKeepsTheAppsOwnChannel() {
     assumeTrue(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
     val manager = context.getSystemService(NotificationManager::class.java)
@@ -112,8 +112,9 @@ class CallKeepForegroundServiceTest {
       onModuleThread { module.displayIncomingCall(uuid, "5551003", "App channel", false, null) }
       assertTrue("call not created", waitFor { VoiceConnectionService.currentConnections.containsKey(uuid) })
       assertTrue("no foreground service", waitFor { isForeground() })
-      assertEquals("the app's channel lost its importance",
-        NotificationManager.IMPORTANCE_HIGH, manager.getNotificationChannel(channelId).importance)
+      val channel = manager.getNotificationChannel(channelId)
+      assertEquals("the app's channel lost its importance", NotificationManager.IMPORTANCE_HIGH, channel.importance)
+      assertEquals("the channel's name doesn't follow the options", "CallKeep test", channel.name.toString())
     } finally {
       onModuleThread { module.endCall(uuid) }
       // Android refuses to delete a channel a foreground service still posts in.
@@ -123,16 +124,18 @@ class CallKeepForegroundServiceTest {
   }
 
   /**
-   * Telecom creates the call in a process where the module doesn't exist yet, as for a call placed
-   * from the Phone app while the app isn't running. Clearing `instance`, which the service reads,
-   * stands for that process.
+   * A call added from native code in a process where the module doesn't exist: the service reads the
+   * stored settings itself. Clearing `instance` and the loaded settings stands for that process.
    */
   @Test fun theForegroundServiceStartsWithoutTheModule() {
     assumeTrue(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
     val module = RNCallKeepModule.getInstance(BridgeReactContext(context), true)
     onModuleThread { module.setup(selfManagedWithForegroundService("io.wazo.callkeep.test")) }
     val uuid = UUID.randomUUID().toString()
+    val loadedSettings = RNCallKeepModule::class.java.getDeclaredField("_settings").apply { isAccessible = true }
+    val settings = loadedSettings.get(null)
     RNCallKeepModule.instance = null
+    loadedSettings.set(null, null)
     try {
       val extras = Bundle().apply {
         putParcelable(TelecomManager.EXTRA_INCOMING_CALL_ADDRESS,
@@ -146,6 +149,7 @@ class CallKeepForegroundServiceTest {
       assertTrue("no foreground service", waitFor { isForeground() })
     } finally {
       RNCallKeepModule.instance = module
+      loadedSettings.set(null, settings)
       onModuleThread { module.endCall(uuid) }
       waitFor { !isForeground() }
       moduleThread.quitSafely()

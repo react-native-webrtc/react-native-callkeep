@@ -314,7 +314,7 @@ public class VoiceConnectionService extends ConnectionService {
             return;
         }
         Log.d(TAG, "[VoiceConnectionService] startForegroundService");
-        ReadableMap foregroundSettings = getForegroundSettings(null);
+        ReadableMap foregroundSettings = getForegroundSettings(this);
 
         if (!this.isForegroundServiceConfigured()) {
             Log.w(TAG, "[VoiceConnectionService] Not creating foregroundService because not configured");
@@ -327,10 +327,15 @@ public class VoiceConnectionService extends ConnectionService {
         chan.setLockscreenVisibility(Notification.VISIBILITY_PRIVATE);
         NotificationManager manager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
         assert manager != null;
-        // A channel that already exists is left as it is: creating it again with IMPORTANCE_NONE would
-        // lower the importance of an app's own channel, whose notifications would stop alerting.
-        if (manager.getNotificationChannel(NOTIFICATION_CHANNEL_ID) == null) {
+        // An existing channel keeps its importance and sound: creating it again with IMPORTANCE_NONE
+        // would lower those of an app's own channel, whose notifications would stop alerting. Its name
+        // still follows the options.
+        NotificationChannel existing = manager.getNotificationChannel(NOTIFICATION_CHANNEL_ID);
+        if (existing == null) {
             manager.createNotificationChannel(chan);
+        } else if (channelName != null && !channelName.contentEquals(existing.getName())) {
+            existing.setName(channelName);
+            manager.createNotificationChannel(existing);
         }
 
         NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID);
@@ -339,8 +344,8 @@ public class VoiceConnectionService extends ConnectionService {
             .setPriority(NotificationManager.IMPORTANCE_MIN)
             .setCategory(Notification.CATEGORY_SERVICE);
 
-        // Telecom can create a connection in a process where the module doesn't exist yet, such as
-        // a call placed from the Phone app while the app isn't running.
+        // Telecom can create a connection in a process where the module doesn't exist yet: a call
+        // placed from the Phone app while the app isn't running, or one added from native code.
         Activity currentActivity = RNCallKeepModule.instance == null
             ? null : RNCallKeepModule.instance.getCurrentReactActivity();
         if (currentActivity != null) {
@@ -374,7 +379,7 @@ public class VoiceConnectionService extends ConnectionService {
 
     private void stopForegroundService() {
         Log.d(TAG, "[VoiceConnectionService] stopForegroundService");
-        ReadableMap foregroundSettings = getForegroundSettings(null);
+        ReadableMap foregroundSettings = getForegroundSettings(this);
 
         if (!this.isForegroundServiceConfigured()) {
             Log.w(TAG, "[VoiceConnectionService] Not creating foregroundService because not configured");
@@ -389,7 +394,7 @@ public class VoiceConnectionService extends ConnectionService {
     }
 
     private boolean isForegroundServiceConfigured() {
-        ReadableMap foregroundSettings = getForegroundSettings(null);
+        ReadableMap foregroundSettings = getForegroundSettings(this);
         try {
             return foregroundSettings != null && foregroundSettings.hasKey("channelId");
         } catch (Exception e) {
