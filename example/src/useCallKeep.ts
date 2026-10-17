@@ -196,8 +196,7 @@ export function useCallKeep() {
   }, [addCall]);
 
   const loadAudioRoutes = useCallback(async () => {
-    // index.d.ts types getAudioRoutes() as Promise<void>; it resolves with the routes.
-    const routes = (await RNCallKeep.getAudioRoutes()) as unknown as AudioRoute[];
+    const routes = await RNCallKeep.getAudioRoutes();
     setAudioRoutes(routes);
     addLog('getAudioRoutes', routes);
   }, [addLog]);

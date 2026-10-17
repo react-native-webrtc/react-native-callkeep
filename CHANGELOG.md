@@ -26,6 +26,7 @@ These changes will ship as 4.4.0. They include everything tagged as 4.3.17 on 20
 
 ### Fixed
 
+- **JS/Typings:** `getAudioRoutes()` is typed as `Promise<AudioRoute[]>` (it was `Promise<void>`), and `setMutedCall` is no longer documented as iOS-only: Android has it too. The README documents the returned array and its `selected` field. ([#838](https://github.com/react-native-webrtc/react-native-callkeep/pull/838) found the return type, @palmtown)
 - **iOS:** Events received before the module is initialized (for example an incoming call reported from `AppDelegate` on a VoIP push cold start) are no longer lost: `_delayedEvents` is now created when the singleton is allocated. ([#877](https://github.com/react-native-webrtc/react-native-callkeep/pull/877), @minhuwv)
 - **iOS:** `getAudioRoutes`/`getAudioInputs` no longer activate the audio session, so they no longer interrupt other apps' audio, switch the output to the receiver, or bring up a hands-free (car) call after a call ends. Outside a call, `selected` now reflects the route actually in use. ([#863](https://github.com/react-native-webrtc/react-native-callkeep/pull/863), @siebeg-ideal)
 - **iOS:** `setAudioRoute` and `getAudioRoutes` reject with the exception description (a string) instead of the `NSException` itself, as React Native 0.79 requires. ([#845](https://github.com/react-native-webrtc/react-native-callkeep/pull/845), @KorotkovAlex)
