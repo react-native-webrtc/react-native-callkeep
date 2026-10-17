@@ -35,6 +35,7 @@ import android.media.AudioManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.HandlerThread;
 import android.view.WindowManager;
 import androidx.annotation.NonNull;
@@ -303,13 +304,19 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule implements Life
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && callStateListener !=null){
             telephonyManager.unregisterTelephonyCallback(callStateListener);
-        } else if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S && legacyCallStateListener != null){
-            telephonyManager.listen(legacyCallStateListener, PhoneStateListener.LISTEN_NONE);
-            
-            if (handlerThread != null) {
-                handlerThread.quitSafely();
-                handlerThread = null;
-            }
+        } else if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S && handlerThread != null){
+            // Unregister on the listener's thread, after any pending registration, then let the thread end.
+            new Handler(handlerThread.getLooper()).post(new Runnable() {
+                @Override
+                public void run() {
+                    if (legacyCallStateListener != null) {
+                        telephonyManager.listen(legacyCallStateListener, PhoneStateListener.LISTEN_NONE);
+                        legacyCallStateListener = null;
+                    }
+                }
+            });
+            handlerThread.quitSafely();
+            handlerThread = null;
         }
     }
 
@@ -328,8 +335,15 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule implements Life
                     handlerThread.start();
                 }
 
-                legacyCallStateListener  = new LegacyCallStateListener();
-                telephonyManager.listen(legacyCallStateListener, PhoneStateListener.LISTEN_CALL_STATE);
+                // PhoneStateListener runs its callbacks on the looper of the thread that creates it,
+                // so create it on the handler thread instead of the caller's thread.
+                new Handler(handlerThread.getLooper()).post(new Runnable() {
+                    @Override
+                    public void run() {
+                        legacyCallStateListener = new LegacyCallStateListener();
+                        telephonyManager.listen(legacyCallStateListener, PhoneStateListener.LISTEN_CALL_STATE);
+                    }
+                });
             }
         }
     }
