@@ -4,22 +4,21 @@ Thank you for your interest in contributing! This guide explains how the library
 
 ## Quick Start
 
-react-native-callkeep is a native module: it only runs inside a React Native app. To work on it, link your clone into an app and rebuild that app.
+react-native-callkeep is a native module: it only runs inside a React Native app. The [example app](example/) uses this repository's code directly, so it is the quickest way to try a change:
 
 ```bash
 # 1. Fork and clone
 git clone https://github.com/<you>/react-native-callkeep.git
+cd react-native-callkeep/example
 
-# 2. In a React Native app, install your clone instead of the npm release
-cd my-app
-npm install ../react-native-callkeep
-
-# 3. Rebuild the native app after every native change
-cd ios && pod install && cd ..
-npx react-native run-ios        # or run-android
+# 2. Install and run (iOS needs a real device for calls; see example/README.md)
+npm install
+npm run android                 # or: cd ios && pod install && cd .. && npm run ios -- --device
 ```
 
-JavaScript changes reload with Metro; Objective-C and Java changes need a native rebuild. If Metro does not follow the symlink, install a tarball instead: run `npm pack` in your clone and `npm install /path/to/react-native-callkeep-<version>.tgz` in the app.
+JavaScript changes reload with Metro; Objective-C and Java changes need a native rebuild.
+
+To try a change in your own app instead, install your clone there (`npm install ../react-native-callkeep`) and rebuild the app. If Metro does not follow the symlink, install a tarball: run `npm pack` in your clone and `npm install /path/to/react-native-callkeep-<version>.tgz` in the app.
 
 ## Where Things Live
 
@@ -31,6 +30,7 @@ JavaScript changes reload with Metro; Objective-C and Java changes need a native
 | `ios/RNCallKeep/RNCallKeep.m` | iOS: CallKit provider, call actions and audio session |
 | `android/src/main/java/io/wazo/callkeep/` | Android: `RNCallKeepModule` (the module), `VoiceConnectionService` and `VoiceConnection` (Telecom) |
 | `docs/` | Installation guides |
+| `example/` | The example app, which runs the library from this repository |
 | `tests/android/` | Android instrumentation tests, run inside a React Native host app (see its README) |
 
 ## Finding Something to Work On
