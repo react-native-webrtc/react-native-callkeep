@@ -72,7 +72,7 @@ import static io.wazo.callkeep.Constants.EXTRA_CALL_NUMBER_SCHEMA;
 import static io.wazo.callkeep.Constants.EXTRA_CALL_UUID;
 import static io.wazo.callkeep.Constants.EXTRA_SELF_MANAGED;
 import static io.wazo.callkeep.Constants.EXTRA_DISABLE_ADD_CALL;
-import static io.wazo.callkeep.Constants.FOREGROUND_SERVICE_TYPE_MICROPHONE;
+import static io.wazo.callkeep.Constants.FOREGROUND_SERVICE_NOTIFICATION_ID;
 import static io.wazo.callkeep.Constants.ACTION_ON_CREATE_CONNECTION_FAILED;
 import static io.wazo.callkeep.Constants.ACTION_DID_DISPLAY_INCOMING_CALL;
 import static io.wazo.callkeep.Constants.EXTRA_HAS_VIDEO;
@@ -314,7 +314,7 @@ public class VoiceConnectionService extends ConnectionService {
             return;
         }
         Log.d(TAG, "[VoiceConnectionService] startForegroundService");
-        ReadableMap foregroundSettings = getForegroundSettings(null);
+        ReadableMap foregroundSettings = getForegroundSettings(this);
 
         if (!this.isForegroundServiceConfigured()) {
             Log.w(TAG, "[VoiceConnectionService] Not creating foregroundService because not configured");
@@ -327,7 +327,16 @@ public class VoiceConnectionService extends ConnectionService {
         chan.setLockscreenVisibility(Notification.VISIBILITY_PRIVATE);
         NotificationManager manager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
         assert manager != null;
-        manager.createNotificationChannel(chan);
+        // An existing channel keeps its importance and sound: creating it again with IMPORTANCE_NONE
+        // would lower those of an app's own channel, whose notifications would stop alerting. Its name
+        // still follows the options.
+        NotificationChannel existing = manager.getNotificationChannel(NOTIFICATION_CHANNEL_ID);
+        if (existing == null) {
+            manager.createNotificationChannel(chan);
+        } else if (channelName != null && !channelName.contentEquals(existing.getName())) {
+            existing.setName(channelName);
+            manager.createNotificationChannel(existing);
+        }
 
         NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID);
         notificationBuilder.setOngoing(true)
@@ -335,7 +344,10 @@ public class VoiceConnectionService extends ConnectionService {
             .setPriority(NotificationManager.IMPORTANCE_MIN)
             .setCategory(Notification.CATEGORY_SERVICE);
 
-        Activity currentActivity = RNCallKeepModule.instance.getCurrentReactActivity();
+        // Telecom can create a connection in a process where the module doesn't exist yet: a call
+        // placed from the Phone app while the app isn't running, or one added from native code.
+        Activity currentActivity = RNCallKeepModule.instance == null
+            ? null : RNCallKeepModule.instance.getCurrentReactActivity();
         if (currentActivity != null) {
             Intent notificationIntent = new Intent(this, currentActivity.getClass());
             notificationIntent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
@@ -359,7 +371,14 @@ public class VoiceConnectionService extends ConnectionService {
         Notification notification = notificationBuilder.build();
 
         try {
-            startForeground(FOREGROUND_SERVICE_TYPE_MICROPHONE, notification);
+            // Without a type, Android 10 and later start the service with every type its manifest
+            // entry declares.
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q && foregroundSettings.hasKey("foregroundServiceType")) {
+                startForeground(FOREGROUND_SERVICE_NOTIFICATION_ID, notification,
+                    foregroundSettings.getInt("foregroundServiceType"));
+            } else {
+                startForeground(FOREGROUND_SERVICE_NOTIFICATION_ID, notification);
+            }
         } catch (Exception e) {
             Log.w(TAG, "[VoiceConnectionService] Can't start foreground service : " + e.toString());
         }
@@ -367,7 +386,7 @@ public class VoiceConnectionService extends ConnectionService {
 
     private void stopForegroundService() {
         Log.d(TAG, "[VoiceConnectionService] stopForegroundService");
-        ReadableMap foregroundSettings = getForegroundSettings(null);
+        ReadableMap foregroundSettings = getForegroundSettings(this);
 
         if (!this.isForegroundServiceConfigured()) {
             Log.w(TAG, "[VoiceConnectionService] Not creating foregroundService because not configured");
@@ -382,7 +401,7 @@ public class VoiceConnectionService extends ConnectionService {
     }
 
     private boolean isForegroundServiceConfigured() {
-        ReadableMap foregroundSettings = getForegroundSettings(null);
+        ReadableMap foregroundSettings = getForegroundSettings(this);
         try {
             return foregroundSettings != null && foregroundSettings.hasKey("channelId");
         } catch (Exception e) {

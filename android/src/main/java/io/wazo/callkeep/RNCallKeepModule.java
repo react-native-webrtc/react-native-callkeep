@@ -783,6 +783,13 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule implements Life
 
    @Override
    public void onHostDestroy() {
+       // Calls that must outlive the activity (owned by native code, for instance) stay, and so
+       // does the process.
+       WritableMap settings = getSettings(this.getAppContext());
+       if (settings != null && settings.hasKey("endCallsOnHostDestroy") && !settings.getBoolean("endCallsOnHostDestroy")) {
+           Log.d(TAG, "[RNCallKeepModule] onHostDestroy: calls kept, endCallsOnHostDestroy is false");
+           return;
+       }
        // When activity destroyed end all calls
        Log.d(TAG, "[RNCallKeepModule] onHostDestroy called");
        if (!isConnectionServiceAvailable() || !hasPhoneAccount()) {

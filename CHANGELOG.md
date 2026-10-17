@@ -11,6 +11,11 @@ are not listed here.
 
 ## [Unreleased]
 
+### Added
+
+- **Android:** `foregroundService.foregroundServiceType` sets the types the foreground service starts with (Android 10 and later), as a mask of `ServiceInfo.FOREGROUND_SERVICE_TYPE_*` values. An app can ring with `phoneCall` alone while its manifest also declares `microphone`; CallKeep keeps the types for the whole call, so adding `microphone` after the answer is up to the app's native code (see the option in `docs/setup.md`). Without the option, the service still starts with every type the manifest declares.
+- **Android:** `endCallsOnHostDestroy: false` keeps the calls, and the app's process, when the React activity is destroyed, for calls that must outlive it (owned by native code, for instance). By default CallKeep still ends every call and kills the process.
+
 ### Changed
 
 - **Docs:** The Expo guide explains the config plugin's setup and what to add to it: the `audio` background mode and microphone text on iOS; on Android, the foreground service permissions, without which Android 14 and later refuse CallKeep's foreground service, and the `phoneCall|microphone` service types; `RECORD_AUDIO` with Expo SDK 54 and earlier. ([#849](https://github.com/react-native-webrtc/react-native-callkeep/pull/849), @sultanmyrza)
@@ -21,6 +26,8 @@ are not listed here.
 ### Fixed
 
 - **iOS:** `setup()` applies its options to CallKit right away. When the app had run before, CallKit kept the options of the previous launch (the module builds the CallKit provider from the stored settings when it loads), and calling `setup()` again didn't change them either. An app that sets up from native code can now call `[RNCallKeep setup:]` again to change them; `setup()` from JavaScript is still ignored then, as documented. ([#732](https://github.com/react-native-webrtc/react-native-callkeep/pull/732), @c960657)
+- **Android:** The foreground service keeps the importance and sound of the notification channel named by `foregroundService.channelId` when that channel already exists; its name still follows `channelName`. An app could pass its own channel, such as the one its incoming calls ring in: creating it again with `IMPORTANCE_NONE` lowered its importance (from high to low on a Galaxy S24, Android 16), and its notifications stopped alerting.
+- **Android:** A call created in a process where the CallKeep module doesn't exist gets its foreground service. The service read the stored settings only through the module: a call placed from the Phone app while the app isn't running started no foreground service, and an incoming call added from native code, whose connection loads the settings, crashed the app with a `NullPointerException`. Without the module, the notification opens no activity.
 - **Android:** `checkIsInManagedCall()`, `setAudioRoute()` and `toggleAudioRouteSpeaker()` no longer crash the app on Android 7 with `NoSuchMethodError`: they called Android 8 APIs. Before Android 8, `checkIsInManagedCall()` reports any ongoing call (there are no self-managed calls then), `setAudioRoute()` rejects and `toggleAudioRouteSpeaker()` does nothing.
 - **Android:** `setAudioRoute()` rejects when no call has the given UUID. Its promise never settled.
 - **Android:** Android lint passes on the library ([#646](https://github.com/react-native-webrtc/react-native-callkeep/issues/646)): `startCall` and `checkDefaultPhoneAccount` handle a `SecurityException` from Telecom (a permission can be revoked at any time), `endCall` uses `AudioManager.MODE_NORMAL`, and the library's `build.gradle` no longer declares the Android Gradle Plugin 3.0.1: the app's plugin builds it. ([#684](https://github.com/react-native-webrtc/react-native-callkeep/pull/684), @ramijarrar)
