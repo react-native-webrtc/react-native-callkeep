@@ -2,6 +2,8 @@
 
 Thank you for your interest in contributing! This guide explains how the library is laid out, how to try a change in an app, and what we look for in a pull request.
 
+Everyone taking part in the project, in issues, pull requests or elsewhere, is expected to follow the [Code of Conduct](CODE_OF_CONDUCT.md).
+
 ## Quick Start
 
 react-native-callkeep is a native module: it only runs inside a React Native app. The [example app](example/) uses this repository's code directly, so it is the quickest way to try a change:
