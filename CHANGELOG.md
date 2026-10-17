@@ -11,6 +11,10 @@ are not listed here.
 
 ## [Unreleased]
 
+### Fixed
+
+- The npm package no longer includes the release notes file (`notes.md`) and an IntelliJ project file (`android/react-native-callkeep.iml`), which 4.4.0 shipped by mistake.
+
 ## [4.4.0] - 2026-10-17
 
 Includes everything tagged as 4.3.17 on 2026-09-10, which was never published to npm.
