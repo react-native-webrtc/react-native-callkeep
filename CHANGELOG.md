@@ -20,6 +20,7 @@ are not listed here.
 
 ### Fixed
 
+- **iOS:** `setup()` applies its options to CallKit right away. When the app had run before, CallKit kept the options of the previous launch (the module builds the CallKit provider from the stored settings when it loads), and calling `setup()` again didn't change them either. An app that sets up from native code can now call `[RNCallKeep setup:]` again to change them; `setup()` from JavaScript is still ignored then, as documented. ([#732](https://github.com/react-native-webrtc/react-native-callkeep/pull/732), @c960657)
 - **Android:** `checkIsInManagedCall()`, `setAudioRoute()` and `toggleAudioRouteSpeaker()` no longer crash the app on Android 7 with `NoSuchMethodError`: they called Android 8 APIs. Before Android 8, `checkIsInManagedCall()` reports any ongoing call (there are no self-managed calls then), `setAudioRoute()` rejects and `toggleAudioRouteSpeaker()` does nothing.
 - **Android:** `setAudioRoute()` rejects when no call has the given UUID. Its promise never settled.
 - **Android:** Android lint passes on the library ([#646](https://github.com/react-native-webrtc/react-native-callkeep/issues/646)): `startCall` and `checkDefaultPhoneAccount` handle a `SecurityException` from Telecom (a permission can be revoked at any time), `endCall` uses `AudioManager.MODE_NORMAL`, and the library's `build.gradle` no longer declares the Android Gradle Plugin 3.0.1: the app's plugin builds it. ([#684](https://github.com/react-native-webrtc/react-native-callkeep/pull/684), @ramijarrar)

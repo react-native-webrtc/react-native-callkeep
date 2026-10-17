@@ -189,6 +189,16 @@ RCT_EXPORT_MODULE()
     }
 }
 
+// Applies the stored settings to the CallKit provider. The provider may exist already: created when the
+// module loaded, from the settings stored during the previous launch, or by an earlier setup().
++ (void)configureCallKitProvider {
+    if (sharedProvider == nil) {
+        [self initCallKitProvider];
+    } else {
+        sharedProvider.configuration = [RNCallKeep getProviderConfiguration:[self getSettings]];
+    }
+}
+
 + (NSString *) getAudioOutput {
     @try{
         NSArray<AVAudioSessionPortDescription *>* outputs = [AVAudioSession sharedInstance].currentRoute.outputs;
@@ -204,7 +214,7 @@ RCT_EXPORT_MODULE()
 
 + (void)setup:(NSDictionary *)options {
     RNCallKeep *callKeep = [RNCallKeep allocWithZone: nil];
-    [callKeep setup:options];
+    [callKeep setupWithOptions:options];
     isSetupNatively = YES;
 }
 
@@ -218,6 +228,11 @@ RCT_EXPORT_METHOD(setup:(NSDictionary *)options)
         return;
     }
 
+    [self setupWithOptions:options];
+}
+
+- (void)setupWithOptions:(NSDictionary *)options
+{
 #ifdef DEBUG
     NSLog(@"[RNCallKeep][setup] options = %@", options);
 #endif
@@ -226,7 +241,7 @@ RCT_EXPORT_METHOD(setup:(NSDictionary *)options)
 
     [self setSettings: options];
 
-    [RNCallKeep initCallKitProvider];
+    [RNCallKeep configureCallKitProvider];
 
     self.callKeepProvider = sharedProvider;
     [self.callKeepProvider setDelegate:self queue:nil];
