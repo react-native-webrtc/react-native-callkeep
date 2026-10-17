@@ -21,7 +21,8 @@ import org.junit.Test
 import org.junit.runner.RunWith
 
 /**
- * The `foregroundService.foregroundServiceType` and `endCallsOnHostDestroy` options, through Telecom.
+ * A call's lifetime and the `foregroundService.foregroundServiceType` and `endCallsWhenReactNativeStops`
+ * options, through Telecom.
  * Same host setup as CallKeepForegroundServiceTest. The host manifest must declare
  * `phoneCall|microphone` on VoiceConnectionService: with `phoneCall` alone, the service starts with
  * `phoneCall` without the option too, and the type test would prove nothing, so it asserts this.
@@ -55,10 +56,10 @@ class CallKeepCallLifetimeOptionsTest {
     return condition()
   }
 
-  private fun selfManagedOptions(foregroundServiceType: Int? = null, endCallsOnHostDestroy: Boolean? = null): WritableMap =
+  private fun selfManagedOptions(foregroundServiceType: Int? = null, endCallsWhenReactNativeStops: Boolean? = null): WritableMap =
     Arguments.createMap().apply {
       putBoolean("selfManaged", true)
-      endCallsOnHostDestroy?.let { putBoolean("endCallsOnHostDestroy", it) }
+      endCallsWhenReactNativeStops?.let { putBoolean("endCallsWhenReactNativeStops", it) }
       putMap("foregroundService", Arguments.createMap().apply {
         putString("channelId", "io.wazo.callkeep.test")
         putString("channelName", "CallKeep test")
@@ -92,24 +93,50 @@ class CallKeepCallLifetimeOptionsTest {
     }
   }
 
-  /** With `endCallsOnHostDestroy: false`, destroying the activity leaves the call and the process. */
-  @Test fun theCallOutlivesTheActivityWhenAsked() {
+  /** A call that rings, then React Native's lifecycle: [react] runs on the module, [check] after. */
+  private fun withACall(options: WritableMap, react: (RNCallKeepModule) -> Unit, check: (String) -> Unit) {
     assumeTrue(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
     val module = RNCallKeepModule.getInstance(BridgeReactContext(context), true)
-    onModuleThread { module.setup(selfManagedOptions(endCallsOnHostDestroy = false)) }
+    onModuleThread { module.setup(options) }
     val uuid = UUID.randomUUID().toString()
     try {
-      onModuleThread { module.displayIncomingCall(uuid, "5551006", "Outlives the activity", false, null) }
+      onModuleThread { module.displayIncomingCall(uuid, "5551006", "Lifetime", false, null) }
       assertTrue("call not created", waitFor { VoiceConnectionService.currentConnections.containsKey(uuid) })
-      // React Native calls this on the main thread. Without the option, it ends the calls and kills
-      // the process, which the instrumentation reports as a crash.
-      instrumentation.runOnMainSync { module.onHostDestroy() }
-      Thread.sleep(500)
-      assertTrue("the call ended with the activity", VoiceConnectionService.currentConnections.containsKey(uuid))
+      react(module)
+      check(uuid)
     } finally {
       onModuleThread { module.endCall(uuid) }
       waitFor { !isForeground() }
       moduleThread.quitSafely()
     }
+  }
+
+  /**
+   * The activity is destroyed (a configuration change, Back, the app swiped away from Recents): the
+   * call goes on, and so does the process. Before, CallKeep ended the calls and killed the process,
+   * which the instrumentation reports as a crash.
+   */
+  @Test fun theCallOutlivesTheActivity() = withACall(selfManagedOptions(), { module ->
+    // React Native calls this on the main thread.
+    instrumentation.runOnMainSync { module.onHostDestroy() }
+    Thread.sleep(500)
+  }) { uuid ->
+    assertTrue("the call ended with the activity", VoiceConnectionService.currentConnections.containsKey(uuid))
+  }
+
+  /** React Native's instance stops (a reload): the JavaScript that handles the call is gone, so it ends. */
+  @Test fun theCallEndsWhenReactNativeStops() = withACall(selfManagedOptions(), { module ->
+    // React Native invalidates the modules off the main thread.
+    onModuleThread { module.invalidate() }
+  }) { uuid ->
+    assertTrue("the call outlived React Native", waitFor { !VoiceConnectionService.currentConnections.containsKey(uuid) })
+  }
+
+  /** With `endCallsWhenReactNativeStops: false`, native code owns the calls: they outlive React Native. */
+  @Test fun nativeCallsOutliveReactNative() = withACall(selfManagedOptions(endCallsWhenReactNativeStops = false), { module ->
+    onModuleThread { module.invalidate() }
+    Thread.sleep(500)
+  }) { uuid ->
+    assertTrue("the call ended with React Native", VoiceConnectionService.currentConnections.containsKey(uuid))
   }
 }
