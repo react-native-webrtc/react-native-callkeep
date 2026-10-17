@@ -1049,6 +1049,8 @@ RNCallKeep.addEventListener('onHasActiveCall', () => {
 
 ## Example
 
+The [example app](example/) runs every part of the library with simulated calls, on iOS and Android, from this repository's code. Its [README](example/README.md) explains what each part shows and which file to look at.
+
 A typical integration:
 
 ```javascript
