@@ -26,6 +26,22 @@ jobs:
       - name: Events match across actions.js, index.d.ts and docs/events.md
         run: npm run check:events
 
+  docs:
+    name: Docs
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+
+      - name: Methods match across index.js, index.d.ts and docs/api.md
+        run: npm run check:api
+
+      - name: Relative links and anchors in the Markdown files resolve
+        run: npm run check:links
+
   package:
     name: Package contents
     runs-on: ubuntu-latest

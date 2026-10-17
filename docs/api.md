@@ -13,6 +13,7 @@ import RNCallKeep from 'react-native-callkeep';
 | Method | Returns | iOS | Android |
 | --- | --- | :-: | :-: |
 | [`setup()`](setup.md) | `Promise` | ✅ | ✅ |
+| [`setSettings()`](#setsettings) | `void` | ✅ | ✅ |
 | [`addEventListener()`](events.md) | `EventListener` | ✅ | ✅ |
 | [`removeEventListener()`](#removeeventlistener) | `void` | ✅ | ✅ |
 | [`getInitialEvents()`](#getinitialevents) | `Promise<{ name, data }[]>` | ✅ | ✅ |
@@ -30,10 +31,13 @@ import RNCallKeep from 'react-native-callkeep';
 | [`sendDTMF()`](#senddtmf) | `void` | ✅ | ✅ |
 | [`getAudioRoutes()`](#getaudioroutes) | `Promise<AudioRoute[]>` | ✅ | ✅ |
 | [`setAudioRoute()`](#setaudioroute) | `Promise` | ✅ | ✅ |
+| [`setReachable()`](#setreachable) | `void` | ✅ | ✅ |
 | [`isCallActive()`](#iscallactive) | `Promise<boolean>` | ✅ | ❌ |
 | [`getCalls()`](#getcalls) | `Promise<object[]>` | ✅ | ❌ |
 | [`checkIfBusy()`](#checkifbusy) | `Promise<boolean>` | ✅ | ❌ |
 | [`checkSpeaker()`](#checkspeaker) | `Promise<boolean>` | ✅ | ❌ |
+| [`reportConnectingOutgoingCallWithUUID()`](#reportconnectingoutgoingcallwithuuid) | `void` | ✅ | ❌ |
+| [`reportConnectedOutgoingCallWithUUID()`](#reportconnectedoutgoingcallwithuuid) | `void` | ✅ | ❌ |
 | [`setAvailable()`](#setavailable) | `void` | ❌ | ✅ |
 | [`setForegroundServiceSettings()`](#setforegroundservicesettings) | `void` | ❌ | ✅ |
 | [`canMakeMultipleCalls()`](#canmakemultiplecalls) | `void` | ❌ | ✅ |
@@ -50,6 +54,28 @@ import RNCallKeep from 'react-native-callkeep';
 | [`backToForeground()`](#backtoforeground) | `void` | ❌ | ✅ |
 | [`registerPhoneAccount()`](#registerphoneaccount) | `void` | ❌ | ✅ |
 | [`registerAndroidEvents()`](#registerandroidevents) | `void` | ❌ | ✅ |
+| [`unregisterAndroidEvents()`](#unregisterandroidevents) | `void` | ❌ | ✅ |
+
+### setSettings
+
+Stores the settings without the rest of `setup()`, which already calls it. It takes the same options as [`setup()`](setup.md#options) and keeps the `ios` or `android` part for the current platform.
+
+On iOS, CallKit's configuration (`appName`, `imageName`, `ringtoneSound`, `supportsVideo`...) is read once, when `setup()` creates the CallKit provider: a later `setSettings()` doesn't change it.
+
+```js
+RNCallKeep.setSettings(options);
+```
+
+### setReachable
+
+Tells CallKeep that your JavaScript is running and can handle calls. Call it when your app starts:
+
+- With the `displayCallReachabilityTimeout` [setup option](setup.md#options), CallKeep ends an incoming call it displayed if `setReachable()` hasn't been called when that delay is over.
+- On Android, when the user starts a call from the Phone app before your app has called `setup()` (typically because your app isn't running), CallKeep sends [`checkReachability`](events.md#checkreachability). Without a `setReachable()` within two seconds, it wakes your app with the [headless task](android-installation.md#calls-started-from-the-phone-app-managed-mode).
+
+```js
+RNCallKeep.setReachable();
+```
 
 ### getInitialEvents
 
@@ -234,6 +260,32 @@ RNCallKeep.startCall(uuid, handle, contactIdentifier);
   - `false` (default)
   - `true` (you know... when not false)
 
+
+### reportConnectingOutgoingCallWithUUID
+
+_This feature is available only on iOS._
+
+Tells CallKit that an outgoing call started connecting, for example when your server starts ringing the callee.
+
+```js
+RNCallKeep.reportConnectingOutgoingCallWithUUID(uuid);
+```
+
+- `uuid`: string
+  - The `uuid` used for `startCall`
+
+### reportConnectedOutgoingCallWithUUID
+
+_This feature is available only on iOS._
+
+Tells CallKit that the callee answered an outgoing call: the call screen shows it as connected. On Android, call [`setCurrentCallActive()`](#setcurrentcallactive) instead.
+
+```js
+RNCallKeep.reportConnectedOutgoingCallWithUUID(uuid);
+```
+
+- `uuid`: string
+  - The `uuid` used for `startCall`
 
 ### updateDisplay
 Use this to update the display after an outgoing call has started.
@@ -550,6 +602,16 @@ _On iOS you still have to call `setup()`._
 
 ```js
 RNCallKeep.registerAndroidEvents();
+```
+
+### unregisterAndroidEvents
+
+_This feature is available only on Android._
+
+The reverse of [`registerAndroidEvents()`](#registerandroidevents): the module stops sending events to JavaScript. It keeps the events that happen meanwhile, and sends them in a [`didLoadWithEvents`](events.md#didloadwithevents) event after the next `registerAndroidEvents()`.
+
+```js
+RNCallKeep.unregisterAndroidEvents();
 ```
 
 ## Constants
