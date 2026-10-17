@@ -81,6 +81,7 @@ RCT_EXPORT_MODULE()
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
         sharedInstance = [super allocWithZone:zone];
+        sharedInstance->_delayedEvents = [NSMutableArray array];
     });
     return sharedInstance;
 }
@@ -171,7 +172,6 @@ RCT_EXPORT_MODULE()
             body, @"data",
             nil
         ];
-        if (_delayedEvents == nil) _delayedEvents = [NSMutableArray array];
         [_delayedEvents addObject:dictionary];
     }
 }
