@@ -17,16 +17,20 @@ Includes everything tagged as 4.3.17 on 2026-09-10, which was never published to
 
 ### Added
 
+- **iOS:** `RNCallKeep.continueUserActivity(_:)`, for apps with a scene life cycle, which iOS 27 requires: forward the scene delegate's user activities to it so calls started from Recents, Contacts or Siri still send `didReceiveStartCallAction`. The pod now defines a module, so Swift code can `import RNCallKeep`. The README explains the scene setup.
+- **Docs:** A new example app (`example/`, React Native 0.87, TypeScript) runs every part of the library with simulated calls from this repository's code, and documents the native setup on both platforms. It replaces the unmaintained Expo 34 example.
 - **Docs:** `CONTRIBUTING.md` (how to try a change in an app, what a pull request needs), `SECURITY.md` (private vulnerability reporting), this changelog, and every contributor in `AUTHORS`.
 - **iOS:** Privacy manifest (`PrivacyInfo.xcprivacy`, UserDefaults reason CA92.1, no collected data) shipped through a CocoaPods resource bundle. The podspec now uses React Native's minimum iOS version when available. ([#770](https://github.com/react-native-webrtc/react-native-callkeep/pull/770), @ujeon, follow-up by @sboily)
 
 ### Changed
 
 - Releases are published to npm from GitHub Actions, with provenance, when a tag named after the version is pushed (`4.4.0`, no `v` prefix). The podspec's source tag follows that format.
+- **iOS:** The library no longer sets a preferred sample rate (44.1 kHz) and IO buffer duration (5 ms) on the call's audio session. On an iPhone 15 Pro Max with iOS 27 the hardware rate stays 48 kHz either way, and the IO buffer goes from 5 ms to iOS's default (about 23 ms). If your audio stack needs a short buffer and doesn't set one itself, call `AVAudioSession.sharedInstance().setPreferredIOBufferDuration(_:)` in your app. ([#858](https://github.com/react-native-webrtc/react-native-callkeep/pull/858), @fhilleriteau-fdi)
 - **Docs:** `didDeactivateAudioSession`, `didResetProvider` and `createIncomingConnectionFailed` added to the events table. ([#804](https://github.com/react-native-webrtc/react-native-callkeep/pull/804), @davidliu)
 
 ### Fixed
 
+- **JS/Typings:** `getAudioRoutes()` is typed as `Promise<AudioRoute[]>` (it was `Promise<void>`), and `setMutedCall` is no longer documented as iOS-only: Android has it too. The README documents the returned array and its `selected` field. ([#838](https://github.com/react-native-webrtc/react-native-callkeep/pull/838) found the return type, @palmtown)
 - **iOS:** Events received before the module is initialized (for example an incoming call reported from `AppDelegate` on a VoIP push cold start) are no longer lost: `_delayedEvents` is now created when the singleton is allocated. ([#877](https://github.com/react-native-webrtc/react-native-callkeep/pull/877), @minhuwv)
 - **iOS:** `getAudioRoutes`/`getAudioInputs` no longer activate the audio session, so they no longer interrupt other apps' audio, switch the output to the receiver, or bring up a hands-free (car) call after a call ends. Outside a call, `selected` now reflects the route actually in use. ([#863](https://github.com/react-native-webrtc/react-native-callkeep/pull/863), @siebeg-ideal)
 - **iOS:** `setAudioRoute` and `getAudioRoutes` reject with the exception description (a string) instead of the `NSException` itself, as React Native 0.79 requires. ([#845](https://github.com/react-native-webrtc/react-native-callkeep/pull/845), @KorotkovAlex)

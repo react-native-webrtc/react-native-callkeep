@@ -4,22 +4,21 @@ Thank you for your interest in contributing! This guide explains how the library
 
 ## Quick Start
 
-react-native-callkeep is a native module: it only runs inside a React Native app. To work on it, link your clone into an app and rebuild that app.
+react-native-callkeep is a native module: it only runs inside a React Native app. The [example app](example/) uses this repository's code directly, so it is the quickest way to try a change:
 
 ```bash
 # 1. Fork and clone
 git clone https://github.com/<you>/react-native-callkeep.git
+cd react-native-callkeep/example
 
-# 2. In a React Native app, install your clone instead of the npm release
-cd my-app
-npm install ../react-native-callkeep
-
-# 3. Rebuild the native app after every native change
-cd ios && pod install && cd ..
-npx react-native run-ios        # or run-android
+# 2. Install and run (iOS needs a real device for calls; see example/README.md)
+npm install
+npm run android                 # or: cd ios && pod install && cd .. && npm run ios -- --device
 ```
 
-JavaScript changes reload with Metro; Objective-C and Java changes need a native rebuild. If Metro does not follow the symlink, install a tarball instead: run `npm pack` in your clone and `npm install /path/to/react-native-callkeep-<version>.tgz` in the app.
+JavaScript changes reload with Metro; Objective-C and Java changes need a native rebuild.
+
+To try a change in your own app instead, install your clone there (`npm install ../react-native-callkeep`) and rebuild the app. If Metro does not follow the symlink, install a tarball: run `npm pack` in your clone and `npm install /path/to/react-native-callkeep-<version>.tgz` in the app.
 
 ## Where Things Live
 
@@ -31,11 +30,23 @@ JavaScript changes reload with Metro; Objective-C and Java changes need a native
 | `ios/RNCallKeep/RNCallKeep.m` | iOS: CallKit provider, call actions and audio session |
 | `android/src/main/java/io/wazo/callkeep/` | Android: `RNCallKeepModule` (the module), `VoiceConnectionService` and `VoiceConnection` (Telecom) |
 | `docs/` | Installation guides |
+| `example/` | The example app, which runs the library from this repository |
 | `tests/android/` | Android instrumentation tests, run inside a React Native host app (see its README) |
 
 ## Finding Something to Work On
 
 Look for issues labeled **help wanted** or **good first issue**. If you plan a larger change, open an issue first so we can agree on the approach before you write the code.
+
+## Issue Policy
+
+Open issues are the work we intend to look at, so they shouldn't pile up:
+
+- An issue with **no activity for two years** gets the `stale` label and a comment.
+- It is **closed 30 days later** unless someone comments. A comment keeps it open, so if the problem still happens with the latest release, say so, with your react-native-callkeep, React Native and OS versions.
+- After it is closed, open a new issue with the details and a link to the old one (GitHub doesn't let authors reopen an issue someone else closed).
+- Issues labeled **help wanted** or **good first issue** are never closed this way. Pull requests aren't either.
+
+A GitHub Actions workflow (`.github/workflows/stale.yml`) applies this policy every day.
 
 ## Making a Change
 

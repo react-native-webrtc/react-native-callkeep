@@ -222,7 +222,7 @@ declare module 'react-native-callkeep' {
       outgoing: boolean
     }[] | void>
 
-    static getAudioRoutes(): Promise<void>
+    static getAudioRoutes(): Promise<AudioRoute[]>
 
     static setAudioRoute: (uuid: string, inputName: string) => Promise<void>
 
@@ -238,9 +238,6 @@ declare module 'react-native-callkeep' {
 
     static hasOutgoingCall(): Promise<boolean>
 
-    /**
-     * @description setMutedCall method is available only on iOS.
-     */
     static setMutedCall(uuid: string, muted: boolean): void
 
     /**

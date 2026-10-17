@@ -929,11 +929,6 @@ RCT_EXPORT_METHOD(getAudioRoutes: (RCTPromiseResolveBlock)resolve
 
     [audioSession setMode:mode error:nil];
 
-    double sampleRate = 44100.0;
-    [audioSession setPreferredSampleRate:sampleRate error:nil];
-
-    NSTimeInterval bufferDuration = .005;
-    [audioSession setPreferredIOBufferDuration:bufferDuration error:nil];
     [audioSession setActive:TRUE error:nil];
 }
 
@@ -965,8 +960,13 @@ RCT_EXPORT_METHOD(getAudioRoutes: (RCTPromiseResolveBlock)resolve
 continueUserActivity:(NSUserActivity *)userActivity
  restorationHandler:(void(^)(NSArray * __nullable restorableObjects))restorationHandler
 {
+    return [RNCallKeep continueUserActivity:userActivity];
+}
+
++ (BOOL)continueUserActivity:(NSUserActivity *)userActivity
+{
 #ifdef DEBUG
-    NSLog(@"[RNCallKeep][application:continueUserActivity]");
+    NSLog(@"[RNCallKeep][continueUserActivity]");
 #endif
     INInteraction *interaction = userActivity.interaction;
     INPerson *contact;
