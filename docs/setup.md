@@ -125,6 +125,21 @@ On iOS you can also perform setup in `AppDelegate`. Doing this allows capturing 
 
 ```
 
+## Setup from native code (Android)
+
+In self-managed mode, native code can set CallKeep up and show an incoming call before React Native runs, or without it: from a Firebase messaging service, for instance, when a call push wakes the app. `setupNative` takes the `android` options of `setup()`, with `selfManaged: true` (Android 8 and later):
+
+```kotlin
+RNCallKeepModule.setupNative(context, Arguments.createMap().apply {
+  putBoolean("selfManaged", true)
+})
+RNCallKeepModule.displayIncomingCall(context, callUUID, number, callerName, false)
+```
+
+It stores the settings and registers the phone account as `setup()` does, but creates no module and no React context. Your app then shows its own incoming-call UI and handles the call from CallKeep's local broadcasts: register a receiver with `LocalBroadcastManager` for the `Constants.ACTION_*` actions (`ACTION_SHOW_INCOMING_CALL_UI`, `ACTION_ANSWER_CALL`, `ACTION_END_CALL`, ...); each intent carries the call's `Constants.EXTRA_CALL_UUID` in its `attributeMap` extra. When React Native starts later, its module uses the same settings. Register your receiver before `displayIncomingCall`: the call's actions (`ACTION_SHOW_INCOMING_CALL_UI`, `ACTION_ANSWER_CALL`, `ACTION_END_CALL`, hold, DTMF...) reach only the receivers registered when they happen. Only the connection service's events (`ACTION_DID_DISPLAY_INCOMING_CALL`, `ACTION_ON_CREATE_CONNECTION_FAILED`...) are kept for JavaScript when no receiver gets them, so once your receiver is registered, React Native's [`getInitialEvents()`](api.md#getinitialevents) doesn't return them either.
+
+Telecom gives self-managed calls the call focus (Android 9 and later). To start a call's audio before React Native runs, set `VoiceConnectionService.nativeFocusListener`: `onFocusGained` tells when the call may use audio, and on `onFocusLost` release its audio and microphone, then call `connectionServiceFocusReleased()` on `VoiceConnectionService.currentConnectionService`. `VoiceConnectionService.hasConnectionServiceFocus()` reads the current state; it turns false when the last call ends, for which Telecom calls no `onFocusLost`.
+
 ## Foreground service (Android 11 and later)
 
 Since Android 11, an app needs a [foreground service](https://developer.android.com/about/versions/11/privacy/foreground-services) to use the microphone in the background. Set the `foregroundService` key in the [`setup()` options](#options), and declare the service's types in the manifest: see [Android installation](android-installation.md#manifest).

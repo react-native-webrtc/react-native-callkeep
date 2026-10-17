@@ -176,7 +176,7 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule implements Life
         this.reactContext = reactContext;
     }
 
-    private boolean isSelfManaged() {
+    private static boolean isSelfManaged() {
         try {
             return Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && _settings.hasKey("selfManaged") && _settings.getBoolean("selfManaged");
         } catch (Exception e) {
@@ -231,8 +231,12 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule implements Life
             Log.w(TAG, "[RNCallKeepModule][initializeTelecomManager] no react context found.");
             return;
         }
+        initializeTelecomManager(context);
+    }
+
+    private static void initializeTelecomManager(Context context) {
         ComponentName cName = new ComponentName(context, VoiceConnectionService.class);
-        String appName = this.getApplicationName(context);
+        String appName = getApplicationName(context);
 
         handle = new PhoneAccountHandle(cName, appName);
         telecomManager = (TelecomManager) context.getSystemService(Context.TELECOM_SERVICE);
@@ -383,7 +387,27 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule implements Life
         if (options == null) {
             return;
         }
-        _settings = storeSettings(options);
+        _settings = storeSettings(getAppContext(), options);
+    }
+
+    /**
+     * Sets up self-managed calls from native code, before React Native runs or without it, so that
+     * a service (an FCM service, for instance) can show an incoming call with the static
+     * displayIncomingCall. It stores the settings and registers the phone account as setup() does,
+     * but creates no module: the app shows its own incoming-call UI and listens to CallKeep's local
+     * broadcasts. When React Native starts later, its module uses the same settings.
+     * Self-managed mode only, Android 8 and later.
+     */
+    public static void setupNative(Context context, ReadableMap options) {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O ||
+                !options.hasKey("selfManaged") || !options.getBoolean("selfManaged")) {
+            throw new IllegalArgumentException("Native setup requires self-managed calls on Android 8+");
+        }
+        _settings = storeSettings(context.getApplicationContext(), options);
+        registerPhoneAccount(context.getApplicationContext());
+        VoiceConnectionService.setPhoneAccountHandle(handle);
+        // The state setup() ends in once the phone account is registered: available, so initialized.
+        VoiceConnectionService.setAvailable(true);
     }
 
     @ReactMethod
@@ -443,7 +467,7 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule implements Life
             return;
         }
 
-        this.registerPhoneAccount(context);
+        registerPhoneAccount(context);
     }
 
     @ReactMethod
@@ -481,6 +505,26 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule implements Life
 
         Log.d(TAG, "[RNCallKeepModule] displayIncomingCall, uuid: " + uuid + ", number: " + number + ", callerName: " + callerName + ", hasVideo: " + hasVideo + ", payload: " + payload);
 
+        this.listenToNativeCallsState();
+        addIncomingCall(uuid, number, callerName, hasVideo, payload);
+    }
+
+    /**
+     * Shows an incoming call from native code, with the phone account set up by setupNative (or
+     * setup) in this process. Telecom then reports it through CallKeep's broadcasts, as for a call
+     * shown from JavaScript.
+     */
+    public static void displayIncomingCall(Context context, String uuid, String number,
+            String callerName, boolean hasVideo) {
+        if (!isSelfManaged()) {
+            throw new IllegalStateException("Call setup is required before native display");
+        }
+        initializeTelecomManager(context.getApplicationContext());
+        addIncomingCall(uuid, number, callerName, hasVideo, null);
+    }
+
+    private static void addIncomingCall(String uuid, String number, String callerName,
+            boolean hasVideo, @Nullable Bundle payload) {
         Bundle extras = new Bundle();
         Uri uri = Uri.fromParts(PhoneAccount.SCHEME_TEL, number, null);
 
@@ -493,7 +537,6 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule implements Life
             extras.putBundle(EXTRA_PAYLOAD, payload);
             incomingCallPayloads.put(uuid, payload);
         }
-        this.listenToNativeCallsState();
         telecomManager.addNewIncomingCall(handle, extras);
     }
 
@@ -1201,19 +1244,14 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule implements Life
         return this.reactContext.getCurrentActivity();
     }
 
-    private void registerPhoneAccount(Context appContext) {
+    private static void registerPhoneAccount(Context context) {
         if (!isConnectionServiceAvailable()) {
             Log.w(TAG, "[RNCallKeepModule] registerPhoneAccount ignored due to no ConnectionService");
             return;
         }
 
-        this.initializeTelecomManager();
-        Context context = this.getAppContext();
-        if (context == null) {
-            Log.w(TAG, "[RNCallKeepModule][registerPhoneAccount] no react context found.");
-            return;
-        }
-        String appName = this.getApplicationName(context);
+        initializeTelecomManager(context);
+        String appName = getApplicationName(context);
 
         PhoneAccount.Builder builder = new PhoneAccount.Builder(handle, appName);
         if (isSelfManaged()) {
@@ -1224,8 +1262,8 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule implements Life
         }
 
         if (_settings != null && _settings.hasKey("imageName")) {
-            int identifier = appContext.getResources().getIdentifier(_settings.getString("imageName"), "drawable", appContext.getPackageName());
-            Icon icon = Icon.createWithResource(appContext, identifier);
+            int identifier = context.getResources().getIdentifier(_settings.getString("imageName"), "drawable", context.getPackageName());
+            Icon icon = Icon.createWithResource(context, identifier);
             builder.setIcon(icon);
         }
 
@@ -1252,7 +1290,7 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule implements Life
         }
     }
 
-    private String getApplicationName(Context appContext) {
+    private static String getApplicationName(Context appContext) {
         ApplicationInfo applicationInfo = appContext.getApplicationInfo();
         int stringId = applicationInfo.labelRes;
 
@@ -1324,8 +1362,7 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule implements Life
     }
 
     // Store all callkeep settings in JSON
-    private WritableMap storeSettings(ReadableMap options) {
-        Context context = getAppContext();
+    private static WritableMap storeSettings(@Nullable Context context, ReadableMap options) {
         if (context == null) {
             Log.w(TAG, "[RNCallKeepModule][storeSettings] no react context found.");
             return MapUtils.readableToWritableMap(options);

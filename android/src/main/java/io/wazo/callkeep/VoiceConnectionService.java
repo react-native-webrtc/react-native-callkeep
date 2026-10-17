@@ -156,6 +156,36 @@ public class VoiceConnectionService extends ConnectionService {
         isInitialized = value;
     }
 
+    /**
+     * Lets native code follow the call focus Telecom gives self-managed calls (Android 9 and later),
+     * to start a call's media before React Native runs. When the focus is lost, release the call's
+     * audio and microphone, then call connectionServiceFocusReleased() on the service.
+     */
+    public interface NativeFocusListener {
+        void onFocusGained();
+        void onFocusLost();
+    }
+    public static NativeFocusListener nativeFocusListener;
+    private static boolean connectionServiceFocused = false;
+
+    public static boolean hasConnectionServiceFocus() {
+        return connectionServiceFocused;
+    }
+
+    @Override
+    public void onConnectionServiceFocusGained() {
+        super.onConnectionServiceFocusGained();
+        connectionServiceFocused = true;
+        if (nativeFocusListener != null) nativeFocusListener.onFocusGained();
+    }
+
+    @Override
+    public void onConnectionServiceFocusLost() {
+        super.onConnectionServiceFocusLost();
+        connectionServiceFocused = false;
+        if (nativeFocusListener != null) nativeFocusListener.onFocusLost();
+    }
+
     public static void deinitConnection(String connectionId) {
         Log.d(TAG, "[VoiceConnectionService] deinitConnection:" + connectionId);
         VoiceConnectionService.hasOutgoingCall = false;
@@ -165,6 +195,8 @@ public class VoiceConnectionService extends ConnectionService {
         }
         
         if (currentConnections.isEmpty()) {
+            // Telecom doesn't call onConnectionServiceFocusLost when the last call ends.
+            connectionServiceFocused = false;
             Log.d(TAG, "[VoiceConnectionService] deinitConnection. No other connections left -> RUN stopForegroundService!");
             currentConnectionService.stopForegroundService();
         } else {

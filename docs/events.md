@@ -324,3 +324,33 @@ RNCallKeep.addEventListener('onHasActiveCall', () => {
 });
 
 ```
+
+## Listening from native code (iOS)
+
+iOS also posts these events to `NotificationCenter.default`, under the names below, with the event's data as `userInfo`. Native code can observe them before a React Native runtime exists, or while JavaScript is busy; the events JavaScript receives are unchanged. `didLoadWithEvents` and `didChangeAudioRoute` are not posted.
+
+Each notification is posted on the thread that sends the event, which can be CallKit's private queue (`didDisplayIncomingCall`, for instance). Observe with `queue: .main`, as below, or move to the main queue yourself before touching the UI or the app's state.
+
+| Event                        | Notification name                        |
+| ---------------------------- | ---------------------------------------- |
+| didReceiveStartCallAction    | `RNCallKeepDidReceiveStartCallAction`    |
+| answerCall                   | `RNCallKeepPerformAnswerCallAction`      |
+| endCall                      | `RNCallKeepPerformEndCallAction`         |
+| didActivateAudioSession      | `RNCallKeepDidActivateAudioSession`      |
+| didDeactivateAudioSession    | `RNCallKeepDidDeactivateAudioSession`    |
+| didDisplayIncomingCall       | `RNCallKeepDidDisplayIncomingCall`       |
+| didPerformSetMutedCallAction | `RNCallKeepDidPerformSetMutedCallAction` |
+| didToggleHoldCallAction      | `RNCallKeepDidToggleHoldAction`          |
+| didPerformDTMFAction         | `RNCallKeepDidPerformDTMFAction`         |
+| didResetProvider             | `RNCallKeepProviderReset`                |
+
+```swift
+NotificationCenter.default.addObserver(
+  forName: Notification.Name("RNCallKeepPerformAnswerCallAction"), object: nil, queue: .main
+) { notification in
+  let callUUID = notification.userInfo?["callUUID"] as? String
+  // ...
+}
+```
+
+On Android, native code receives CallKeep's local broadcasts: see [Setup from native code (Android)](setup.md#setup-from-native-code-android).
