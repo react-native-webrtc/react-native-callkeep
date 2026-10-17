@@ -1,111 +1,86 @@
-# Android Installation
+# Android installation
 
-## Automatic linking
+## Install
 
 ```sh
-react-native link react-native-callkeep
+npm install react-native-callkeep
 ```
 
-## Manual installation
+Autolinking adds the library: there is nothing to link by hand, and no code to add to `MainActivity` or `MainApplication`. The library's own manifest adds `CALL_PHONE`, `READ_PHONE_NUMBERS`, `MANAGE_OWN_CALLS` and, up to Android 10, `READ_PHONE_STATE`.
 
-1. In `android/app/build.gradle`
-Add a line `compile project(':react-native-callkeep')` in `dependencies {}` section.
+## Manifest
 
-2. In `android/settings.gradle`
-Add:
-
-```java
-include ':react-native-callkeep'
-project(':react-native-callkeep').projectDir = new File(rootProject.projectDir, '../node_modules/react-native-callkeep/android')
-```
-
-3. In `android/app/src/main/java/.../MainApplication.java`:
-
-```java
-import io.wazo.callkeep.RNCallKeepPackage; // Add this import line
-//...
-
-private static List<ReactPackage> getPackages() {
-    return Arrays.<ReactPackage>asList(
-        new MainReactPackage(),
-        new RNCallKeepPackage() // Add this line
-    );
-}
-```
-
-4. Add permissionResult listener in `MainActivity.java`:
-
-```java
-import io.wazo.callkeep.RNCallKeepModule; // Add these import lines
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
-
-public class MainActivity extends ReactActivity {
-    // ...
-
-    // Permission results
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        switch (requestCode) {
-            case RNCallKeepModule.REQUEST_READ_PHONE_STATE:
-                RNCallKeepModule.onRequestPermissionsResult(requestCode, permissions, grantResults);
-                break;
-        }
-    }
-}
-```
-
-## Android common step installation
-
-1. In `android/app/src/main/AndroidManifest.xml` add these permissions:
+In `android/app/src/main/AndroidManifest.xml`, add the permissions and the connection service:
 
 ```xml
-<uses-permission android:name="android.permission.BIND_TELECOM_CONNECTION_SERVICE"/>
-<uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
-<uses-permission android:name="android.permission.READ_PHONE_STATE" />
-<uses-permission android:name="android.permission.CALL_PHONE" />
-<uses-permission android:name="android.permission.RECORD_AUDIO" />
-// Use this to target android >= 14
-<uses-permission android:name="android.permission.FOREGROUND_SERVICE_MICROPHONE" />
-<uses-permission android:name="android.permission.FOREGROUND_SERVICE_CAMERA" />
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+  <!-- The microphone for the call, and the foreground service that keeps it in the background. -->
+  <uses-permission android:name="android.permission.RECORD_AUDIO" />
+  <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+  <uses-permission android:name="android.permission.FOREGROUND_SERVICE_PHONE_CALL" />
+  <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MICROPHONE" />
+  <!-- Android 13+: the foreground service's notification. -->
+  <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
-<application>
-    // ...
-    <service android:name="io.wazo.callkeep.VoiceConnectionService"
-        android:label="Wazo"
-        android:permission="android.permission.BIND_TELECOM_CONNECTION_SERVICE"
-        // Use this to target android >= 11
-        android:foregroundServiceType="camera|microphone"
-        // For android < 11
-        android:foregroundServiceType="phoneCall"
-    >
-        
-        <intent-filter>
-            <action android:name="android.telecom.ConnectionService" />
-        </intent-filter>
+  <application>
+    <!-- The ConnectionService Telecom talks to. The permission makes sure only the system binds to it. -->
+    <service
+      android:name="io.wazo.callkeep.VoiceConnectionService"
+      android:label="Your app"
+      android:permission="android.permission.BIND_TELECOM_CONNECTION_SERVICE"
+      android:foregroundServiceType="phoneCall|microphone"
+      android:exported="true">
+      <intent-filter>
+        <action android:name="android.telecom.ConnectionService" />
+      </intent-filter>
     </service>
-    // ....
-</application>
+  </application>
+</manifest>
 ```
 
-Beware to choose the right `foregroundServiceType` depending on the version of Android you want to target.
+- The library starts its foreground service with every type declared on the service, and each type has its own requirements. `phoneCall|microphone` fits audio calls. Add `camera` only for video calls: it also needs `FOREGROUND_SERVICE_CAMERA` and the camera permission.
+- `BIND_TELECOM_CONNECTION_SERVICE` goes on the service only. Your app doesn't request it as a `uses-permission`.
 
-2. To be able to wake up your killed application when making an outgoing call form the native Phone application:
+## Runtime permissions
 
-Add this in the `application` node of `android/app/src/main/AndroidManifest.xml` :
+Ask for the microphone, and on Android 13 and later for notifications, before the first call. `RNCallKeep.setup()` asks for the phone permissions it needs itself.
+
+```js
+import { PermissionsAndroid, Platform } from 'react-native';
+
+const permissions = [PermissionsAndroid.PERMISSIONS.RECORD_AUDIO];
+if (Platform.Version >= 33) {
+  permissions.push(PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS);
+}
+await PermissionsAndroid.requestMultiple(permissions);
+```
+
+## Managed or self-managed
+
+- **Managed** (the default): Android shows its own call screens. The user has to enable your app's phone account in the system settings: `RNCallKeep.setup()` shows an alert with your `alertTitle` and `alertDescription`, and opens those settings.
+- **Self-managed** (`selfManaged: true`, Android 8 and later): your app draws its own incoming-call screen when it receives [`showIncomingCallUi`](events.md#showincomingcallui), and no phone account needs enabling. See the [self-managed mode guide](guides/android-self-managed.md).
+
+## Calls started from the Phone app (managed mode)
+
+To wake your app when the user starts a call from the Phone app while your app isn't running, add this service to the `application` element of the manifest:
 
 ```xml
 <service android:name="io.wazo.callkeep.RNCallKeepBackgroundMessagingService" />
 ```
 
-
-In your `index.android.js` file :
+and register its headless task in your `index.js`:
 
 ```js
+import { AppRegistry } from 'react-native';
+
 AppRegistry.registerHeadlessTask('RNCallKeepBackgroundMessage', () => ({ name, callUUID, handle }) => {
-  // Make your call here
-  
+  // Start the call with your VoIP stack.
   return Promise.resolve();
 });
 ```
+
+## Set up CallKeep
+
+Call `RNCallKeep.setup()` early in your JavaScript, with the `foregroundService` option to keep the microphone in the background: see [Setup and options](setup.md).
+
+Calls work on emulators as well as devices. The [example app](../example/) has this whole setup, tested on Android 10 and Android 16.
