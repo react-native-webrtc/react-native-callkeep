@@ -111,11 +111,15 @@ declare module 'react-native-callkeep' {
       imageName?: string,
       additionalPermissions: string[],
       selfManaged?: boolean,
+      /** End every call and the process when the React activity is destroyed (default true). */
+      endCallsOnHostDestroy?: boolean,
       foregroundService?: {
         channelId: string,
         channelName: string,
         notificationTitle: string,
-        notificationIcon?: string
+        notificationIcon?: string,
+        /** Android 10+: a mask of ServiceInfo.FOREGROUND_SERVICE_TYPE_* values; default: the manifest's types. */
+        foregroundServiceType?: number
       }
     }
   }

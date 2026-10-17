@@ -84,6 +84,9 @@ RNCallKeep.setup(options).then(accepted => {});
       - `channelName`: string, the channel's name in the system settings
       - `notificationTitle`: string
       - `notificationIcon`: string (optional), the name of a `mipmap` resource, such as `ic_launcher`
+      - `foregroundServiceType`: number (optional, Android 10 and later), the types the service starts with, as a mask of [`ServiceInfo.FOREGROUND_SERVICE_TYPE_*`](https://developer.android.com/reference/android/content/pm/ServiceInfo#FOREGROUND_SERVICE_TYPE_PHONE_CALL) values: `4` for `phoneCall`, `132` for `phoneCall` and `microphone`. Each type must be declared on the service in the manifest. Without it, the service starts with every type the manifest declares. CallKeep starts the service when the call is created and keeps these types for the whole call: with `4` alone, an answered call has no microphone access while the app is in the background. To add `microphone` once the call is answered, call `startForeground(Constants.FOREGROUND_SERVICE_NOTIFICATION_ID, notification, types)` on `VoiceConnectionService.currentConnectionService` from native code, with both types
+    - `endCallsOnHostDestroy`: boolean (optional, default `true`)
+      When the React activity is destroyed, CallKeep ends every call and kills the app's process. Set it to `false` when your calls must outlive the activity, for instance when native code owns them: ending them is then up to your app.
     - `selfManaged`: boolean (optional)
       When set to true, call keep will configure itself to run as a self managed connection service. See the [self-managed mode guide](guides/android-self-managed.md) and [Google's documentation](https://developer.android.com/guide/topics/connectivity/telecom/selfManaged).
       - `displayCallReachabilityTimeout`: number in ms (optional)
