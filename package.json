@@ -3,7 +3,12 @@
   "version": "4.3.17",
   "description": "iOS 10 CallKit and Android ConnectionService Framework For React Native",
   "main": "index.js",
-  "scripts": {},
+  "scripts": {
+    "check": "npm run check:types && npm run check:events && npm run check:package",
+    "check:types": "npx --yes -p typescript@5.9.3 tsc --noEmit --strict index.d.ts",
+    "check:events": "node scripts/check-events.js",
+    "check:package": "node scripts/check-package.js"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/react-native-webrtc/react-native-callkeep.git"

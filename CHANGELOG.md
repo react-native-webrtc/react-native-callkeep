@@ -36,6 +36,8 @@ These changes will ship as 4.4.0. They include everything tagged as 4.3.17 on 20
 - **Android:** Removed the three-argument overloads of `displayIncomingCall` and `startCall`, which React Native 0.76 rejects as duplicate method names. The JS API is unchanged. ([#816](https://github.com/react-native-webrtc/react-native-callkeep/pull/816), @Irfanwani)
 - **Android:** The Gradle `namespace` (`io.wazo.callkeep`) is set, so the library builds with Android Gradle Plugin 8 (React Native 0.73). ([#781](https://github.com/react-native-webrtc/react-native-callkeep/pull/781), @gasolin)
 - **Android:** `@RequiresApi(S)` added on `CallStateListener` (lint). ([#741](https://github.com/react-native-webrtc/react-native-callkeep/pull/741), @ramijarrar)
+- **JS/Typings:** `NativeEvents.onHasActiveCall` now holds the native event name `'RNCallKeepHasActiveCall'` (it was `'onHasActiveCall'`), so the `InitialEvents` entries for this event are typed correctly.
+- The npm package no longer ships the `tests/` folder.
 
 ## [4.3.16] - 2024-11-18
 

@@ -16,7 +16,7 @@ declare module 'react-native-callkeep' {
     checkReachability: 'RNCallKeepCheckReachability';
     didResetProvider: 'RNCallKeepProviderReset';
     didLoadWithEvents: 'RNCallKeepDidLoadWithEvents';
-    onHasActiveCall : 'onHasActiveCall';
+    onHasActiveCall : 'RNCallKeepHasActiveCall';
   }
 
   export type InitialEvents = Array<{
