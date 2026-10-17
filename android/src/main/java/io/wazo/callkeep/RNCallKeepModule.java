@@ -35,7 +35,8 @@ import android.media.AudioManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Looper;
+import android.os.Handler;
+import android.os.HandlerThread;
 import android.view.WindowManager;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -120,6 +121,7 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule implements Life
 
     private static final String TAG = "RNCallKeep";
     private static TelecomManager telecomManager;
+    private HandlerThread handlerThread;
     private LegacyCallStateListener legacyCallStateListener;
     private CallStateListener callStateListener;
     private static TelephonyManager telephonyManager;
@@ -312,9 +314,19 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule implements Life
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && callStateListener !=null){
             telephonyManager.unregisterTelephonyCallback(callStateListener);
-        } else if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S && legacyCallStateListener != null){
-            telephonyManager.listen(legacyCallStateListener, PhoneStateListener.LISTEN_NONE);
-            Looper.myLooper().quit();
+        } else if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S && handlerThread != null){
+            // Unregister on the listener's thread, after any pending registration, then let the thread end.
+            new Handler(handlerThread.getLooper()).post(new Runnable() {
+                @Override
+                public void run() {
+                    if (legacyCallStateListener != null) {
+                        telephonyManager.listen(legacyCallStateListener, PhoneStateListener.LISTEN_NONE);
+                        legacyCallStateListener = null;
+                    }
+                }
+            });
+            handlerThread.quitSafely();
+            handlerThread = null;
         }
     }
 
@@ -325,15 +337,23 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule implements Life
 
         if (permissionCheck == PackageManager.PERMISSION_GRANTED) {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                  callStateListener = new CallStateListener();
-                  telephonyManager.registerTelephonyCallback(context.getMainExecutor(),callStateListener);
+                callStateListener = new CallStateListener();
+                telephonyManager.registerTelephonyCallback(context.getMainExecutor(),callStateListener);
             } else {
-                  if (Looper.myLooper() == null) {
-                    Looper.prepare();
-                  }
-                  legacyCallStateListener  = new LegacyCallStateListener();
-                  telephonyManager.listen(legacyCallStateListener, PhoneStateListener.LISTEN_CALL_STATE);
-                  Looper.loop();
+                if (handlerThread == null) {
+                    handlerThread = new HandlerThread("TelephonyManager");
+                    handlerThread.start();
+                }
+
+                // PhoneStateListener runs its callbacks on the looper of the thread that creates it,
+                // so create it on the handler thread instead of the caller's thread.
+                new Handler(handlerThread.getLooper()).post(new Runnable() {
+                    @Override
+                    public void run() {
+                        legacyCallStateListener = new LegacyCallStateListener();
+                        telephonyManager.listen(legacyCallStateListener, PhoneStateListener.LISTEN_CALL_STATE);
+                    }
+                });
             }
         }
     }
