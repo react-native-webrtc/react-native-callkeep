@@ -327,7 +327,11 @@ public class VoiceConnectionService extends ConnectionService {
         chan.setLockscreenVisibility(Notification.VISIBILITY_PRIVATE);
         NotificationManager manager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
         assert manager != null;
-        manager.createNotificationChannel(chan);
+        // A channel that already exists is left as it is: creating it again with IMPORTANCE_NONE would
+        // lower the importance of an app's own channel, whose notifications would stop alerting.
+        if (manager.getNotificationChannel(NOTIFICATION_CHANNEL_ID) == null) {
+            manager.createNotificationChannel(chan);
+        }
 
         NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID);
         notificationBuilder.setOngoing(true)
@@ -335,7 +339,10 @@ public class VoiceConnectionService extends ConnectionService {
             .setPriority(NotificationManager.IMPORTANCE_MIN)
             .setCategory(Notification.CATEGORY_SERVICE);
 
-        Activity currentActivity = RNCallKeepModule.instance.getCurrentReactActivity();
+        // Telecom can create a connection in a process where the module doesn't exist yet, such as
+        // a call placed from the Phone app while the app isn't running.
+        Activity currentActivity = RNCallKeepModule.instance == null
+            ? null : RNCallKeepModule.instance.getCurrentReactActivity();
         if (currentActivity != null) {
             Intent notificationIntent = new Intent(this, currentActivity.getClass());
             notificationIntent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);

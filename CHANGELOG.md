@@ -20,6 +20,8 @@ are not listed here.
 
 ### Fixed
 
+- **Android:** The foreground service leaves the notification channel named by `foregroundService.channelId` as it is when that channel already exists. An app could pass its own channel, such as the one its incoming calls ring in: creating it again with `IMPORTANCE_NONE` lowered its importance (from high to low on a Galaxy S24, Android 16), and its notifications stopped alerting.
+- **Android:** The foreground service starts when the app's process has no CallKeep module yet, as when Telecom creates a call placed from the Phone app while the app isn't running. It crashed the app with a `NullPointerException`; without the module, its notification opens no activity.
 - **Android:** `checkIsInManagedCall()`, `setAudioRoute()` and `toggleAudioRouteSpeaker()` no longer crash the app on Android 7 with `NoSuchMethodError`: they called Android 8 APIs. Before Android 8, `checkIsInManagedCall()` reports any ongoing call (there are no self-managed calls then), `setAudioRoute()` rejects and `toggleAudioRouteSpeaker()` does nothing.
 - **Android:** `setAudioRoute()` rejects when no call has the given UUID. Its promise never settled.
 - **Android:** Android lint passes on the library ([#646](https://github.com/react-native-webrtc/react-native-callkeep/issues/646)): `startCall` and `checkDefaultPhoneAccount` handle a `SecurityException` from Telecom (a permission can be revoked at any time), `endCall` uses `AudioManager.MODE_NORMAL`, and the library's `build.gradle` no longer declares the Android Gradle Plugin 3.0.1: the app's plugin builds it. ([#684](https://github.com/react-native-webrtc/react-native-callkeep/pull/684), @ramijarrar)

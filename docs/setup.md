@@ -80,7 +80,7 @@ RNCallKeep.setup(options).then(accepted => {});
       multiple popups to the user at different times.
     - `foregroundService`: object (optional)
       Keeps the app and its microphone running while a call is in progress; see [Foreground service](#foreground-service-android-11-and-later).
-      - `channelId`: string, the notification channel the service creates
+      - `channelId`: string, the notification channel the service posts in. CallKeep creates it if it doesn't exist; an existing channel, such as one your app created, is left as it is
       - `channelName`: string, the channel's name in the system settings
       - `notificationTitle`: string
       - `notificationIcon`: string (optional), the name of a `mipmap` resource, such as `ic_launcher`
