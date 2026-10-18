@@ -11,6 +11,10 @@ are not listed here.
 
 ## [Unreleased]
 
+## [4.6.1] - 2026-10-18
+
+On Android, a call's connection now reports the dialing or ringing state that Telecom shows. On iOS, `setAudioRoute()` no longer leaves its promise pending when no route has the given name.
+
 ### Fixed
 
 - **iOS:** `setAudioRoute()` rejects when no audio route has the given name. Its promise never settled.
@@ -686,7 +690,8 @@ Version 3.0.5 was tagged (`v3.0.5`) but not published to npm; its changes are li
 
 - First release as react-native-callkeep, forked from react-native-callkit 1.3.4 (iOS CallKit, by @ianlin). Adds Android support through ConnectionService; the native module is renamed `RNCallKeep` and `setup` takes `{ ios, android }` options. ([#1](https://github.com/react-native-webrtc/react-native-callkeep/pull/1), @manuquentin)
 
-[Unreleased]: https://github.com/react-native-webrtc/react-native-callkeep/compare/4.6.0...HEAD
+[Unreleased]: https://github.com/react-native-webrtc/react-native-callkeep/compare/4.6.1...HEAD
+[4.6.1]: https://github.com/react-native-webrtc/react-native-callkeep/compare/4.6.0...4.6.1
 [4.6.0]: https://github.com/react-native-webrtc/react-native-callkeep/compare/4.5.0...4.6.0
 [4.5.0]: https://github.com/react-native-webrtc/react-native-callkeep/compare/4.4.0...4.5.0
 [4.4.0]: https://github.com/react-native-webrtc/react-native-callkeep/compare/db693d5...4.4.0
