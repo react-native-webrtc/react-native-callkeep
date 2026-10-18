@@ -260,6 +260,8 @@ RNCallKeep.startCall(uuid, handle, contactIdentifier);
   - `false` (default)
   - `true` (you know... when not false)
 
+When the system accepts the call, you get [`didReceiveStartCallAction`](events.md#didreceivestartcallaction); when it refuses it, [`startCallFailed`](events.md#startcallfailed).
+
 
 ### reportConnectingOutgoingCallWithUUID
 

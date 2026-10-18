@@ -11,6 +11,10 @@ are not listed here.
 
 ## [Unreleased]
 
+### Added
+
+- `startCallFailed` event: sent when iOS or Android refuses a call started with `startCall`. It went unreported: `didReceiveStartCallAction` never came, and the app kept a call the system didn't show. On iOS it carries CallKit's `errorCode`, such as `MaximumCallGroupsReached`. On Android it covers Telecom's refusals, such as a second managed call while one is dialing; in self-managed mode Android asks the user instead, and tells the app nothing if they cancel. See [startCallFailed](docs/events.md#startcallfailed). Based on [#878](https://github.com/react-native-webrtc/react-native-callkeep/pull/878) (@mjerris).
+
 ## [4.5.0] - 2026-10-17
 
 On Android, calls now outlive the app's activity, as in other calling apps: read the first *Changed* entry if your app relied on calls ending with it. Native code can now set CallKeep up and show calls on Android, and observe its events on iOS, before React Native runs.

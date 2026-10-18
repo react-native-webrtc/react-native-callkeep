@@ -22,6 +22,7 @@ export type LogEntry = { id: number; time: string; event: string; data?: string 
 const EVENTS: Events[] = [
   'didLoadWithEvents',
   'didReceiveStartCallAction',
+  'startCallFailed',
   'answerCall',
   'endCall',
   'didDisplayIncomingCall',
@@ -128,6 +129,13 @@ const handlers: Handlers = {
       muted: false,
     });
     connectOutgoingCall(callUUID);
+  },
+  // The system refused a call startCall started. With CallUUIDAlreadyExists (iOS), the call with this
+  // UUID exists and goes on.
+  startCallFailed: ({ callUUID, errorCode }) => {
+    if (errorCode !== 'CallUUIDAlreadyExists') {
+      removeCall(callUUID);
+    }
   },
   answerCall: ({ callUUID }) => {
     // Answered from the system call screen or with answerIncomingCall(). An app connects the media

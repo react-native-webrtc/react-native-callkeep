@@ -13,6 +13,7 @@ subscription.remove();
 | Event                                                             |  iOS | Android |
 | ----------------------------------------------------------------- | :--: | :-----: |
 | [didReceiveStartCallAction](#didreceivestartcallaction)         |  ✅  |   ✅    |
+| [startCallFailed](#startcallfailed)                             |  ✅  |   ✅    |
 | [answerCall](#answercall)                                       |  ✅  |   ✅    |
 | [endCall](#endcall)                                             |  ✅  |   ✅    |
 | [didActivateAudioSession](#didactivateaudiosession)             |  ✅  |   ✅    |
@@ -37,6 +38,8 @@ or by the app calling `RNCallKeep.startCall`.
 
 Try to start your app call action from here (e.g. get credentials of the user by `data.handle` and/or send INVITE to your SIP server)
 
+If the system refuses a call started with `startCall`, you get [`startCallFailed`](#startcallfailed) instead.
+
 Note: on iOS, when the call comes from Recents, Contacts or Siri, `callUUID` is not defined: CallKit doesn't manage the call yet. Generate a UUID and call `startCall`, which sends this event again with the `callUUID`.
 
 ```js
@@ -51,6 +54,35 @@ RNCallKeep.addEventListener('didReceiveStartCallAction', ({ handle, callUUID, na
   - The UUID of the call that is to be answered
 - `name` (string)
   - Name of the callee
+
+### startCallFailed
+
+The system refused a call started with `startCall`: it shows no call, and [`didReceiveStartCallAction`](#didreceivestartcallaction) won't come for it. Stop what your app started for this call, and tell the user.
+
+- On iOS, CallKit refused the call. `errorCode` says why, for instance `MaximumCallGroupsReached` when calls already fill the [`maximumCallGroups`](setup.md#options) option.
+- On Android, Telecom refused the call before creating it, for instance in managed mode while another outgoing call is dialing. Android doesn't say why. In self-managed mode, Android asks the user whether to end the ongoing call instead; if they cancel, Android doesn't tell the app, and this event isn't sent.
+
+With `errorCode` `CallUUIDAlreadyExists` (iOS), CallKit already has a call with this UUID, for instance after a second `startCall` for the same call: that call goes on, so don't end it.
+
+```js
+RNCallKeep.addEventListener('startCallFailed', ({ callUUID, handle, name, errorCode }) => {
+  if (errorCode === 'CallUUIDAlreadyExists') {
+    return; // the call with this UUID goes on
+  }
+  // Stop your app's call for callUUID, e.g. cancel the INVITE sent to your SIP server.
+});
+```
+
+- `callUUID` (string)
+  - The UUID passed to `startCall`.
+- `handle` (string)
+  - Phone number of the callee.
+- `name` (string)
+  - The `contactIdentifier` passed to `startCall`.
+- `error` (string)
+  - iOS only. CallKit's description of the error.
+- `errorCode` (string)
+  - iOS only. Possible values: "Unentitled", "UnknownCallProvider", "EmptyTransaction", "UnknownCallUUID", "CallUUIDAlreadyExists", "InvalidAction", "MaximumCallGroupsReached", "CallIsProtected", "Unknown". See https://developer.apple.com/documentation/callkit/cxerrorcoderequesttransactionerror for more information.
 
 ### answerCall
 
@@ -334,6 +366,7 @@ Each notification is posted on the thread that sends the event, which can be Cal
 | Event                        | Notification name                        |
 | ---------------------------- | ---------------------------------------- |
 | didReceiveStartCallAction    | `RNCallKeepDidReceiveStartCallAction`    |
+| startCallFailed              | `RNCallKeepStartCallFailed`              |
 | answerCall                   | `RNCallKeepPerformAnswerCallAction`      |
 | endCall                      | `RNCallKeepPerformEndCallAction`         |
 | didActivateAudioSession      | `RNCallKeepDidActivateAudioSession`      |
