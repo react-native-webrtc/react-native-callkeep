@@ -11,6 +11,10 @@ are not listed here.
 
 ## [Unreleased]
 
+## [4.6.0] - 2026-10-18
+
+A call that iOS or Android refuses to start is now reported to JavaScript, with the new `startCallFailed` event.
+
 ### Added
 
 - `startCallFailed` event: sent when iOS or Android refuses a call started with `startCall`. It went unreported: `didReceiveStartCallAction` never came, and the app kept a call the system didn't show. On iOS it carries CallKit's `errorCode`, such as `MaximumCallGroupsReached`. On Android it covers Telecom's refusals, such as a second managed call while one is dialing; in self-managed mode Android asks the user instead, and tells the app nothing if they cancel. See [startCallFailed](docs/events.md#startcallfailed). Based on [#878](https://github.com/react-native-webrtc/react-native-callkeep/pull/878) (@mjerris).
@@ -677,7 +681,8 @@ Version 3.0.5 was tagged (`v3.0.5`) but not published to npm; its changes are li
 
 - First release as react-native-callkeep, forked from react-native-callkit 1.3.4 (iOS CallKit, by @ianlin). Adds Android support through ConnectionService; the native module is renamed `RNCallKeep` and `setup` takes `{ ios, android }` options. ([#1](https://github.com/react-native-webrtc/react-native-callkeep/pull/1), @manuquentin)
 
-[Unreleased]: https://github.com/react-native-webrtc/react-native-callkeep/compare/4.5.0...HEAD
+[Unreleased]: https://github.com/react-native-webrtc/react-native-callkeep/compare/4.6.0...HEAD
+[4.6.0]: https://github.com/react-native-webrtc/react-native-callkeep/compare/4.5.0...4.6.0
 [4.5.0]: https://github.com/react-native-webrtc/react-native-callkeep/compare/4.4.0...4.5.0
 [4.4.0]: https://github.com/react-native-webrtc/react-native-callkeep/compare/db693d5...4.4.0
 [4.3.16]: https://www.npmjs.com/package/react-native-callkeep/v/4.3.16
