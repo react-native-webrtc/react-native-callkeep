@@ -107,6 +107,7 @@ import static io.wazo.callkeep.Constants.ACTION_WAKE_APP;
 import static io.wazo.callkeep.Constants.ACTION_SHOW_INCOMING_CALL_UI;
 import static io.wazo.callkeep.Constants.ACTION_ON_SILENCE_INCOMING_CALL;
 import static io.wazo.callkeep.Constants.ACTION_ON_CREATE_CONNECTION_FAILED;
+import static io.wazo.callkeep.Constants.ACTION_ON_CREATE_OUTGOING_CONNECTION_FAILED;
 import static io.wazo.callkeep.Constants.ACTION_DID_CHANGE_AUDIO_ROUTE;
 import static io.wazo.callkeep.Constants.ACTION_DID_DISPLAY_INCOMING_CALL;
 
@@ -589,11 +590,13 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule implements Life
 
         Log.d(TAG, "[RNCallKeepModule] startCall, uuid: " + uuid);
         this.listenToNativeCallsState();
+        VoiceConnectionService.addPlacedCall(callExtras);
         try {
             telecomManager.placeCall(uri, extras);
         } catch (SecurityException e) {
             // hasPermissions() is checked above, but a permission can be revoked at any time.
             Log.w(TAG, "[RNCallKeepModule] startCall failed: " + e.getMessage());
+            VoiceConnectionService.takePlacedCall(uuid, null);
         }
     }
 
@@ -1348,6 +1351,7 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule implements Life
             intentFilter.addAction(ACTION_SHOW_INCOMING_CALL_UI);
             intentFilter.addAction(ACTION_ON_SILENCE_INCOMING_CALL);
             intentFilter.addAction(ACTION_ON_CREATE_CONNECTION_FAILED);
+            intentFilter.addAction(ACTION_ON_CREATE_OUTGOING_CONNECTION_FAILED);
             intentFilter.addAction(ACTION_DID_CHANGE_AUDIO_ROUTE);
             intentFilter.addAction(ACTION_DID_DISPLAY_INCOMING_CALL);
 
@@ -1511,6 +1515,12 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule implements Life
                     args.putString("callUUID", attributeMap.get(EXTRA_CALL_UUID));
                     args.putString("name", attributeMap.get(EXTRA_CALLER_NAME));
                     sendEventToJS("RNCallKeepOnIncomingConnectionFailed", args);
+                    break;
+                case ACTION_ON_CREATE_OUTGOING_CONNECTION_FAILED:
+                    args.putString("handle", attributeMap.get(EXTRA_CALL_NUMBER));
+                    args.putString("callUUID", attributeMap.get(EXTRA_CALL_UUID));
+                    args.putString("name", attributeMap.get(EXTRA_CALLER_NAME));
+                    sendEventToJS("RNCallKeepStartCallFailed", args);
                     break;
                 case ACTION_DID_CHANGE_AUDIO_ROUTE:
                     args.putString("handle", attributeMap.get(EXTRA_CALL_NUMBER));

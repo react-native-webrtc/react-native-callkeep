@@ -13,6 +13,7 @@ declare module 'react-native-callkeep' {
     showIncomingCallUi: 'RNCallKeepShowIncomingCallUi';
     silenceIncomingCall: 'RNCallKeepOnSilenceIncomingCall';
     createIncomingConnectionFailed: 'RNCallKeepOnIncomingConnectionFailed';
+    startCallFailed: 'RNCallKeepStartCallFailed';
     checkReachability: 'RNCallKeepCheckReachability';
     didResetProvider: 'RNCallKeepProviderReset';
     didLoadWithEvents: 'RNCallKeepDidLoadWithEvents';
@@ -52,6 +53,13 @@ declare module 'react-native-callkeep' {
     showIncomingCallUi: { handle: string, callUUID: string, name: string };
     silenceIncomingCall: { handle: string, callUUID: string, name: string };
     createIncomingConnectionFailed: { handle: string, callUUID: string, name: string };
+    startCallFailed: {
+      callUUID: string,
+      handle: string,
+      name: string,
+      error?: string,
+      errorCode?: 'Unentitled' | 'UnknownCallProvider' | 'EmptyTransaction' | 'UnknownCallUUID' | 'CallUUIDAlreadyExists' | 'InvalidAction' | 'MaximumCallGroupsReached' | 'CallIsProtected' | 'Unknown',
+    };
     checkReachability: undefined;
     didResetProvider: undefined;
     didLoadWithEvents: InitialEvents;

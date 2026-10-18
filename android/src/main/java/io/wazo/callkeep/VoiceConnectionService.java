@@ -74,6 +74,7 @@ import static io.wazo.callkeep.Constants.EXTRA_SELF_MANAGED;
 import static io.wazo.callkeep.Constants.EXTRA_DISABLE_ADD_CALL;
 import static io.wazo.callkeep.Constants.FOREGROUND_SERVICE_NOTIFICATION_ID;
 import static io.wazo.callkeep.Constants.ACTION_ON_CREATE_CONNECTION_FAILED;
+import static io.wazo.callkeep.Constants.ACTION_ON_CREATE_OUTGOING_CONNECTION_FAILED;
 import static io.wazo.callkeep.Constants.ACTION_DID_DISPLAY_INCOMING_CALL;
 import static io.wazo.callkeep.Constants.EXTRA_HAS_VIDEO;
 
@@ -95,6 +96,9 @@ public class VoiceConnectionService extends ConnectionService {
 
     public static Map<String, VoiceConnection> currentConnections = new HashMap<>();
     public static Boolean hasOutgoingCall = false;
+    // The extras of the calls startCall placed, until Telecom creates or refuses them: when Telecom
+    // refuses a call before creating it, the request only has the number.
+    private static final List<Bundle> placedCalls = new ArrayList<>();
     public static VoiceConnectionService currentConnectionService = null;
 
     public static Connection getConnection(String connectionId) {
@@ -109,6 +113,29 @@ public class VoiceConnectionService extends ConnectionService {
         Log.d(TAG, "[VoiceConnectionService] Constructor");
         currentConnectionRequest = null;
         currentConnectionService = this;
+    }
+
+    public static void addPlacedCall(Bundle extras) {
+        synchronized (placedCalls) {
+            placedCalls.add(extras);
+        }
+    }
+
+    // Removes and returns the latest placed call with this UUID or, without one, this number.
+    @Nullable
+    public static Bundle takePlacedCall(@Nullable String uuid, @Nullable String number) {
+        synchronized (placedCalls) {
+            for (int i = placedCalls.size() - 1; i >= 0; i--) {
+                Bundle call = placedCalls.get(i);
+                boolean matches = uuid != null
+                    ? uuid.equals(call.getString(EXTRA_CALL_UUID))
+                    : number != null && number.equals(call.getString(EXTRA_CALL_NUMBER));
+                if (matches) {
+                    return placedCalls.remove(i);
+                }
+            }
+            return null;
+        }
     }
 
     public static void setPhoneAccountHandle(PhoneAccountHandle phoneAccountHandle) {
@@ -269,6 +296,7 @@ public class VoiceConnectionService extends ConnectionService {
 
         Bundle extras = request.getExtras();
         String callUUID = extras.getString(EXTRA_CALL_UUID);
+        takePlacedCall(callUUID, null);
 
         if(callUUID == null || callUUID == ""){
           callUUID = UUID.randomUUID().toString();
@@ -602,6 +630,31 @@ public class VoiceConnectionService extends ConnectionService {
         }
 
         sendCallRequestToActivity(ACTION_ON_CREATE_CONNECTION_FAILED, extrasMap, true);
+    }
+
+    // Telecom refused an outgoing call without creating it, for instance while another outgoing call
+    // is dialing.
+    @Override
+    public void onCreateOutgoingConnectionFailed(PhoneAccountHandle connectionManagerPhoneAccount, ConnectionRequest request) {
+        super.onCreateOutgoingConnectionFailed(connectionManagerPhoneAccount, request);
+        Log.w(TAG, "[VoiceConnectionService] onCreateOutgoingConnectionFailed: " + request);
+
+        String number = request.getAddress() == null ? null : request.getAddress().getSchemeSpecificPart();
+        Bundle extras = request.getExtras();
+        String callUUID = extras == null ? null : extras.getString(EXTRA_CALL_UUID);
+        Bundle placedCall = takePlacedCall(callUUID, number);
+        if (callUUID == null && placedCall != null) {
+            extras = placedCall;
+            callUUID = extras.getString(EXTRA_CALL_UUID);
+        }
+        if (callUUID == null) {
+            // Not a call startCall placed, e.g. one from the Phone app: JavaScript doesn't know it.
+            return;
+        }
+
+        HashMap<String, String> extrasMap = this.bundleToMap(extras);
+        extrasMap.put(EXTRA_CALL_NUMBER, number);
+        sendCallRequestToActivity(ACTION_ON_CREATE_OUTGOING_CONNECTION_FAILED, extrasMap, true);
     }
 
     // When a listener is available for `sendCallRequestToActivity`, send delayed events.

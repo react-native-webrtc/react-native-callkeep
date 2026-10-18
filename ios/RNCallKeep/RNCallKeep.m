@@ -37,6 +37,7 @@ static NSString *const RNCallKeepProviderReset = @"RNCallKeepProviderReset";
 static NSString *const RNCallKeepCheckReachability = @"RNCallKeepCheckReachability";
 static NSString *const RNCallKeepDidChangeAudioRoute = @"RNCallKeepDidChangeAudioRoute";
 static NSString *const RNCallKeepDidLoadWithEvents = @"RNCallKeepDidLoadWithEvents";
+static NSString *const RNCallKeepStartCallFailed = @"RNCallKeepStartCallFailed";
 
 @implementation RNCallKeep
 {
@@ -116,7 +117,8 @@ RCT_EXPORT_MODULE()
         RNCallKeepProviderReset,
         RNCallKeepCheckReachability,
         RNCallKeepDidLoadWithEvents,
-        RNCallKeepDidChangeAudioRoute
+        RNCallKeepDidChangeAudioRoute,
+        RNCallKeepStartCallFailed
     ];
 }
 
@@ -124,9 +126,13 @@ RCT_EXPORT_MODULE()
 {
     NSLog(@"[RNCallKeep][startObserving]");
     _hasListeners = YES;
-    if ([_delayedEvents count] > 0) {
-        [self sendEventWithName:RNCallKeepDidLoadWithEvents body:_delayedEvents];
-    }
+    // The events are buffered on the main queue. React Native converts the body on another thread,
+    // so it gets a copy.
+    dispatch_async(dispatch_get_main_queue(), ^{
+        if ([self->_delayedEvents count] > 0) {
+            [self sendEventWithName:RNCallKeepDidLoadWithEvents body:[self->_delayedEvents copy]];
+        }
+    });
 }
 
 - (void)stopObserving
@@ -343,7 +349,10 @@ RCT_EXPORT_METHOD(getInitialEvents:(RCTPromiseResolveBlock)resolve
 #ifdef DEBUG
     NSLog(@"[RNCallKeep][getInitialEvents]");
 #endif
-    resolve(_delayedEvents);
+    // As in startObserving: read the buffer on the main queue, and resolve with a copy.
+    dispatch_async(dispatch_get_main_queue(), ^{
+        resolve([self->_delayedEvents copy]);
+    });
 }
 
 RCT_EXPORT_METHOD(clearInitialEvents)
@@ -351,7 +360,9 @@ RCT_EXPORT_METHOD(clearInitialEvents)
 #ifdef DEBUG
     NSLog(@"[RNCallKeep][clearInitialEvents]");
 #endif
-    _delayedEvents = [NSMutableArray array];
+    dispatch_async(dispatch_get_main_queue(), ^{
+        self->_delayedEvents = [NSMutableArray array];
+    });
 }
 
 RCT_EXPORT_METHOD(startCall:(NSString *)uuidString
@@ -691,6 +702,23 @@ RCT_EXPORT_METHOD(getAudioRoutes: (RCTPromiseResolveBlock)resolve
     [self.callKeepCallController requestTransaction:transaction completion:^(NSError * _Nullable error) {
         if (error != nil) {
             NSLog(@"[RNCallKeep][requestTransaction] Error requesting transaction (%@): (%@)", transaction.actions, error);
+
+            // CallKit refused to start the call: performStartCallAction won't be called.
+            if ([[transaction.actions firstObject] isKindOfClass:[CXStartCallAction class]]) {
+                CXStartCallAction *startCallAction = [transaction.actions firstObject];
+                NSDictionary *body = @{
+                    @"callUUID": [startCallAction.callUUID.UUIDString lowercaseString] ?: @"",
+                    @"handle": startCallAction.handle.value ?: @"",
+                    @"name": startCallAction.contactIdentifier ?: @"",
+                    @"error": error.localizedDescription ?: @"",
+                    @"errorCode": [self getRequestTransactionErrorCode:error],
+                };
+                // This completion runs on CallKit's private queue, and the events are buffered on the
+                // main queue, as the provider's delegate sends them.
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    [self sendEventWithNameWrapper:RNCallKeepStartCallFailed body:body];
+                });
+            }
         } else {
             NSLog(@"[RNCallKeep][requestTransaction] Requested transaction successfully");
 
@@ -845,6 +873,32 @@ RCT_EXPORT_METHOD(getAudioRoutes: (RCTPromiseResolveBlock)resolve
     }
 }
 
+
+- (NSString *)getRequestTransactionErrorCode:(NSError *)error {
+    if (![error.domain isEqualToString:CXErrorDomainRequestTransaction]) {
+        return @"Unknown";
+    }
+    switch ([error code]) {
+        case CXErrorCodeRequestTransactionErrorUnentitled:
+            return @"Unentitled";
+        case CXErrorCodeRequestTransactionErrorUnknownCallProvider:
+            return @"UnknownCallProvider";
+        case CXErrorCodeRequestTransactionErrorEmptyTransaction:
+            return @"EmptyTransaction";
+        case CXErrorCodeRequestTransactionErrorUnknownCallUUID:
+            return @"UnknownCallUUID";
+        case CXErrorCodeRequestTransactionErrorCallUUIDAlreadyExists:
+            return @"CallUUIDAlreadyExists";
+        case CXErrorCodeRequestTransactionErrorInvalidAction:
+            return @"InvalidAction";
+        case CXErrorCodeRequestTransactionErrorMaximumCallGroupsReached:
+            return @"MaximumCallGroupsReached";
+        case 8: // CXErrorCodeRequestTransactionErrorCallIsProtected, missing from older SDKs
+            return @"CallIsProtected";
+        default:
+            return @"Unknown";
+    }
+}
 
 - (BOOL)lessThanIos10_2
 {
