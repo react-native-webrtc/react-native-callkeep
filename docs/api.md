@@ -486,6 +486,7 @@ await RNCallKeep.setAudioRoute(uuid, routeName);
   - AudioRoute.name. 
 
 On Android, the promise is rejected when no call has this `uuid`, and before Android 8 (API 26), which has no API to change a call's audio route.
+On iOS, it is rejected when no audio route has this name.
 
 ### supportConnectionService
 

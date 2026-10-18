@@ -13,6 +13,7 @@ are not listed here.
 
 ### Fixed
 
+- **iOS:** `setAudioRoute()` rejects when no audio route has the given name. Its promise never settled.
 - **Android:** An outgoing call's connection stays in `STATE_DIALING`, and an incoming call's in `STATE_RINGING`, as Telecom shows them. `setInitialized()`, called after `setDialing()` or `setRinging()`, put the connection back to `STATE_NEW`: `VoiceConnectionService.getConnection(uuid).getState()` returned `STATE_NEW` while the call was dialing or ringing. Samsung devices already skipped it for outgoing calls, where it kept the native UI from showing; every device now does as they did.
 
 ## [4.6.0] - 2026-10-18
