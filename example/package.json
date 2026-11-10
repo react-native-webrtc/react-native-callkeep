@@ -12,12 +12,12 @@
   "dependencies": {
     "react": "19.3.1",
     "react-native": "0.88.1",
-    "react-native-safe-area-context": "^5.11.0"
+    "react-native-safe-area-context": "^5.11.1"
   },
   "devDependencies": {
-    "@babel/core": "^7.25.2",
+    "@babel/core": "^7.29.13",
     "@babel/preset-env": "^7.25.3",
-    "@babel/runtime": "^7.25.0",
+    "@babel/runtime": "^7.29.13",
     "@react-native-community/cli": "20.2.0",
     "@react-native-community/cli-platform-android": "20.2.0",
     "@react-native-community/cli-platform-ios": "20.2.0",
