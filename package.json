@@ -34,5 +34,8 @@
   "devDependencies": {
     "react-native": ">=0.40.0"
   },
-  "dependencies": {}
+  "dependencies": {},
+  "swiftpmConfig": {
+    "name": "RNCallKeep"
+  }
 }
