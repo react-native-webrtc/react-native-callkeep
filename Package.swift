@@ -3,7 +3,6 @@
 import Foundation
 import PackageDescription
 
-// React Native resolves these paths through build/generated/autolinking/libs.
 let usedRootEntries: Set<String> = ["Package.swift", "ios", "include"]
 let unusedRootEntries = try! FileManager.default.contentsOfDirectory(atPath: Context.packageDirectory)
     .filter { !usedRootEntries.contains($0) }
@@ -34,14 +33,7 @@ let package = Package(
             resources: [.copy("ios/PrivacyInfo.xcprivacy")],
             publicHeadersPath: "include",
             cSettings: [.define("RCT_NEW_ARCH_ENABLED", to: "1")],
-            cxxSettings: [.define("RCT_NEW_ARCH_ENABLED", to: "1")],
-            linkerSettings: [
-                .linkedFramework("UIKit"),
-                .linkedFramework("Foundation"),
-                .linkedFramework("CallKit"),
-                .linkedFramework("Intents"),
-                .linkedFramework("AVFoundation"),
-            ]
+            cxxSettings: [.define("RCT_NEW_ARCH_ENABLED", to: "1")]
         ),
     ],
     cxxLanguageStandard: .cxx20
