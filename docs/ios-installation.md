@@ -9,6 +9,17 @@ cd ios && pod install
 
 Autolinking adds the `RNCallKeep` pod: there is nothing to link by hand in Xcode. The pod ships a privacy manifest, and it builds as a module, so Swift code can `import RNCallKeep`.
 
+### Swift Package Manager
+
+React Native 0.88 can build an app's iOS libraries with Swift Package Manager (SwiftPM) instead of CocoaPods. CallKeep ships a `Package.swift`, so in an app set up for SwiftPM, run React Native's `spm` command instead of `pod install`:
+
+```sh
+npm install react-native-callkeep
+npx react-native spm
+```
+
+An app still on CocoaPods moves to SwiftPM with `npx react-native spm add --deintegrate`. As with the pod, Swift code can `import RNCallKeep` without a bridging header, and the privacy manifest ships in CallKeep's resource bundle. Tested with React Native 0.88.1.
+
 ## Background modes and microphone
 
 In Xcode, under *Signing & Capabilities*, add **Background Modes** and check **Voice over IP** and **Audio, AirPlay, and Picture in Picture**. In `Info.plist`, together with the text iOS shows when it asks for the microphone, this is:

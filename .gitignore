@@ -9,6 +9,9 @@
 # Xcode
 #
 build/
+# SwiftPM, when Package.swift is opened in Xcode or evaluated with swift package
+.build/
+.swiftpm/
 *.pbxuser
 !default.pbxuser
 *.mode1v3

@@ -31,6 +31,8 @@ npm install react-native-callkeep
 cd ios && pod install
 ```
 
+An app that builds its iOS libraries with Swift Package Manager runs `npx react-native spm` instead of `pod install`: see [Swift Package Manager](docs/ios-installation.md#swift-package-manager).
+
 Then follow the platform setup: [iOS](docs/ios-installation.md) and [Android](docs/android-installation.md).
 
 ## Quick start
