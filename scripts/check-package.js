@@ -13,6 +13,8 @@ const required = [
   'index.d.ts',
   'package.json',
   'RNCallKeep.podspec',
+  'Package.swift',
+  'include/RNCallKeep/RNCallKeep.h',
   'ios/RNCallKeep/RNCallKeep.h',
   'ios/RNCallKeep/RNCallKeep.m',
   'ios/PrivacyInfo.xcprivacy',

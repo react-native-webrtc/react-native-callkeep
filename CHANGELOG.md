@@ -11,6 +11,10 @@ are not listed here.
 
 ## [Unreleased]
 
+### Added
+
+- **iOS:** Swift Package Manager support. An app that React Native 0.88 builds with SwiftPM instead of CocoaPods can now use CallKeep; `npx react-native spm add` stopped with `Package.swift is missing for library "react-native-callkeep"`. Swift code can still `import RNCallKeep`, and CocoaPods apps don't change. See [Swift Package Manager](docs/ios-installation.md#swift-package-manager). From [#919](https://github.com/react-native-webrtc/react-native-callkeep/pull/919) (@chrfalch).
+
 ## [4.6.1] - 2026-10-18
 
 On Android, a call's connection now reports the dialing or ringing state that Telecom shows. On iOS, `setAudioRoute()` no longer leaves its promise pending when no route has the given name.
